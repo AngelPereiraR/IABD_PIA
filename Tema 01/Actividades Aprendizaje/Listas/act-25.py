@@ -9,4 +9,6 @@ for tupla in pares:
         else:
             contador[valor] = 1
 
-print(contador)
+print("Conteo de valores:")
+for valor, cantidad in contador.items():
+    print(f"'{valor}': {cantidad} veces")
