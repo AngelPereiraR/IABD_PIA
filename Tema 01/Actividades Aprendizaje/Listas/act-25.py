@@ -1,14 +1,12 @@
-pares = [(1, 2), (2, 3), (1, 3), (4, 2)]
+listaDeListaCadenas = [["Hola", "mundo"], ["esto", "es", "una", "prueba"], ["Python", "es", "genial"]]
 
-contador = {}
-
-for tupla in pares:
-    for valor in tupla:
-        if valor in contador:
-            contador[valor] += 1
-        else:
-            contador[valor] = 1
-
-print("Conteo de valores:")
-for valor, cantidad in contador.items():
-    print(f"'{valor}': {cantidad} veces")
+def concatenarElementosFila(lista, fila, posicion=0):
+    if fila < 0 or fila >= len(lista):
+        return ""
+    if posicion >= len(lista[fila]):
+        return ""
+    else:
+        return lista[fila][posicion] + " " + concatenarElementosFila(lista, fila, posicion + 1)
+      
+print(concatenarElementosFila(listaDeListaCadenas, 1))
+print(concatenarElementosFila(listaDeListaCadenas, 0))

@@ -1,14 +1,12 @@
-listaDeListaCadenas = [["Hola", "mundo"], ["esto", "es", "una", "prueba"], ["Python", "es", "genial"]]
+matriz = [[3, 5, 2, 8], [7, 9, 1, 4], [6, 8, 2, 5]]
 
-def buscarPosicionPalabra(lista, palabra, fila=0, columna=0):
-    if fila >= len(lista):
-        return (-1, -1)
-    if columna >= len(lista[fila]):
-        return buscarPosicionPalabra(lista, palabra, fila + 1, 0)
-    if lista[fila][columna] == palabra:
-        return (fila, columna)
-    return buscarPosicionPalabra(lista, palabra, fila, columna + 1)
+def devolverTranspuesta(matriz):
+    transpuesta = []
+    for i in range(len(matriz[0])):
+        nuevaFila = []
+        for fila in matriz:
+            nuevaFila.append(fila[i])
+        transpuesta.append(nuevaFila)
+    return transpuesta
 
-print(buscarPosicionPalabra(listaDeListaCadenas, "prueba"))
-print(buscarPosicionPalabra(listaDeListaCadenas, "Python"))
-print(buscarPosicionPalabra(listaDeListaCadenas, "Java"))
+print(devolverTranspuesta(matriz))

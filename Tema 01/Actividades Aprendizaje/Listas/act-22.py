@@ -1,12 +1,12 @@
-matriz = [[3, 5, 2, 8], [7, 9, 1, 4], [6, 8, 2, 5]]
+def filtrarPalabrasLargas(lista):
+    if len(lista) == 0:
+        return []
+    else:
+        cabeza = lista[0]
+        cola = lista[1:]
+        if len(cabeza) > 5:
+            return [cabeza] + filtrarPalabrasLargas(cola)
+        else:
+            return filtrarPalabrasLargas(cola)
 
-def devolverTranspuesta(matriz):
-    transpuesta = []
-    for i in range(len(matriz[0])):
-        nuevaFila = []
-        for fila in matriz:
-            nuevaFila.append(fila[i])
-        transpuesta.append(nuevaFila)
-    return transpuesta
-
-print(devolverTranspuesta(matriz))
+print(filtrarPalabrasLargas(['hola', 'javascript', 'clase', 'expresiones']))

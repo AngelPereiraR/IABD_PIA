@@ -1,7 +1,10 @@
-def sumar(lista):
-    if len(lista) == 0:
-        return 0
-    else:
-        return lista[0] + sumar(lista[1:])
+import random as rd
 
-print(sumar([1, 2, 3, 4]))
+numRandom = rd.randint(30, 40)
+
+numeros = [rd.randint(1, 30) for _ in range(numRandom)]
+
+sinDuplicados = list(set(numeros))
+
+print(f"Números generados ({numRandom}): {numeros}")
+print(f"Números sin duplicados: {sinDuplicados}")

@@ -1,24 +1,8 @@
-lista = [3, 5, 2, 7, 9]
-
-def encontrarParParecido(lista):
-    if len(lista) < 2:
-        return None  # No hay suficientes elementos para formar un par
+def encontrarMaximo(lista):
+    if len(lista) == 1:
+        return lista[0]
     else:
-      copiaLista = lista.copy()
-      numMin = min(copiaLista)
-      copiaLista.remove(numMin)
-      segundoNumMin = min(copiaLista)
-
-      return (numMin, segundoNumMin)
-
-def encontrarParDiferente(lista):
-    if len(lista) < 2:
-        return None  # No hay suficientes elementos para formar un par
-    else:
-      numMin = min(lista)
-      numMax = max(lista)
-
-      return (numMin, numMax)
-
-print(encontrarParParecido(lista))
-print(encontrarParDiferente(lista))
+        maximoResto = encontrarMaximo(lista[1:])
+        return lista[0] if lista[0] > maximoResto else maximoResto
+      
+print(encontrarMaximo([7, 2, 10, 3]))

@@ -1,12 +1,24 @@
-listaDeListaCadenas = [["Hola", "mundo"], ["esto", "es", "una", "prueba"], ["Python", "es", "genial"]]
+lista = [3, 5, 2, 7, 9]
 
-def concatenarElementosFila(lista, fila, posicion=0):
-    if fila < 0 or fila >= len(lista):
-        return ""
-    if posicion >= len(lista[fila]):
-        return ""
+def encontrarParParecido(lista):
+    if len(lista) < 2:
+        return None  # No hay suficientes elementos para formar un par
     else:
-        return lista[fila][posicion] + " " + concatenarElementosFila(lista, fila, posicion + 1)
-      
-print(concatenarElementosFila(listaDeListaCadenas, 1))
-print(concatenarElementosFila(listaDeListaCadenas, 0))
+      copiaLista = lista.copy()
+      numMin = min(copiaLista)
+      copiaLista.remove(numMin)
+      segundoNumMin = min(copiaLista)
+
+      return (numMin, segundoNumMin)
+
+def encontrarParDiferente(lista):
+    if len(lista) < 2:
+        return None  # No hay suficientes elementos para formar un par
+    else:
+      numMin = min(lista)
+      numMax = max(lista)
+
+      return (numMin, numMax)
+
+print(encontrarParParecido(lista))
+print(encontrarParDiferente(lista))

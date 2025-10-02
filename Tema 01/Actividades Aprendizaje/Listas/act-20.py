@@ -1,12 +1,8 @@
-def filtrarPalabrasLargas(lista):
+def contarMayores(lista, umbral):
     if len(lista) == 0:
-        return []
+        return 0
     else:
-        cabeza = lista[0]
-        cola = lista[1:]
-        if len(cabeza) > 5:
-            return [cabeza] + filtrarPalabrasLargas(cola)
-        else:
-            return filtrarPalabrasLargas(cola)
-
-print(filtrarPalabrasLargas(['hola', 'javascript', 'clase', 'expresiones']))
+        count = 1 if lista[0] > umbral else 0
+        return count + contarMayores(lista[1:], umbral)
+      
+print(contarMayores([1, 5, 8, 12], 6))

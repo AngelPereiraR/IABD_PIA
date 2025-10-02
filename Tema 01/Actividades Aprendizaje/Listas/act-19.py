@@ -1,8 +1,7 @@
-def encontrarMaximo(lista):
-    if len(lista) == 1:
-        return lista[0]
+def sumar(lista):
+    if len(lista) == 0:
+        return 0
     else:
-        maximoResto = encontrarMaximo(lista[1:])
-        return lista[0] if lista[0] > maximoResto else maximoResto
-      
-print(encontrarMaximo([7, 2, 10, 3]))
+        return lista[0] + sumar(lista[1:])
+
+print(sumar([1, 2, 3, 4]))
