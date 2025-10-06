@@ -10,7 +10,7 @@ def EscribirCentrado(texto):
     texto += '='
     longitud += 1
   espacios = (80 - longitud) // 2
-  print('=' * espacios + texto + '=' * espacios)
-  print('=' * 80)
+  print(' ' * espacios + texto + ' ' * espacios)
+  print(' ' * espacios + '=' * longitud + ' ' * espacios)
   
 EscribirCentrado("Hola Mundo")
