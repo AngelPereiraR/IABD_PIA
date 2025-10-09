@@ -13,7 +13,7 @@ def main():
         except ValueError:
             print("Entrada no válida. Por favor, introduce un número entero positivo.")
 
-    for _ in range(numAlumnos):
+    while numAlumnos > 0:
         nombre = input("Introduce el nombre del alumno: ")
         if(nombre in alumnosNotas):
             print("El alumno ya existe. Introduce un nombre diferente.")
@@ -28,6 +28,8 @@ def main():
                 notas.append(nota)
             except ValueError:
                 print("Entrada no válida. Por favor, introduce un número entero no negativo.")
+                
+        numAlumnos -= 1
 
     print("Notas media de los alumnos:")
     for alumno, notas in alumnosNotas.items():
