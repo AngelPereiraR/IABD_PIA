@@ -1,15 +1,20 @@
 lista = [3, 5, 2, 7, 9]
 
-def encontrarParParecido(lista):
+def encontrarParMasParecido(lista):
     if len(lista) < 2:
         return None  # No hay suficientes elementos para formar un par
     else:
-      copiaLista = lista.copy()
-      numMin = min(copiaLista)
-      copiaLista.remove(numMin)
-      segundoNumMin = min(copiaLista)
+        lista.sort()
+        parMasParecido = (lista[0], lista[1])
+        menorDiferencia = abs(lista[0] - lista[1])
 
-      return (numMin, segundoNumMin)
+        for i in range(1, len(lista) - 1):
+            diferencia = abs(lista[i] - lista[i + 1])
+            if diferencia < menorDiferencia:
+                menorDiferencia = diferencia
+                parMasParecido = (lista[i], lista[i + 1])
+
+        return parMasParecido
 
 def encontrarParDiferente(lista):
     if len(lista) < 2:
@@ -20,5 +25,5 @@ def encontrarParDiferente(lista):
 
       return (numMin, numMax)
 
-print(encontrarParParecido(lista))
+print(encontrarParMasParecido(lista))
 print(encontrarParDiferente(lista))
