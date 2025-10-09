@@ -3,13 +3,21 @@
 def ValidarFecha(fecha):
     """Función que valida si una fecha es correcta"""
     dia, mes, anio = map(int, fecha.split('/'))
-    return dia, mes, anio
+    if mes < 1 or mes > 12:
+        return False
+    if dia < 1 or dia > DiasDelMes(mes, anio):
+        return False
+    return True
 
 def LeerFecha():
     """Función que lee una fecha en formato dd/mm/aaaa y la devuelve como una tupla (dd, mm, aaaa)"""
-    fecha = input("Introduce una fecha (dd/mm/aaaa): ")
-    dia, mes, anio = ValidarFecha(fecha)
-    return dia, mes, anio
+    while True:
+        fecha = input("Introduce una fecha (dd/mm/aaaa): ")
+        if ValidarFecha(fecha):
+            dia, mes, anio = map(int, fecha.split('/'))
+            return dia, mes, anio
+        else:
+            print("Fecha inválida. Por favor, introduce una fecha válida.")
 
 def EsBisiesto(anio):
     """Función que devuelve True si el año es bisiesto"""

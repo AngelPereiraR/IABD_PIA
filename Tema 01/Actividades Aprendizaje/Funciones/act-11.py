@@ -3,7 +3,7 @@
 def LeerFecha():
     """Función que lee una fecha en formato dd/mm/aaaa y la devuelve como una tupla (dd, mm, aaaa)"""
     fecha = input("Introduce una fecha (dd/mm/aaaa): ")
-    dia, mes, anio = fecha.split('/')
+    dia, mes, anio = map(int, fecha.split('/'))
     return dia, mes, anio
 
 def EsBisiesto(anio):
