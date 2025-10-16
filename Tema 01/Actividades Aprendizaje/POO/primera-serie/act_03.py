@@ -1,7 +1,8 @@
 # act-03.py
 # POO - primera serie - ejercicio 3
 
-from act_02 import Cuenta, Persona
+from act_01 import Persona
+from act_02 import Cuenta
 
 class CuentaJoven(Cuenta):
     def __init__(self, titular, saldo=0.0, bonificacion=0.0):
