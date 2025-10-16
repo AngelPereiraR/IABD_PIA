@@ -25,11 +25,12 @@ def Leer_fracción():
             fraccion = input("Introduce una fracción en la forma 'numerador/denominador': ")
             numerador, denominador = map(int, fraccion.split('/'))
             if denominador == 0:
-                print("El denominador no puede ser cero. Inténtalo de nuevo.")
-                continue
+                raise ZeroDivisionError
             return (numerador, denominador)
         except ValueError:
             print("Entrada inválida. Asegúrate de introducir la fracción en el formato correcto.")
+        except ZeroDivisionError:
+            print("El denominador no puede ser cero. Inténtalo de nuevo.")
     
 def Sumar_fracciones(n1, d1, n2, d2):
     """Función que suma dos fracciones y devuelve el resultado simplificado."""
