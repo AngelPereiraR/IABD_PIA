@@ -5,8 +5,8 @@ def introducir_nombre():
     while True:
         try:
             nombre = input("Introduce tu nombre: ")
-            if not nombre.isalpha():
-                raise ValueError("El nombre debe contener solo letras.")
+            if nombre == "" or nombre.isdigit():
+                raise ValueError("El nombre no puede estar vacío y debe contener letras.")
             print(f"Nombre ingresado: {nombre}")
             break
         except ValueError as e:
