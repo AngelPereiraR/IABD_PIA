@@ -1,0 +1,20 @@
+{
+    "EASY": {
+        "player_wins": 0,
+        "ai_wins": 0,
+        "player_score": 0,
+        "ai_score": 0
+    },
+    "NORMAL": {
+        "player_wins": 0,
+        "ai_wins": 0,
+        "player_score": 0,
+        "ai_score": 0
+    },
+    "HARD": {
+        "player_wins": 1,
+        "ai_wins": 0,
+        "player_score": 17,
+        "ai_score": 12
+    }
+}

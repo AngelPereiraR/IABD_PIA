@@ -1,0 +1,5 @@
+id_curso,nombre_curso,creditos
+C01,Introducción a Python,4
+C02,Desarrollo Web con Django,6
+C03,Bases de Datos SQL,5
+C04,Algoritmos Avanzados,4
