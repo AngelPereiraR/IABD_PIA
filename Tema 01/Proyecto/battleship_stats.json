@@ -33,16 +33,16 @@
     },
     "RUSO": {
         "EASY": {
-            "player_wins": 0,
+            "player_wins": 1,
             "ai_wins": 0,
-            "player_score": 0,
-            "ai_score": 0
+            "player_score": 20,
+            "ai_score": 8
         },
         "NORMAL": {
-            "player_wins": 0,
+            "player_wins": 1,
             "ai_wins": 0,
-            "player_score": 0,
-            "ai_score": 0
+            "player_score": 20,
+            "ai_score": 15
         },
         "HARD": {
             "player_wins": 0,
@@ -57,10 +57,10 @@
             "ai_score": 0
         },
         "VERY HARD": {
-            "player_wins": 0,
+            "player_wins": 1,
             "ai_wins": 0,
-            "player_score": 0,
-            "ai_score": 0
+            "player_score": 20,
+            "ai_score": 18
         }
     }
 }

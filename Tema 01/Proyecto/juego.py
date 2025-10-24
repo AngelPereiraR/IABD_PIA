@@ -3,6 +3,7 @@ import random
 import time 
 import json
 import os
+import datetime
 
 # --- CONFIGURACIÓN INICIAL DE PYGAME Y CONSTANTES ---
 pygame.init()
@@ -13,6 +14,7 @@ SQUARE_SIZE = 30
 GRID_ROWS, GRID_COLS = 10, 10
 GRID_WIDTH_PX = GRID_COLS * SQUARE_SIZE
 STATS_FILE = "battleship_stats.json" # Nombre del archivo de guardado
+LOG_FILE = "battleship_log.txt" # Nombre del archivo de log
 
 # Cálculo para centrar los dos tableros (300px cada uno) y el espacio intermedio
 CENTRAL_SPACE = 100
@@ -31,7 +33,7 @@ TABLE_X_PLAYER = GRID_OFFSET_X_PLAYER
 TABLE_X_AI = GRID_OFFSET_X_AI
 
 # Posición del mensaje de Fin del Juego
-GAME_OVER_Y = 680
+GAME_OVER_Y = 780
 
 # Colores
 WHITE = (255, 255, 255)
@@ -119,6 +121,14 @@ def save_stats(stats):
             json.dump(stats, f, indent=4)
     except IOError:
         print("Error al guardar el archivo de estadísticas.")
+
+def log_action(message):
+    """Escribe una entrada en el archivo de log."""
+    try:
+        with open(LOG_FILE, 'a', encoding='utf-8') as f:
+            f.write(f"{datetime.datetime.now()}: {message}\n")
+    except IOError:
+        print("Error al escribir en el archivo de log.")
 
 
 # --- CLASE PARA RASTREAR EL ESTADO DE CADA BARCO ---
@@ -354,7 +364,7 @@ def ai_take_turn(player_grid, player_ships, difficulty, ai_target_queue, last_hi
         new_consecutive_hits = 0
         new_current_direction = None
 
-    return hit, message, sunk_points, ai_target_queue, new_last_hit, new_consecutive_hits, new_current_direction
+    return hit, message, sunk_points, ai_target_queue, new_last_hit, new_consecutive_hits, new_current_direction, r, c
 
 # --- PANTALLA DE SELECCIÓN DE DIFICULTAD ---
 
@@ -462,6 +472,9 @@ def game_loop(screen, difficulty_mode, stats, ship_mode):
     else:
         SHIP_DEFINITIONS = SHIP_DEFINITIONS_RUSSIAN
 
+    # Loguear inicio de partida
+    log_action(f"Partida iniciada: Dificultad: {difficulty_mode}, Modo barcos: {ship_mode}")
+
     # Inicialización
     player_grid_base = create_empty_grid()
     ai_grid_base = create_empty_grid()
@@ -509,6 +522,15 @@ def game_loop(screen, difficulty_mode, stats, ship_mode):
                             hit, message, sunk_points = take_shot(ai_grid, ai_ships, grid_row, grid_col)
                             game_message = f"Jugador: {message}"
                             
+                            # Determinar resultado para log
+                            if not hit:
+                                resultado = "Agua"
+                            elif sunk_points > 0:
+                                resultado = "Hundido"
+                            else:
+                                resultado = "Tocado"
+                            log_action(f"Jugador: Disparo en ({grid_row}, {grid_col}) - {resultado}")
+                            
                             if sunk_points > 0:
                                 current_player_score += sunk_points
                                 
@@ -519,6 +541,8 @@ def game_loop(screen, difficulty_mode, stats, ship_mode):
                                 stats[ship_mode][difficulty_mode]['player_wins'] += 1
                                 stats[ship_mode][difficulty_mode]['player_score'] += current_player_score
                                 stats[ship_mode][difficulty_mode]['ai_score'] += current_ai_score
+                                # Log del resultado
+                                log_action(f"Fin de partida: Ganador: Jugador, Puntuación Jugador: {current_player_score}, Puntuación IA: {current_ai_score}")
                             
                             player_turn = False 
                         else:
@@ -534,11 +558,20 @@ def game_loop(screen, difficulty_mode, stats, ship_mode):
         if not player_turn and not game_over:
             time.sleep(0.8)
 
-            hit, message, sunk_points, ai_target_queue, last_hit_coord, consecutive_hits, current_direction = ai_take_turn(
+            hit, message, sunk_points, ai_target_queue, last_hit_coord, consecutive_hits, current_direction, r, c = ai_take_turn(
                 player_grid, player_ships, difficulty_mode, ai_target_queue, last_hit_coord, consecutive_hits, current_direction
             )
             
             game_message = f"IA ({difficulty_mode}): {message}"
+            
+            # Determinar resultado para log
+            if not hit:
+                resultado = "Agua"
+            elif sunk_points > 0:
+                resultado = "Hundido"
+            else:
+                resultado = "Tocado"
+            log_action(f"IA ({difficulty_mode}): Disparo en ({r}, {c}) - {resultado}")
             
             if sunk_points > 0:
                 current_ai_score += sunk_points
@@ -550,6 +583,8 @@ def game_loop(screen, difficulty_mode, stats, ship_mode):
                 stats[ship_mode][difficulty_mode]['ai_wins'] += 1
                 stats[ship_mode][difficulty_mode]['player_score'] += current_player_score
                 stats[ship_mode][difficulty_mode]['ai_score'] += current_ai_score
+                # Log del resultado
+                log_action(f"Fin de partida: Ganador: IA, Puntuación Jugador: {current_player_score}, Puntuación IA: {current_ai_score}")
 
             player_turn = True 
 
