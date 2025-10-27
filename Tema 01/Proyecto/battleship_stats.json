@@ -1,10 +1,10 @@
 {
     "NORMAL": {
         "EASY": {
-            "player_wins": 1,
+            "player_wins": 4,
             "ai_wins": 0,
-            "player_score": 17,
-            "ai_score": 0
+            "player_score": 68,
+            "ai_score": 3
         },
         "NORMAL": {
             "player_wins": 0,

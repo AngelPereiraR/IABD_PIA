@@ -4,6 +4,7 @@ import time
 import json
 import os
 import datetime
+import csv
 
 # --- CONFIGURACIÓN INICIAL DE PYGAME Y CONSTANTES ---
 pygame.init()
@@ -14,7 +15,7 @@ SQUARE_SIZE = 30
 GRID_ROWS, GRID_COLS = 10, 10
 GRID_WIDTH_PX = GRID_COLS * SQUARE_SIZE
 STATS_FILE = "battleship_stats.json" # Nombre del archivo de guardado
-LOG_FILE = "battleship_log.txt" # Nombre del archivo de log
+LOG_FILE = "battleship_log.csv" # Nombre del archivo de log
 
 # Cálculo para centrar los dos tableros (300px cada uno) y el espacio intermedio
 CENTRAL_SPACE = 100
@@ -125,8 +126,12 @@ def save_stats(stats):
 def log_action(message):
     """Escribe una entrada en el archivo de log."""
     try:
-        with open(LOG_FILE, 'a', encoding='utf-8') as f:
-            f.write(f"{datetime.datetime.now()}: {message}\n")
+        file_exists = os.path.exists(LOG_FILE)
+        with open(LOG_FILE, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow(['Timestamp', 'Message'])
+            writer.writerow([datetime.datetime.now(), message])
     except IOError:
         print("Error al escribir en el archivo de log.")
 
