@@ -28,10 +28,10 @@
         },
         "2": {
             "EASY": {
-                "player_wins": 1,
+                "player_wins": 0,
                 "ai_wins": 0,
-                "player_score": 34,
-                "ai_score": 5
+                "player_score": 0,
+                "ai_score": 0
             },
             "NORMAL": {
                 "player_wins": 0,
@@ -46,18 +46,18 @@
                 "ai_score": 0
             },
             "VERY HARD": {
-                "player_wins": 0,
-                "ai_wins": 1,
-                "player_score": 11,
-                "ai_score": 17
+                "player_wins": 1,
+                "ai_wins": 0,
+                "player_score": 31,
+                "ai_score": 11
             }
         },
         "3": {
             "EASY": {
-                "player_wins": 2,
+                "player_wins": 1,
                 "ai_wins": 0,
-                "player_score": 102,
-                "ai_score": 13
+                "player_score": 51,
+                "ai_score": 0
             },
             "NORMAL": {
                 "player_wins": 0,
@@ -73,9 +73,9 @@
             },
             "VERY HARD": {
                 "player_wins": 0,
-                "ai_wins": 1,
-                "player_score": 9,
-                "ai_score": 17
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
             }
         }
     },
