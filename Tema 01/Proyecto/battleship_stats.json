@@ -1,66 +1,162 @@
 {
     "NORMAL": {
-        "EASY": {
-            "player_wins": 4,
-            "ai_wins": 0,
-            "player_score": 68,
-            "ai_score": 3
+        "1": {
+            "EASY": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "NORMAL": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "HARD": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "VERY HARD": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            }
         },
-        "NORMAL": {
-            "player_wins": 0,
-            "ai_wins": 0,
-            "player_score": 0,
-            "ai_score": 0
+        "2": {
+            "EASY": {
+                "player_wins": 1,
+                "ai_wins": 0,
+                "player_score": 34,
+                "ai_score": 5
+            },
+            "NORMAL": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "HARD": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "VERY HARD": {
+                "player_wins": 0,
+                "ai_wins": 1,
+                "player_score": 11,
+                "ai_score": 17
+            }
         },
-        "HARD": {
-            "player_wins": 0,
-            "ai_wins": 0,
-            "player_score": 0,
-            "ai_score": 0
-        },
-        "VERY_HARD": {
-            "player_wins": 0,
-            "ai_wins": 0,
-            "player_score": 0,
-            "ai_score": 0
-        },
-        "VERY HARD": {
-            "player_wins": 1,
-            "ai_wins": 0,
-            "player_score": 17,
-            "ai_score": 8
+        "3": {
+            "EASY": {
+                "player_wins": 2,
+                "ai_wins": 0,
+                "player_score": 102,
+                "ai_score": 13
+            },
+            "NORMAL": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "HARD": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "VERY HARD": {
+                "player_wins": 0,
+                "ai_wins": 1,
+                "player_score": 9,
+                "ai_score": 17
+            }
         }
     },
     "RUSO": {
-        "EASY": {
-            "player_wins": 1,
-            "ai_wins": 0,
-            "player_score": 20,
-            "ai_score": 8
+        "1": {
+            "EASY": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "NORMAL": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "HARD": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "VERY HARD": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            }
         },
-        "NORMAL": {
-            "player_wins": 1,
-            "ai_wins": 0,
-            "player_score": 20,
-            "ai_score": 15
+        "2": {
+            "EASY": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "NORMAL": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "HARD": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "VERY HARD": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            }
         },
-        "HARD": {
-            "player_wins": 0,
-            "ai_wins": 0,
-            "player_score": 0,
-            "ai_score": 0
-        },
-        "VERY_HARD": {
-            "player_wins": 0,
-            "ai_wins": 0,
-            "player_score": 0,
-            "ai_score": 0
-        },
-        "VERY HARD": {
-            "player_wins": 1,
-            "ai_wins": 0,
-            "player_score": 20,
-            "ai_score": 18
+        "3": {
+            "EASY": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "NORMAL": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "HARD": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            },
+            "VERY HARD": {
+                "player_wins": 0,
+                "ai_wins": 0,
+                "player_score": 0,
+                "ai_score": 0
+            }
         }
     }
 }

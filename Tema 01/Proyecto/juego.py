@@ -14,6 +14,7 @@ WIDTH, HEIGHT = 1200, 900
 SQUARE_SIZE = 30
 GRID_ROWS, GRID_COLS = 10, 10
 GRID_WIDTH_PX = GRID_COLS * SQUARE_SIZE
+GRID_HEIGHT_PX = GRID_ROWS * SQUARE_SIZE
 STATS_FILE = "battleship_stats.json" # Nombre del archivo de guardado
 LOG_FILE = "battleship_log.csv" # Nombre del archivo de log
 
@@ -24,12 +25,12 @@ INITIAL_OFFSET_X = (WIDTH - TOTAL_GAME_WIDTH) // 2
 
 # Posiciones de las cuadrículas (Centradas)
 GRID_OFFSET_X_PLAYER = INITIAL_OFFSET_X
-GRID_OFFSET_Y_PLAYER = 100
+GRID_OFFSET_Y_PLAYER = 250
 GRID_OFFSET_X_AI = INITIAL_OFFSET_X + GRID_WIDTH_PX + CENTRAL_SPACE
-GRID_OFFSET_Y_AI = 100
+GRID_OFFSET_Y_AI = 250
 
 # Posición del Marcador (Tablas)
-TABLE_Y_START = 450
+TABLE_Y_START = 600
 TABLE_X_PLAYER = GRID_OFFSET_X_PLAYER
 TABLE_X_AI = GRID_OFFSET_X_AI
 
@@ -80,16 +81,44 @@ def get_default_stats():
     """Devuelve la estructura base de estadísticas."""
     return {
         'NORMAL': {
-            'EASY': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
-            'NORMAL': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
-            'HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
-            'VERY HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+            '1': {
+                'EASY': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'NORMAL': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'VERY HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+            },
+            '2': {
+                'EASY': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'NORMAL': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'VERY HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+            },
+            '3': {
+                'EASY': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'NORMAL': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'VERY HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+            }
         },
         'RUSO': {
-            'EASY': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
-            'NORMAL': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
-            'HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
-            'VERY HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+            '1': {
+                'EASY': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'NORMAL': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'VERY HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+            },
+            '2': {
+                'EASY': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'NORMAL': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'VERY HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+            },
+            '3': {
+                'EASY': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'NORMAL': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+                'VERY HARD': {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0},
+            }
         }
     }
 
@@ -99,15 +128,19 @@ def load_stats():
         try:
             with open(STATS_FILE, 'r') as f:
                 stats = json.load(f)
-                # Asegura que el archivo cargado tenga todas las claves de ship_mode y dificultad
+                # Asegura que el archivo cargado tenga todas las claves de ship_mode, num_rivals y dificultad
                 default_stats = get_default_stats()
                 for ship_mode in default_stats:
                     if ship_mode not in stats:
                         stats[ship_mode] = default_stats[ship_mode]
                     else:
-                        for difficulty in default_stats[ship_mode]:
-                            if difficulty not in stats[ship_mode]:
-                                stats[ship_mode][difficulty] = default_stats[ship_mode][difficulty]
+                        for num_r in default_stats[ship_mode]:
+                            if num_r not in stats[ship_mode]:
+                                stats[ship_mode][num_r] = default_stats[ship_mode][num_r]
+                            else:
+                                for difficulty in default_stats[ship_mode][num_r]:
+                                    if difficulty not in stats[ship_mode][num_r]:
+                                        stats[ship_mode][num_r][difficulty] = default_stats[ship_mode][num_r][difficulty]
                 return stats
         except (json.JSONDecodeError, IOError):
             # Si el archivo está corrupto o hay error de lectura, usamos las predeterminadas.
@@ -373,12 +406,12 @@ def ai_take_turn(player_grid, player_ships, difficulty, ai_target_queue, last_hi
 
 # --- PANTALLA DE SELECCIÓN DE DIFICULTAD ---
 
-def draw_stats_table(screen, font, stats, ship_mode):
+def draw_stats_table(screen, font, stats, ship_mode, num_rivals):
     """Dibuja la tabla de estadísticas totales, centrada."""
-    y_start = 600
+    y_start = 675
     small_font = pygame.font.Font(None, 24)
     
-    draw_text(screen, f"MARCADOR GLOBAL - BARCO {ship_mode}", font, BLACK, WIDTH // 2, y_start)
+    draw_text(screen, f"MARCADOR GLOBAL - BARCO {ship_mode} - {num_rivals} RIVALES", font, BLACK, WIDTH // 2, y_start)
     y_current = y_start + 40
 
     # Definir las posiciones X. 
@@ -398,7 +431,7 @@ def draw_stats_table(screen, font, stats, ship_mode):
 
     # Dibujar filas de datos
     for difficulty in ['EASY', 'NORMAL', 'HARD', 'VERY HARD']:
-        data = stats[ship_mode].get(difficulty, {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0})
+        data = stats[ship_mode][str(num_rivals)].get(difficulty, {'player_wins': 0, 'ai_wins': 0, 'player_score': 0, 'ai_score': 0})
         
         diff_text = difficulty.replace('_', ' ').capitalize()
         
@@ -410,7 +443,7 @@ def draw_stats_table(screen, font, stats, ship_mode):
         y_current += 25
 
 
-def difficulty_menu(screen, font, stats, ship_mode):
+def difficulty_menu(screen, font, stats, ship_mode, num_rivals):
     """Muestra el menú de selección de dificultad y espera la elección."""
     running = True
     
@@ -419,13 +452,14 @@ def difficulty_menu(screen, font, stats, ship_mode):
         "NORMAL": (WIDTH // 2, 280, 250, 75, 'NORMAL'),
         "DIFÍCIL": (WIDTH // 2, 360, 250, 75, 'HARD'),
         "MUY DIFÍCIL": (WIDTH // 2, 440, 250, 75, 'VERY HARD'),
-        "TOGGLE_SHIPS": (WIDTH // 2, 520, 500, 75, 'TOGGLE_SHIPS')
+        "TOGGLE_SHIPS": (WIDTH // 2, 520, 500, 75, 'TOGGLE_SHIPS'),
+        "TOGGLE_RIVALS": (WIDTH // 2, 600, 250, 75, 'TOGGLE_RIVALS')
     }
     
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return None, ship_mode 
+                return None, ship_mode, num_rivals
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = event.pos
@@ -434,8 +468,10 @@ def difficulty_menu(screen, font, stats, ship_mode):
                     if rect.collidepoint(mouse_x, mouse_y):
                         if mode == 'TOGGLE_SHIPS':
                             ship_mode = 'RUSO' if ship_mode == 'NORMAL' else 'NORMAL'
+                        elif mode == 'TOGGLE_RIVALS':
+                            num_rivals = (num_rivals % 3) + 1
                         else:
-                            return mode, ship_mode
+                            return mode, ship_mode, num_rivals
                         
         screen.fill(WHITE)
         draw_text(screen, "SELECCIONA LA DIFICULTAD", font, BLACK, WIDTH // 2, 100)
@@ -451,21 +487,23 @@ def difficulty_menu(screen, font, stats, ship_mode):
             pygame.draw.rect(screen, color, rect)
             if text == "TOGGLE_SHIPS":
                 display_text = f"FORMATO BARCO: {ship_mode}"
+            elif text == "TOGGLE_RIVALS":
+                display_text = f"RIVALES: {num_rivals}"
             else:
                 display_text = text
             draw_text(screen, display_text, font, WHITE, cx, cy)
             
         # Dibujar la tabla de estadísticas
-        draw_stats_table(screen, font, stats, ship_mode)
+        draw_stats_table(screen, font, stats, ship_mode, num_rivals)
 
         pygame.display.update()
         pygame.time.Clock().tick(30)
     
-    return None, ship_mode
+    return None, ship_mode, num_rivals
 
 # --- BUCLE PRINCIPAL DEL JUEGO ---
 
-def game_loop(screen, difficulty_mode, stats, ship_mode):
+def game_loop(screen, difficulty_mode, stats, ship_mode, num_rivals, width, height):
     pygame.display.set_caption(f"Hundir la Flota - Modo: {difficulty_mode}")
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
@@ -478,27 +516,43 @@ def game_loop(screen, difficulty_mode, stats, ship_mode):
         SHIP_DEFINITIONS = SHIP_DEFINITIONS_RUSSIAN
 
     # Loguear inicio de partida
-    log_action(f"Partida iniciada: Dificultad: {difficulty_mode}, Modo barcos: {ship_mode}")
+    log_action(f"Partida iniciada: Dificultad: {difficulty_mode}, Modo barcos: {ship_mode}, Rivales: {num_rivals}")
 
     # Inicialización
     player_grid_base = create_empty_grid()
-    ai_grid_base = create_empty_grid()
     player_grid, player_ships = place_ships_randomly(player_grid_base, SHIP_DEFINITIONS)
-    ai_grid, ai_ships = place_ships_randomly(ai_grid_base, SHIP_DEFINITIONS)
+    
+    ai_grids = []
+    ai_ships = []
+    for _ in range(num_rivals):
+        grid, ships = place_ships_randomly(create_empty_grid(), SHIP_DEFINITIONS)
+        ai_grids.append(grid)
+        ai_ships.append(ships)
 
     # Variables de estado
     player_turn = True
     game_over = False
     winner_message = ""
-    game_message = "Tu turno. ¡Dispara a la flota enemiga!"
+    game_message = ""  # Mensaje del jugador
+    ai_messages = [""] * num_rivals  # Mensajes de cada IA
     
-    ai_target_queue = [] 
-    last_hit_coord = None 
-    consecutive_hits = 0
-    current_direction = None
+    ai_target_queues = [[] for _ in range(num_rivals)]
+    last_hit_coords = [None] * num_rivals
+    consecutive_hits_list = [0] * num_rivals
+    current_directions = [None] * num_rivals
     
     current_player_score = 0
     current_ai_score = 0
+    current_rival_index = 0
+
+    # Botones para cambiar rival
+    rival_buttons = []
+    button_size = 40
+    button_spacing = 10
+    for i in range(num_rivals):
+        x = GRID_OFFSET_X_AI + i * (button_size + button_spacing)
+        y = GRID_OFFSET_Y_AI - 110
+        rival_buttons.append(pygame.Rect(x, y, button_size, button_size))
 
     running = True
     while running:
@@ -519,39 +573,42 @@ def game_loop(screen, difficulty_mode, stats, ship_mode):
             if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 if player_turn:
                     mouse_pos = pygame.mouse.get_pos()
-                    grid_row, grid_col = get_grid_coords_from_mouse(mouse_pos, GRID_OFFSET_X_AI, GRID_OFFSET_Y_AI)
                     
-                    if grid_row is not None:
-                        if ai_grid[grid_row][grid_col] == WATER or ai_grid[grid_row][grid_col] == SHIP:
-                            
-                            hit, message, sunk_points = take_shot(ai_grid, ai_ships, grid_row, grid_col)
-                            game_message = f"Jugador: {message}"
-                            
-                            # Determinar resultado para log
-                            if not hit:
-                                resultado = "Agua"
-                            elif sunk_points > 0:
-                                resultado = "Hundido"
-                            else:
-                                resultado = "Tocado"
-                            log_action(f"Jugador: Disparo en ({grid_row}, {grid_col}) - {resultado}")
-                            
-                            if sunk_points > 0:
-                                current_player_score += sunk_points
-                                
-                            if check_win(ai_ships):
-                                game_over = True
-                                winner_message = "¡Has ganado! ¡Hundiste toda la flota enemiga!"
-                                # Actualizar estadísticas globales
-                                stats[ship_mode][difficulty_mode]['player_wins'] += 1
-                                stats[ship_mode][difficulty_mode]['player_score'] += current_player_score
-                                stats[ship_mode][difficulty_mode]['ai_score'] += current_ai_score
-                                # Log del resultado
-                                log_action(f"Fin de partida: Ganador: Jugador, Puntuación Jugador: {current_player_score}, Puntuación IA: {current_ai_score}")
-                            
-                            player_turn = False 
+                    # Verificar clicks en botones de rivales
+                    for i, button in enumerate(rival_buttons):
+                        if button.collidepoint(mouse_pos):
+                            current_rival_index = i
+                            break
+                    
+                    # Verificar click en grid del rival actual
+                    grid_row, grid_col = get_grid_coords_from_mouse(mouse_pos, GRID_OFFSET_X_AI, GRID_OFFSET_Y_AI)
+                    if grid_row is not None and ai_grids[current_rival_index][grid_row][grid_col] in [WATER, SHIP]:
+                        hit, message, sunk_points = take_shot(ai_grids[current_rival_index], ai_ships[current_rival_index], grid_row, grid_col)
+                        game_message = f"Jugador: {message} a Rival {current_rival_index+1}"
+                        
+                        # Determinar resultado para log
+                        if not hit:
+                            resultado = "Agua"
+                        elif sunk_points > 0:
+                            resultado = "Hundido"
                         else:
-                            game_message = "Jugador: Ya has disparado aquí."
+                            resultado = "Tocado"
+                        log_action(f"Jugador: Disparo a Rival {current_rival_index+1} en ({grid_row}, {grid_col}) - {resultado}")
+                        
+                        if sunk_points > 0:
+                            current_player_score += sunk_points
+                            
+                        if all(check_win(ai_ships[j]) for j in range(num_rivals)):
+                            game_over = True
+                            winner_message = "¡Has ganado! ¡Hundiste todas las flotas enemigas!"
+                            # Actualizar estadísticas globales
+                            stats[ship_mode][str(num_rivals)][difficulty_mode]['player_wins'] += 1
+                            stats[ship_mode][str(num_rivals)][difficulty_mode]['player_score'] += current_player_score
+                            stats[ship_mode][str(num_rivals)][difficulty_mode]['ai_score'] += current_ai_score
+                            # Log del resultado
+                            log_action(f"Fin de partida: Ganador: Jugador, Puntuación Jugador: {current_player_score}, Puntuación IA: {current_ai_score}")
+                        
+                        player_turn = False
             
             # --- Reiniciar Juego (con R) ---
             if game_over and event.type == pygame.KEYDOWN and event.key == pygame.K_r:
@@ -559,37 +616,56 @@ def game_loop(screen, difficulty_mode, stats, ship_mode):
                 save_stats(stats)
                 return 'restart' 
 
-        # --- Lógica del Turno de la IA ---
+        # --- Lógica del Turno de las IAs ---
         if not player_turn and not game_over:
-            time.sleep(0.8)
-
-            hit, message, sunk_points, ai_target_queue, last_hit_coord, consecutive_hits, current_direction, r, c = ai_take_turn(
-                player_grid, player_ships, difficulty_mode, ai_target_queue, last_hit_coord, consecutive_hits, current_direction
-            )
-            
-            game_message = f"IA ({difficulty_mode}): {message}"
-            
-            # Determinar resultado para log
-            if not hit:
-                resultado = "Agua"
-            elif sunk_points > 0:
-                resultado = "Hundido"
-            else:
-                resultado = "Tocado"
-            log_action(f"IA ({difficulty_mode}): Disparo en ({r}, {c}) - {resultado}")
-            
-            if sunk_points > 0:
-                current_ai_score += sunk_points
-                
-            if check_win(player_ships):
-                game_over = True
-                winner_message = "¡La IA ha ganado! ¡Tu flota ha sido hundida!"
-                # Actualizar estadísticas globales
-                stats[ship_mode][difficulty_mode]['ai_wins'] += 1
-                stats[ship_mode][difficulty_mode]['player_score'] += current_player_score
-                stats[ship_mode][difficulty_mode]['ai_score'] += current_ai_score
-                # Log del resultado
-                log_action(f"Fin de partida: Ganador: IA, Puntuación Jugador: {current_player_score}, Puntuación IA: {current_ai_score}")
+            for i in range(num_rivals):
+                if not check_win(ai_ships[i]):
+                    time.sleep(0.8)
+                    
+                    # Elegir target al azar
+                    possible_targets = ['player'] + [j for j in range(num_rivals) if j != i and not check_win(ai_ships[j])]
+                    chosen = random.choice(possible_targets)
+                    if chosen == 'player':
+                        target_grid = player_grid
+                        target_ships = player_ships
+                        target_name = "Jugador"
+                        is_player_target = True
+                    else:
+                        target_grid = ai_grids[chosen]
+                        target_ships = ai_ships[chosen]
+                        target_name = f"Rival {chosen+1}"
+                        is_player_target = False
+                    
+                    hit, message, sunk_points, ai_target_queues[i], last_hit_coords[i], consecutive_hits_list[i], current_directions[i], r, c = ai_take_turn(
+                        target_grid, target_ships, difficulty_mode, ai_target_queues[i], last_hit_coords[i], consecutive_hits_list[i], current_directions[i]
+                    )
+                    
+                    ai_messages[i] = f"IA {i+1} ({difficulty_mode}): {message} a {target_name}"
+                    
+                    # Determinar resultado para log
+                    if not hit:
+                        resultado = "Agua"
+                    elif sunk_points > 0:
+                        resultado = "Hundido"
+                    else:
+                        resultado = "Tocado"
+                    log_action(f"IA {i+1} ({difficulty_mode}): Disparo a {target_name} en ({r}, {c}) - {resultado}")
+                    
+                    if is_player_target and sunk_points > 0:
+                        current_ai_score += sunk_points
+                        
+                    if is_player_target and check_win(player_ships):
+                        game_over = True
+                        winner_message = "¡Las IAs han ganado! ¡Tu flota ha sido hundida!"
+                        # Actualizar estadísticas globales
+                        stats[ship_mode][str(num_rivals)][difficulty_mode]['ai_wins'] += 1
+                        stats[ship_mode][str(num_rivals)][difficulty_mode]['player_score'] += current_player_score
+                        stats[ship_mode][str(num_rivals)][difficulty_mode]['ai_score'] += current_ai_score
+                        # Log del resultado
+                        log_action(f"Fin de partida: Ganador: IA, Puntuación Jugador: {current_player_score}, Puntuación IA: {current_ai_score}")
+                        break
+                else:
+                    ai_messages[i] = ""
 
             player_turn = True 
 
@@ -598,27 +674,36 @@ def game_loop(screen, difficulty_mode, stats, ship_mode):
 
         # Títulos de los tableros
         draw_text(screen, "TU FLOTA", font, BLACK, GRID_OFFSET_X_PLAYER + GRID_COLS * SQUARE_SIZE // 2, GRID_OFFSET_Y_PLAYER - 30)
-        draw_text(screen, "FLOTA ENEMIGA (Haz click para disparar)", font, BLACK, GRID_OFFSET_X_AI + GRID_COLS * SQUARE_SIZE // 2, GRID_OFFSET_Y_AI - 30)
+        draw_text(screen, f"FLOTA ENEMIGA {current_rival_index+1} (Haz click para disparar)", font, BLACK, GRID_OFFSET_X_AI + GRID_COLS * SQUARE_SIZE // 2, GRID_OFFSET_Y_AI - 30)
+
+        # Dibujar botones de rivales
+        for i, button in enumerate(rival_buttons):
+            color = GREEN if i == current_rival_index else GREY
+            pygame.draw.rect(screen, color, button)
+            draw_text(screen, str(i+1), small_font, BLACK, button.centerx, button.centery)
 
         # Puntuación actual del juego
-        draw_text(screen, f"Puntuación Jugador: {current_player_score}", small_font, BLUE, GRID_OFFSET_X_PLAYER + 50, 420)
-        draw_text(screen, f"Puntuación IA: {current_ai_score}", small_font, BLUE, GRID_OFFSET_X_AI + 50, 420)
+        draw_text(screen, f"Puntuación Jugador: {current_player_score}", small_font, BLUE, GRID_OFFSET_X_PLAYER + 50, TABLE_Y_START - 25)
+        draw_text(screen, f"Puntuación IA: {current_ai_score}", small_font, BLUE, GRID_OFFSET_X_AI + 50, TABLE_Y_START - 25)
 
         # Dibujar las cuadrículas
         draw_grid(screen, player_grid, GRID_OFFSET_X_PLAYER, GRID_OFFSET_Y_PLAYER, show_ships=True)
-        draw_grid(screen, ai_grid, GRID_OFFSET_X_AI, GRID_OFFSET_Y_AI, show_ships=False)
+        draw_grid(screen, ai_grids[current_rival_index], GRID_OFFSET_X_AI, GRID_OFFSET_Y_AI, show_ships=False)
 
         # Mensajes de estado
-        draw_text(screen, game_message, font, BLACK, WIDTH // 2, 40)
+        draw_text(screen, game_message, font, BLACK, width // 2, 40)
+        active_messages = [msg for msg in ai_messages if msg]
+        for idx, msg in enumerate(active_messages):
+            draw_text(screen, msg, small_font, BLACK, width // 2, 70 + idx * 25)
 
         # Dibujar la tabla de barcos (Marcador)
         draw_ship_table(screen, player_ships, small_font, "ESTADO DE TU FLOTA", TABLE_X_PLAYER, TABLE_Y_START)
-        draw_ship_table(screen, ai_ships, small_font, "ESTADO FLOTA ENEMIGA", TABLE_X_AI, TABLE_Y_START)
+        draw_ship_table(screen, ai_ships[current_rival_index], small_font, f"ESTADO FLOTA ENEMIGA {current_rival_index+1}", TABLE_X_AI, TABLE_Y_START)
 
         # Mostrar mensaje de victoria/derrota 
         if game_over:
-            draw_text(screen, winner_message, font, RED, WIDTH // 2, GAME_OVER_Y)
-            draw_text(screen, "Presiona R para reiniciar o ESC para cambiar la dificultad", small_font, BLACK, WIDTH // 2, GAME_OVER_Y + 40)
+            draw_text(screen, winner_message, font, RED, width // 2, GAME_OVER_Y)
+            draw_text(screen, "Presiona R para reiniciar o ESC para cambiar la dificultad", small_font, BLACK, width // 2, GAME_OVER_Y + 40)
 
 
         pygame.display.update()
@@ -629,19 +714,28 @@ def game_loop(screen, difficulty_mode, stats, ship_mode):
 # --- BUCLE MAESTRO (Control de Flujo) ---
 
 if __name__ == "__main__":
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     font_large = pygame.font.Font(None, 48)
+    
+    # Inicializar pantalla
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     
     # 1. Cargar las estadísticas globales al inicio del juego
     game_stats = load_stats()
     ship_mode = 'NORMAL'  # Por defecto barcos normales
+    num_rivals = 1  # Por defecto 1 rival
 
     app_running = True
     while app_running:
         
         # 2. Mostrar menú de dificultad y pasar las estadísticas y modo de barcos
-        selected_difficulty, new_ship_mode = difficulty_menu(screen, font_large, game_stats, ship_mode)
+        selected_difficulty, new_ship_mode, new_num_rivals = difficulty_menu(screen, font_large, game_stats, ship_mode, num_rivals)
         ship_mode = new_ship_mode
+        num_rivals = new_num_rivals
+        
+        # Calcular tamaño de ventana basado en rivales
+        dynamic_width = 1200
+        dynamic_height = 900
+        screen = pygame.display.set_mode((dynamic_width, dynamic_height))
         
         if selected_difficulty is None:
             app_running = False
@@ -649,7 +743,7 @@ if __name__ == "__main__":
         elif selected_difficulty:
             # 3. Bucle para reiniciar con los mismos settings
             while True:
-                result = game_loop(screen, selected_difficulty, game_stats, ship_mode)
+                result = game_loop(screen, selected_difficulty, game_stats, ship_mode, num_rivals, dynamic_width, dynamic_height)
                 
                 if result == 'quit':
                     app_running = False
