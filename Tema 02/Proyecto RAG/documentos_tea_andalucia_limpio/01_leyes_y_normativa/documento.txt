@@ -1,0 +1,22 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: LEY
+TIPO: HTML
+URL ORIGINAL: https://www.unir.net/educacion/revista/noticias/como-solicitar-ley-dependencia-andalucia/
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: https://www.unir.net/educacion/revista/noticias/como-solicitar-ley-dependencia-andalucia/
+Error: 404 Client Error: Not Found for url: https://www.unir.net/revista/educacion/noticias/como-solicitar-ley-dependencia-andalucia/
+
+================================================================================
+Documento original: documento.txt
+Procesado y limpiado automáticamente
+================================================================================

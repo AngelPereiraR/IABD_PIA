@@ -1,0 +1,648 @@
+================================================================================
+ÍNDICE DE DOCUMENTOS EXTRAÍDOS - TEA ANDALUCÍA
+================================================================================
+
+
+================================================================================
+01_LEYES_Y_NORMATIVA
+================================================================================
+
+[1] Ley 1/2023, de 16 de febrero, por la que se regula la atención temprana en la Comunidad Autónoma de Andalucía.
+    Archivo: Ley_12023_de_16_de_febrero_por_la_que_se_regula_la_atencion_temprana_en_la_Comunidad_Autonoma_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/1
+
+[2] BOJA23-036-00032-3427-01_00278501
+    Archivo: BOJA23_036_00032_3427_01_00278501.txt
+    Tipo: PDF
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/BOJA23-036-00032-3427-01_00278501.pdf
+
+[3] Boletín Oficial de la Junta de Andalucía - Sede Electrónica del BOJA - Junta de Andalucía - Junta de Andalucía
+    Archivo: Boletin_Oficial_de_la_Junta_de_Andalucia_Sede_Electronica_del_BOJA_Junta_de_Andalucia_Junta_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja
+
+[4] Boletín Oficial de la Junta de Andalucía - Sede Electrónica del BOJA - Junta de Andalucía - Junta de Andalucía
+    Archivo: Boletin_Oficial_de_la_Junta_de_Andalucia_Sede_Electronica_del_BOJA_Junta_de_Andalucia_Junta_de_Andalucia_1.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja#main-content
+
+[5] BOJA - Boletín Oficial de la Junta de Andalucía. Buscador.
+    Archivo: BOJA_Boletin_Oficial_de_la_Junta_de_Andalucia_Buscador.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/eboja/buscador/
+
+[6] BOJA nº 215 de 2025.
+    Archivo: BOJA_no_215_de_2025.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/BOJA
+
+[7] Boletín Oficial de la Junta de Andalucía – Boletines por fecha
+    Archivo: Boletin_Oficial_de_la_Junta_de_Andalucia_Boletines_por_fecha.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/eboja/index.html
+
+[8] Inicio - BOJA
+    Archivo: Inicio_BOJA.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://ws040.juntadeandalucia.es/sedeboja/web/textos-consolidados/inicio
+
+[9] BOJA: Sobre BOJA - Junta de Andalucía
+    Archivo: BOJA_Sobre_BOJA_Junta_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/eboja/sobre-boja.html
+
+[10] ¿Qué es el BOJA? - Junta de Andalucía
+    Archivo: Que_es_el_BOJA_Junta_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/eboja/sobre-boja/informacion-general.html
+
+[11] Información del nuevo BOJA - Junta de Andalucía
+    Archivo: Informacion_del_nuevo_BOJA_Junta_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/eboja/sobre-boja/nuevo-boja.html
+
+[12] Historia - Junta de Andalucía
+    Archivo: Historia_Junta_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/eboja/sobre-boja/historia.html
+
+[13] Normativa - Junta de Andalucía
+    Archivo: Normativa_Junta_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/eboja/sobre-boja/normativa.html
+
+[14] Boletín Oficial de la Junta de Andalucía – Histórico del BOJA – Boletines por fecha
+    Archivo: Boletin_Oficial_de_la_Junta_de_Andalucia_Historico_del_BOJA_Boletines_por_fecha.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023.html
+
+[15] BOJA nº 1 de 2023.
+    Archivo: BOJA_no_1_de_2023.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/1/index.html
+
+[16] BOJA nº 2 de 2023.
+    Archivo: BOJA_no_2_de_2023.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/2/index.html
+
+[17] BOJA nº 3 de 2023. 2.1. Nombramientos, situaciones e incidencias
+    Archivo: BOJA_no_3_de_2023_21_Nombramientos_situaciones_e_incidencias.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/3/index.html
+
+[18] BOJA nº 4 de 2023.
+    Archivo: BOJA_no_4_de_2023.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/4/index.html
+
+[19] BOJA nº 5 de 2023.
+    Archivo: BOJA_no_5_de_2023.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/5/index.html
+
+[20] BOJA nº 6 de 2023.
+    Archivo: BOJA_no_6_de_2023.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/6/index.html
+
+[21] BOJA nº 7 de 2023. 2.1. Nombramientos, situaciones e incidencias
+    Archivo: BOJA_no_7_de_2023_21_Nombramientos_situaciones_e_incidencias.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/7/index.html
+
+[22] BOJA nº 8 de 2023.
+    Archivo: BOJA_no_8_de_2023.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/8/index.html
+
+[23] BOJA nº 9 de 2023.
+    Archivo: BOJA_no_9_de_2023.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/9/index.html
+
+[24] BOJA nº 10 de 2023. 2.1. Nombramientos, situaciones e incidencias
+    Archivo: BOJA_no_10_de_2023_21_Nombramientos_situaciones_e_incidencias.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/10/index.html
+
+[25] BOJA nº 36 de 2023.
+    Archivo: BOJA_no_36_de_2023.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/
+
+[26] BOJA23-036-00013_00005382
+    Archivo: BOJA23_036_00013_00005382.txt
+    Tipo: PDF
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/BOJA23-036-00013_00005382.pdf
+
+[27] BOJA nº 36 de 2023. 2.1. Nombramientos, situaciones e incidencias
+    Archivo: BOJA_no_36_de_2023_21_Nombramientos_situaciones_e_incidencias.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/s52
+
+[28] BOJA nº 36 de 2023.
+    Archivo: BOJA_no_36_de_2023_1.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/s51
+
+[29] BOJA nº 36 de 2023. 2.2. Oposiciones, concursos y otras convocatorias
+    Archivo: BOJA_no_36_de_2023_22_Oposiciones_concursos_y_otras_convocatorias.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/s53
+
+[30] BOJA nº 36 de 2023.
+    Archivo: BOJA_no_36_de_2023_2.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/s54
+
+[31] BOJA nº 36 de 2023. 5.1. Licitaciones públicas y adjudicaciones
+    Archivo: BOJA_no_36_de_2023_51_Licitaciones_publicas_y_adjudicaciones.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/s56
+
+[32] BOJA nº 36 de 2023. 5.2. Otros anuncios oficiales
+    Archivo: BOJA_no_36_de_2023_52_Otros_anuncios_oficiales.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/s57
+
+[33] BOJA nº 36 de 2023.
+    Archivo: BOJA_no_36_de_2023_3.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/s51.html
+
+[34] Ley 1/2023, de 16 de febrero, por la que se regula la atención temprana en la Comunidad Autónoma de Andalucía.
+    Archivo: Ley_12023_de_16_de_febrero_por_la_que_se_regula_la_atencion_temprana_en_la_Comunidad_Autonoma_de_Andalucia_1.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/1#descargas
+
+[35] Boletín Oficial de la Junta de Andalucía. Verificación de autenticidad
+    Archivo: Boletin_Oficial_de_la_Junta_de_Andalucia_Verificacion_de_autenticidad.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/1-verificacion
+
+[36] Resolución de 16 de febrero de 2023, de la Agencia Tributaria de Andalucía, por la que se adjudica puesto de trabajo de libre designación, convocado por resolución que se cita.
+    Archivo: Resolucion_de_16_de_febrero_de_2023_de_la_Agencia_Tributaria_de_Andalucia_por_la_que_se_adjudica_puesto_de_trabajo_de_libre_designacion_convocado_por.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.juntadeandalucia.es/boja/2023/36/2
+
+[37] RESOLUCION_2020_11_13(F)_0
+    Archivo: RESOLUCION_2020_11_13(F)_0.txt
+    Tipo: PDF
+    Prioridad: ALTA
+    URL: http://www.juntadeandalucia.es/export/drupaljda/RESOLUCION_2020_11_13(F)_0.pdf
+
+[38] RESOLUCION_2020_11_13(F)
+    Archivo: RESOLUCION_2020_11_13(F).txt
+    Tipo: PDF
+    Prioridad: ALTA
+    URL: http://www.juntadeandalucia.es/export/drupaljda/RESOLUCION_2020_11_13(F).pdf
+
+[39] INSTRUCCIONES%2022%20JUNIO%202015%20CON%20ANEXOS
+    Archivo: INSTRUCCIONES%2022%20JUNIO%202015%20CON%20ANEXOS.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: http://www.juntadeandalucia.es/export/drupaljda/INSTRUCCIONES%2022%20JUNIO%202015%20CON%20ANEXOS.pdf
+
+[40] BOE-A-2006-7899 Ley Orgánica 2/2006, de 3 de mayo, de Educación.
+    Archivo: BOE_A_2006_7899_Ley_Organica_22006_de_3_de_mayo_de_Educacion.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.boe.es/eli/es/lo/2006/05/03/2/con
+
+[41] BOE-A-2008-1184 Ley 17/2007, de 10 de diciembre, de Educación de Andalucía.
+    Archivo: BOE_A_2008_1184_Ley_172007_de_10_de_diciembre_de_Educacion_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.boe.es/eli/es-an/l/2007/12/10/17/con
+
+[42] valoracion_discapacidades
+    Archivo: valoracion_discapacidades.txt
+    Tipo: PDF
+    Prioridad: ALTA
+    URL: https://www.boe.es/buscar/act.php?id=BOE-A-2022-17105http://www.juntadeandalucia.es/export/drupaljda/valoracion_discapacidades.pdf
+
+[43] BOE-A-2010-3514 Ley Orgánica 2/2010, de 3 de marzo, de salud sexual y reproductiva y de la interrupción voluntaria del embarazo.
+    Archivo: BOE_A_2010_3514_Ley_Organica_22010_de_3_de_marzo_de_salud_sexual_y_reproductiva_y_de_la_interrupcion_voluntaria_del_embarazo.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: http://www.boe.es/diario_boe/txt.php?id=BOE-A-2010-3514
+
+[44] BOE-B-2024-14197 Extracto de la Resolución de 12 de abril de 2024, de la Secretaría de Estado de Educación, por la que se convocan ayudas para alumnos con necesidad específica de apoyo educativo para el curso académico 2024-2025
+    Archivo: BOE_B_2024_14197_Extracto_de_la_Resolucion_de_12_de_abril_de_2024_de_la_Secretaria_de_Estado_de_Educacion_por_la_que_se_convocan_ayudas_para_alumnos_c.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.boe.es/diario_boe/txt.php?id=BOE-B-2024-14197
+
+[45] 
+    Archivo: documento.txt
+    Tipo: HTML
+    Prioridad: ALTA
+    URL: https://www.unir.net/educacion/revista/noticias/como-solicitar-ley-dependencia-andalucia/
+
+
+================================================================================
+02_PROCEDIMIENTOS_OFICIALES
+================================================================================
+
+[1] 
+    Archivo: solicitudhtml.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/organismos/inclusionsocialjuventudfamiliaseigualdad/areas/dependencia/solicitud.html
+
+[2] Centros_Valoracion_Orientacion_0
+    Archivo: Centros_Valoracion_Orientacion_0.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/sites/default/files/inline-files/2022/08/Centros_Valoracion_Orientacion_0.pdf
+
+[3] 
+    Archivo: 7151html.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: http://juntadeandalucia.es/servicios/sede/tramites/procedimientos/detalle/7151.html
+
+[4] Cómo solicitar de forma correcta el reconocimiento del grado de discapacidad en Andalucía
+    Archivo: Como_solicitar_de_forma_correcta_el_reconocimiento_del_grado_de_discapacidad_en_Andalucia.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://andaluciainforma.eldiario.es/tramites/como-solicitar-de-forma-correcta-el-reconocimiento-del-grado-de-discapacidad-en-andalucia/
+
+[5] Cómo solicitar de forma correcta el reconocimiento del grado de discapacidad en Andalucía
+    Archivo: Como_solicitar_de_forma_correcta_el_reconocimiento_del_grado_de_discapacidad_en_Andalucia_1.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://andaluciainforma.eldiario.es/tramites/como-solicitar-de-forma-correcta-el-reconocimiento-del-grado-de-discapacidad-en-andalucia/#content
+
+[6] Deducciones de hasta 1.200 €: cómo funciona la declaración de la Renta de las personas con discapacidad
+    Archivo: Deducciones_de_hasta_1200_como_funciona_la_declaracion_de_la_Renta_de_las_personas_con_discapacidad.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://andaluciainforma.eldiario.es/tramites/deducciones-de-hasta-1-200-e-como-funciona-la-declaracion-de-la-renta-de-las-personas-con-discapacidad/
+
+[7] Consigue un empleo en Andalucía utilizando las 5 fases del IPI
+    Archivo: Consigue_un_empleo_en_Andalucia_utilizando_las_5_fases_del_IPI.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://andaluciainforma.eldiario.es/tramites/consigue-un-empleo-en-andalucia-utilizando-las-5-fases-del-ipi/
+
+
+================================================================================
+03_GUIAS_Y_RECURSOS
+================================================================================
+
+[1] Res_TEA
+    Archivo: Res_TEA.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: https://www.rpdiscapacidad.gob.es/docs/Res_TEA.pdf
+
+[2] Atención a la diversidad - Junta de Andalucía
+    Archivo: Atencion_a_la_diversidad_Junta_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/centros-educativos/atencion-diversidad.html
+
+[3] Anexo%20I%20-%20Protocolo
+    Archivo: Anexo%20I%20_%20Protocolo.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: http://www.juntadeandalucia.es/export/drupaljda/Anexo%20I%20-%20Protocolo.pdf
+
+[4] Anexo%20I%20del%20Protocolo
+    Archivo: Anexo%20I%20del%20Protocolo.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: http://www.juntadeandalucia.es/export/drupaljda/Anexo%20I%20del%20Protocolo.pdf
+
+[5] Atención a la diversidad - Junta de Andalucía
+    Archivo: Atencion_a_la_diversidad_Junta_de_Andalucia_1.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/centros-educativos/atencion-diversidad.html#main-content
+
+[6] 
+    Archivo: dependenciahtml.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/servicios/sede/ventanillas/dependencia.html
+
+[7] Valoración de la discapacidad (Centros de Valoración y Orientación (CVO)) - Junta de Andalucía
+    Archivo: Valoracion_de_la_discapacidad_(Centros_de_Valoracion_y_Orientacion_(CVO))_Junta_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/organismos/inclusionsocialjuventudfamiliaseigualdad/areas/discapacidad/cvo.html
+
+[8] Tarjeta%20Acreditativa%20de%20discapacidad%2028122022_0
+    Archivo: Tarjeta%20Acreditativa%20de%20discapacidad%2028122022_0.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/sites/default/files/inline-files/2023/02/Tarjeta%20Acreditativa%20de%20discapacidad%2028122022_0.pdf
+
+[9] Valoración de la discapacidad (Centros de Valoración y Orientación (CVO)) - Junta de Andalucía
+    Archivo: Valoracion_de_la_discapacidad_(Centros_de_Valoracion_y_Orientacion_(CVO))_Junta_de_Andalucia_1.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/organismos/inclusionsocialjuventudfamiliaseigualdad/areas/discapacidad/cvo.html#main-content
+
+[10] Direcciones de los Centros de Valoración y Orientación (CVO) de Andalucía - Junta de Andalucía
+    Archivo: Direcciones_de_los_Centros_de_Valoracion_y_Orientacion_(CVO)_de_Andalucia_Junta_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/organismos/inclusionsocialjuventudfamiliaseigualdad/areas/discapacidad/cvo/paginas/direcciones.html
+
+[11] Derechos, ayudas y prestaciones de apoyo a la autonomía de las personas con discapacidad - Junta de Andalucía
+    Archivo: Derechos_ayudas_y_prestaciones_de_apoyo_a_la_autonomia_de_las_personas_con_discapacidad_Junta_de_Andalucia.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/organismos/saludyconsumo/areas/salud-vida/adulta/paginas/ive-discapacidad.html
+
+[12] salud_5af95873c5046_folleto_derechos_autonomia_discapacitados
+    Archivo: salud_5af95873c5046_folleto_derechos_autonomia_discapacitados.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/export/drupaljda/salud_5af95873c5046_folleto_derechos_autonomia_discapacitados.pdf
+
+[13] Derechos, ayudas y prestaciones de apoyo a la autonomía de las personas con discapacidad - Junta de Andalucía
+    Archivo: Derechos_ayudas_y_prestaciones_de_apoyo_a_la_autonomia_de_las_personas_con_discapacidad_Junta_de_Andalucia_1.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/organismos/saludyconsumo/areas/salud-vida/adulta/paginas/ive-discapacidad.html#main-content
+
+[14] 
+    Archivo: indexhtm.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: http://www.dependencia.imserso.es/dependencia_01/index.htm
+
+[15] Inicio - Educación
+    Archivo: Inicio_Educacion.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/educacion/portals/web/ced
+
+[16] Inicio - Consejería de Desarrollo Educativo y Formación Profesional
+    Archivo: Inicio_Consejeria_de_Desarrollo_Educativo_y_Formacion_Profesional.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/educacion/portals/web/escuela-familias
+
+[17] 
+    Archivo: familias.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/educacion/portals/web/familias
+
+[18] Becas y ayudas para alumnos con necesidad específica de apoyo educativo (Curso 2024 - 2025)  | Ministerio de Educación, Formación Profesional y Deportes
+    Archivo: Becas_y_ayudas_para_alumnos_con_necesidad_especifica_de_apoyo_educativo_(Curso_2024_2025)_Ministerio_de_Educacion_Formacion_Profesional_y_Deportes.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.educacionfpydeportes.gob.es/servicios-al-ciudadano/catalogo/general/05/050140/ficha/050140-2024.html
+
+[19] 41-resol-ee-firmada-24-25-10abr25
+    Archivo: 41_resol_ee_firmada_24_25_10abr25.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: https://www.educacionfpydeportes.gob.es/dam/jcr:5d675fdc-cfe8-4e0b-b918-5bdd09e48794/41-resol-ee-firmada-24-25-10abr25.pdf
+
+[20] Becas y ayudas - Becas y ayudas para estudiantes | Ministerio de Educación, Formación Profesional y Deportes
+    Archivo: Becas_y_ayudas_Becas_y_ayudas_para_estudiantes_Ministerio_de_Educacion_Formacion_Profesional_y_Deportes.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: http://www.becaseducacion.gob.es/becas-y-ayudas.html
+
+[21] Becas y ayudas - Becas y ayudas para estudiantes | Ministerio de Educación, Formación Profesional y Deportes
+    Archivo: Becas_y_ayudas_Becas_y_ayudas_para_estudiantes_Ministerio_de_Educacion_Formacion_Profesional_y_Deportes_1.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.becaseducacion.gob.es/becas-y-ayudas.html
+
+[22] 
+    Archivo: prestacioneshtml.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.juntadeandalucia.es/temas/familias-igualdad/discapacidad/prestaciones.html
+
+[23] Seguridad Social: Prestaciones / Pensiones de Trabajadores
+    Archivo: Seguridad_Social_Prestaciones_Pensiones_de_Trabajadores.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/PrestacionesPensionesTrabajadores/61fce0cb-bb6d-4bfa-8e83-61ec6e2bce86
+
+[24] 
+    Archivo: documento.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.familiasandalucia.es/familias-con-necesidades-especiales/
+
+[25] Reclamamos que se potencie y extienda la disponibilidad de aulas especificas de atención al alumnado con autismo | Defensor del Pueblo Andaluz
+    Archivo: Reclamamos_que_se_potencie_y_extienda_la_disponibilidad_de_aulas_especificas_de_atencion_al_alumnado_con_autismo_Defensor_del_Pueblo_Andaluz.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.defensordelpuebloandaluz.es/reclamamos-que-se-potencie-y-extienda-la-disponibilidad-de-aulas-especificas-de-atencion-al-alumnado
+
+[26] Estrategia_Espanola_en_TEA
+    Archivo: Estrategia_Espanola_en_TEA.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: https://www.mdsocialesa2030.gob.es/derechos-sociales/discapacidad/docs/Estrategia_Espanola_en_TEA.pdf
+
+[27] Reclamamos que se potencie y extienda la disponibilidad de aulas especificas de atención al alumnado con autismo | Defensor del Pueblo Andaluz
+    Archivo: Reclamamos_que_se_potencie_y_extienda_la_disponibilidad_de_aulas_especificas_de_atencion_al_alumnado_con_autismo_Defensor_del_Pueblo_Andaluz_1.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.defensordelpuebloandaluz.es/reclamamos-que-se-potencie-y-extienda-la-disponibilidad-de-aulas-especificas-de-atencion-al-alumnado#main-content
+
+[28] Preguntas frecuentes sobre el funcionamiento del Defensor del Pueblo Andaluz | Defensor del Pueblo Andaluz
+    Archivo: Preguntas_frecuentes_sobre_el_funcionamiento_del_Defensor_del_Pueblo_Andaluz_Defensor_del_Pueblo_Andaluz.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.defensordelpuebloandaluz.es/content/preguntas-frecuentes-funcionamiento-del-defensor-del-pueblo-andaluz
+
+[29] Consultas relevantes | Defensor del Pueblo Andaluz
+    Archivo: Consultas_relevantes_Defensor_del_Pueblo_Andaluz.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.defensordelpuebloandaluz.es/te_ayudamos/consultas_frecuentes
+
+[30] Ayudas y Becas para alumnado con Necesidades Educativas en Andalucía - EducaOrienta
+    Archivo: Ayudas_y_Becas_para_alumnado_con_Necesidades_Educativas_en_Andalucia_EducaOrienta.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://educaorientamalaga.com/ayudas-y-becas-para-alumnado-con-necesidades-educativas-en-andalucia/
+
+[31] Tipos de ayuda - Ayudas de apoyo educativo - Becas y ayudas para estudiantes | Ministerio de Educación, Formación Profesional y Deportes
+    Archivo: Tipos_de_ayuda_Ayudas_de_apoyo_educativo_Becas_y_ayudas_para_estudiantes_Ministerio_de_Educacion_Formacion_Profesional_y_Deportes.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.becaseducacion.gob.es/becas-y-ayudas/ayudas-apoyo-educativo/tipos-de-becas.html
+
+[32] Apoyo escolar a medida | EducaOrienta
+    Archivo: Apoyo_escolar_a_medida_EducaOrienta.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://educaorientamalaga.com/lp-refuerzo/
+
+[33] Andalucía: ya puedes solicitar la Ayuda para la promoción de la autonomía de personas con discapacidad | CRIANDO 24/7
+    Archivo: Andalucia_ya_puedes_solicitar_la_Ayuda_para_la_promocion_de_la_autonomia_de_personas_con_discapacidad_CRIANDO_247.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://criando247.com/andalucia-ayuda-autonomia-discapacidad/
+
+[34] Seguridad Infantil & Salud | CRIANDO 24/7
+    Archivo: Seguridad_Infantil_&_Salud_CRIANDO_247.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://criando247.com/category/blog-criando-24-7/crianza/seguridad-infantil-salud/
+
+[35] Ayudas por discapacidad | CRIANDO 24/7
+    Archivo: Ayudas_por_discapacidad_CRIANDO_247.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://criando247.com/category/blog-criando-24-7/crianza-atipica/burocracia-crianza-atipica/ayudas-por-discapacidad/
+
+
+================================================================================
+04_ASOCIACIONES
+================================================================================
+
+[1] prestaciones-servicios-TEA
+    Archivo: prestaciones_servicios_TEA.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: https://www.mirame.org/main/wp-content/uploads/2022/01/prestaciones-servicios-TEA.pdf
+
+[2] Servicios y Recursos - Autismo Andalucía
+    Archivo: Servicios_y_Recursos_Autismo_Andalucia.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.autismoandalucia.org/autismo/servicios-y-recursos/
+
+[3] Buenas_Practicas_para_el_abuso_de_personas_con_TEA
+    Archivo: Buenas_Practicas_para_el_abuso_de_personas_con_TEA.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: http://www.autismoandalucia.org/wp-content/uploads/2018/02/Buenas_Practicas_para_el_abuso_de_personas_con_TEA.pdf
+
+[4] IACAPAP-DeclaraciondeVenecia
+    Archivo: IACAPAP_DeclaraciondeVenecia.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: http://www.autismoandalucia.org/wp-content/uploads/2018/02/IACAPAP-DeclaraciondeVenecia.pdf
+
+[5] UE-CartaderechospnasTEA2
+    Archivo: UE_CartaderechospnasTEA2.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: http://www.autismoandalucia.org/wp-content/uploads/2018/02/UE-CartaderechospnasTEA2.pdf
+
+[6] Inicio - Autismo Andalucía
+    Archivo: Inicio_Autismo_Andalucia.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.autismoandalucia.org
+
+[7] Participación ciudadana- Servicios a las Asociaciones - Autismo Andalucía
+    Archivo: Participacion_ciudadana_Servicios_a_las_Asociaciones_Autismo_Andalucia.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.autismoandalucia.org/autismo/servicios-a-las-asociaciones
+
+[8] Profesionales - Autismo Andalucía
+    Archivo: Profesionales_Autismo_Andalucia.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.autismoandalucia.org/autismo/profesionales-servicios
+
+[9] Comunicado sobre el Convenio de Apoyo al Alumnado con TEA - Autismo Andalucía
+    Archivo: Comunicado_sobre_el_Convenio_de_Apoyo_al_Alumnado_con_TEA_Autismo_Andalucia.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.autismoandalucia.org/entradas-autismo/comunicado-sobre-el-convenio-de-apoyo-al-alumnado-con-tea/
+
+[10] Facebook
+    Archivo: Facebook.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: http://www.facebook.com/sharer.php?u=https://autismoandalucia.org/entradas-autismo/comunicado-sobre-el-convenio-de-apoyo-al-alumnado-con-tea/
+
+[11] Google Workspace Updates: New community features for Google Chat and an update on Currents
+    Archivo: Google_Workspace_Updates_New_community_features_for_Google_Chat_and_an_update_on_Currents.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://plus.google.com/share?url=https://autismoandalucia.org/entradas-autismo/comunicado-sobre-el-convenio-de-apoyo-al-alumnado-con-tea/
+
+[12] 
+    Archivo: share.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: http://twitter.com/share?url=https://autismoandalucia.org/entradas-autismo/comunicado-sobre-el-convenio-de-apoyo-al-alumnado-con-tea/&text=Comunicado%20sobre%20el%20Convenio%20de%20Apoyo%20al%20Alumnado%20con%20TEA%20
+
+[13] Autismo Sevilla | Apoyos Individualizados
+    Archivo: Autismo_Sevilla_Apoyos_Individualizados.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.autismosevilla.org/apoyos-individualizados.php
+
+[14] Programas de apoyo para familiares cuidadores de personas con TEA
+    Archivo: Programas_de_apoyo_para_familiares_cuidadores_de_personas_con_TEA.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.autismosevilla.org/blog/programas-de-apoyo-para-familiares-cuidadores-de-personas-con-tea/
+
+[15] admin
+    Archivo: admin.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.autismosevilla.org/blog/author/admin/
+
+[16] Proyectos
+    Archivo: Proyectos.txt
+    Tipo: HTML
+    Prioridad: MEDIA
+    URL: https://www.autismosevilla.org/blog/categoria/proyectos/
+
+[17] Informe_Educacion_2021_2022_AutismoEspana
+    Archivo: Informe_Educacion_2021_2022_AutismoEspana.txt
+    Tipo: PDF
+    Prioridad: MEDIA
+    URL: https://autismo.org.es/wp-content/uploads/2023/05/Informe_Educacion_2021_2022_AutismoEspana.pdf
+

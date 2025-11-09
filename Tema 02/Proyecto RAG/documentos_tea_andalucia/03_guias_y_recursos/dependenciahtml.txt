@@ -1,0 +1,10 @@
+================================================================================
+CATEGORÍA: GUIA
+TIPO: HTML
+TÍTULO: 
+URL ORIGINAL: https://www.juntadeandalucia.es/servicios/sede/ventanillas/dependencia.html
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: https://www.juntadeandalucia.es/servicios/sede/ventanillas/dependencia.html
+Error: 404 Client Error: Not Found for url: https://www.juntadeandalucia.es/servicios/sede/ventanillas/dependencia.html

@@ -1,0 +1,22 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: ASOCIACION
+TIPO: HTML
+URL ORIGINAL: http://twitter.com/share?url=https://autismoandalucia.org/entradas-autismo/comunicado-sobre-el-convenio-de-apoyo-al-alumnado-con-tea/&text=Comunicado%20sobre%20el%20Convenio%20de%20Apoyo%20al%20Alumnado%20con%20TEA%20
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: http://twitter.com/share?url=https://autismoandalucia.org/entradas-autismo/comunicado-sobre-el-convenio-de-apoyo-al-alumnado-con-tea/&text=Comunicado%20sobre%20el%20Convenio%20de%20Apoyo%20al%20Alumnado%20con%20TEA%20
+Error: 520 Server Error: <none> for url: http://twitter.com/share?url=https://autismoandalucia.org/entradas-autismo/comunicado-sobre-el-convenio-de-apoyo-al-alumnado-con-tea/&text=Comunicado%20sobre%20el%20Convenio%20de%20Apoyo%20al%20Alumnado%20con%20TEA%20
+
+================================================================================
+Documento original: share.txt
+Procesado y limpiado automáticamente
+================================================================================

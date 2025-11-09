@@ -1,0 +1,22 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: PROCEDIMIENTO
+TIPO: HTML
+URL ORIGINAL: http://juntadeandalucia.es/servicios/sede/tramites/procedimientos/detalle/7151.html
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: http://juntadeandalucia.es/servicios/sede/tramites/procedimientos/detalle/7151.html
+Error: 403 Client Error: Forbidden for url: http://juntadeandalucia.es/servicios/sede/tramites/procedimientos/detalle/7151.html
+
+================================================================================
+Documento original: 7151html.txt
+Procesado y limpiado automáticamente
+================================================================================

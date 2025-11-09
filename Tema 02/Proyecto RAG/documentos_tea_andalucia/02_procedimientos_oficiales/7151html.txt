@@ -1,0 +1,10 @@
+================================================================================
+CATEGORÍA: PROCEDIMIENTO
+TIPO: HTML
+TÍTULO: 
+URL ORIGINAL: http://juntadeandalucia.es/servicios/sede/tramites/procedimientos/detalle/7151.html
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: http://juntadeandalucia.es/servicios/sede/tramites/procedimientos/detalle/7151.html
+Error: 403 Client Error: Forbidden for url: http://juntadeandalucia.es/servicios/sede/tramites/procedimientos/detalle/7151.html

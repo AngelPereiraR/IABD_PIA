@@ -1,0 +1,21 @@
+================================================================================
+REPORTE DE LIMPIEZA DE DOCUMENTOS
+================================================================================
+
+📊 ESTADÍSTICAS:
+   • Archivos procesados correctamente: 105
+   • Archivos con errores: 0
+   • Líneas de ruido eliminadas: 15654
+   • Líneas duplicadas eliminadas: 0
+
+✅ MEJORAS APLICADAS:
+   • Eliminación de cabeceras y pies de página repetidos
+   • Eliminación de números de página y separadores
+   • Eliminación de texto duplicado consecutivo
+   • Normalización de espacios en blanco
+   • Unificación de codificación a UTF-8
+   • Corrección de caracteres mal codificados
+   • Preservación de metadatos importantes
+
+📁 Documentos limpios guardados en: documentos_tea_andalucia_limpio
+================================================================================

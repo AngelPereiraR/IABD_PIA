@@ -1,0 +1,22 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: GUIA
+TIPO: HTML
+URL ORIGINAL: http://www.dependencia.imserso.es/dependencia_01/index.htm
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: http://www.dependencia.imserso.es/dependencia_01/index.htm
+Error: HTTPSConnectionPool(host='www.dependencia.imserso.es', port=443): Max retries exceeded with url: /dependencia_01/index.htm (Caused by SSLError(SSLCertVerificationError(1, "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'www.dependencia.imserso.es'. (_ssl.c:1032)")))
+
+================================================================================
+Documento original: indexhtm.txt
+Procesado y limpiado automáticamente
+================================================================================

@@ -1,0 +1,22 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: GUIA
+TIPO: HTML
+URL ORIGINAL: https://www.juntadeandalucia.es/educacion/portals/web/familias
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: https://www.juntadeandalucia.es/educacion/portals/web/familias
+Error: 404 Client Error: Not Found for url: https://cauce.juntadeandalucia.es/cau/error/error404.html
+
+================================================================================
+Documento original: familias.txt
+Procesado y limpiado automáticamente
+================================================================================

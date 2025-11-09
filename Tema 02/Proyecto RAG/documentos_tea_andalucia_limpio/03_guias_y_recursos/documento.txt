@@ -1,0 +1,22 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: GUIA
+TIPO: HTML
+URL ORIGINAL: https://www.familiasandalucia.es/familias-con-necesidades-especiales/
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: https://www.familiasandalucia.es/familias-con-necesidades-especiales/
+Error: HTTPSConnectionPool(host='www.familiasandalucia.es', port=443): Max retries exceeded with url: /familias-con-necesidades-especiales/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x00000250938C3D90>: Failed to resolve 'www.familiasandalucia.es' ([Errno 11002] getaddrinfo failed)"))
+
+================================================================================
+Documento original: documento.txt
+Procesado y limpiado automáticamente
+================================================================================

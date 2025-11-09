@@ -1,0 +1,10 @@
+================================================================================
+CATEGORÍA: LEY
+TIPO: PDF
+TÍTULO: valoracion_discapacidades
+URL ORIGINAL: https://www.boe.es/buscar/act.php?id=BOE-A-2022-17105http://www.juntadeandalucia.es/export/drupaljda/valoracion_discapacidades.pdf
+================================================================================
+
+ERROR: No se pudo extraer el contenido del PDF
+URL: https://www.boe.es/buscar/act.php?id=BOE-A-2022-17105http://www.juntadeandalucia.es/export/drupaljda/valoracion_discapacidades.pdf
+Error: EOF marker not found

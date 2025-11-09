@@ -1,0 +1,26 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: GUIA
+TIPO: HTML
+TÍTULO: Tipos de ayuda - Ayudas de apoyo educativo - Becas y ayudas para estudiantes | Ministerio de Educación, Formación Profesional y Deportes
+URL ORIGINAL: https://www.becaseducacion.gob.es/becas-y-ayudas/ayudas-apoyo-educativo/tipos-de-becas.html
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+METADATOS:
+DESCRIPTION: Consulta los tipos de ayudas disponibles a personas con necesidades específicas de apoyo educativo
+KEYWORDS: Becas alumnos necesidades específicas, becas necesidades especiales, becas alumnos altas capacidades, becas alumnos con discapacidad, becas alumnos tea
+CONTENIDO:
+Becas y Ayudas
+Ayudas para alumnado con necesidades específicas de apoyo educativo
+
+================================================================================
+Documento original: Tipos_de_ayuda_Ayudas_de_apoyo_educativo_Becas_y_ayudas_para_estudiantes_Ministerio_de_Educacion_Formacion_Profesional_y_Deportes.txt
+Procesado y limpiado automáticamente
+================================================================================

@@ -1,0 +1,22 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: GUIA
+TIPO: HTML
+URL ORIGINAL: https://www.juntadeandalucia.es/temas/familias-igualdad/discapacidad/prestaciones.html
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: https://www.juntadeandalucia.es/temas/familias-igualdad/discapacidad/prestaciones.html
+Error: 403 Client Error: Forbidden for url: https://www.juntadeandalucia.es/temas/familias-igualdad/discapacidad/prestaciones.html
+
+================================================================================
+Documento original: prestacioneshtml.txt
+Procesado y limpiado automáticamente
+================================================================================

@@ -1,0 +1,23 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: GUIA
+TIPO: PDF
+TÍTULO: Estrategia_Espanola_en_TEA
+URL ORIGINAL: https://www.mdsocialesa2030.gob.es/derechos-sociales/discapacidad/docs/Estrategia_Espanola_en_TEA.pdf
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+ERROR: No se pudo extraer el contenido del PDF
+URL: https://www.mdsocialesa2030.gob.es/derechos-sociales/discapacidad/docs/Estrategia_Espanola_en_TEA.pdf
+Error: HTTPSConnectionPool(host='www.mdsocialesa2030.gob.es', port=443): Max retries exceeded with url: /derechos-sociales/discapacidad/docs/Estrategia_Espanola_en_TEA.pdf (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)')))
+
+================================================================================
+Documento original: Estrategia_Espanola_en_TEA.txt
+Procesado y limpiado automáticamente
+================================================================================

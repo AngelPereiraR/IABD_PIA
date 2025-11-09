@@ -1,0 +1,22 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: GUIA
+TIPO: HTML
+URL ORIGINAL: https://www.juntadeandalucia.es/servicios/sede/ventanillas/dependencia.html
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: https://www.juntadeandalucia.es/servicios/sede/ventanillas/dependencia.html
+Error: 404 Client Error: Not Found for url: https://www.juntadeandalucia.es/servicios/sede/ventanillas/dependencia.html
+
+================================================================================
+Documento original: dependenciahtml.txt
+Procesado y limpiado automáticamente
+================================================================================

@@ -1,0 +1,24 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: GUIA
+TIPO: HTML
+TÍTULO: Inicio - Consejería de Desarrollo Educativo y Formación Profesional
+URL ORIGINAL: https://www.juntadeandalucia.es/educacion/portals/web/escuela-familias
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+METADATOS:
+DESCRIPTION: Inicio
+CONTENIDO:
+Escuela de Familias
+
+================================================================================
+Documento original: Inicio_Consejeria_de_Desarrollo_Educativo_y_Formacion_Profesional.txt
+Procesado y limpiado automáticamente
+================================================================================

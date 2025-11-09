@@ -1,0 +1,10 @@
+================================================================================
+CATEGORÍA: PROCEDIMIENTO
+TIPO: HTML
+TÍTULO: 
+URL ORIGINAL: https://www.juntadeandalucia.es/organismos/inclusionsocialjuventudfamiliaseigualdad/areas/dependencia/solicitud.html
+================================================================================
+
+ERROR: No se pudo extraer el contenido
+URL: https://www.juntadeandalucia.es/organismos/inclusionsocialjuventudfamiliaseigualdad/areas/dependencia/solicitud.html
+Error: 404 Client Error: Not Found for url: https://www.juntadeandalucia.es/organismos/inclusionsocialjuventudfamiliaseigualdad/areas/dependencia/solicitud.html

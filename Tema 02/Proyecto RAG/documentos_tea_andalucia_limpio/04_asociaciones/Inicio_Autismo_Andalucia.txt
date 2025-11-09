@@ -1,0 +1,21 @@
+================================================================================
+DOCUMENTO LIMPIO Y NORMALIZADO
+================================================================================
+
+INFORMACIÓN DEL DOCUMENTO:
+--------------------------------------------------------------------------------
+CATEGORÍA: ASOCIACION
+TIPO: HTML
+TÍTULO: Inicio - Autismo Andalucía
+URL ORIGINAL: https://www.autismoandalucia.org
+
+================================================================================
+CONTENIDO:
+================================================================================
+
+La Asociación ASTEA Autismo Almería tiene en marcha una iniciativa para la recaudación de fondos que irá destinada a los programas que la asociación dirige a las personas con TEA y sus familias. Se trata de la elaboración de colgantes...
+
+================================================================================
+Documento original: Inicio_Autismo_Andalucia.txt
+Procesado y limpiado automáticamente
+================================================================================
