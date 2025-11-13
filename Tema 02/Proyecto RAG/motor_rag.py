@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_community.vectorstores import FAISS
@@ -127,18 +128,40 @@ if __name__ == "__main__":
         engine = TeaRagEngine()
         print("✅ Motor RAG inicializado (History-Aware Retriever).")
         
-        # Prueba de la casuística problemática
-        q1 = "¿Qué es el CVO?"
-        print(f"\n>>> Pregunta 1: {q1}")
-        r1 = engine.get_answer(q1)
-        print(f"Respuesta 1: {r1['answer'][:200]}...")
-
-        q2 = "¿Y dónde está el de Sevilla?" 
-        # AHORA DEBERÍA FUNCIONAR: El modelo reformulará internamente a 
-        # "¿Dónde está el Centro de Valoración y Orientación (CVO) de Sevilla?" antes de buscar.
-        print(f"\n>>> Pregunta 2 (Contextual): {q2}")
-        r2 = engine.get_answer(q2)
-        print(f"Respuesta 2: {r2['answer'][:200]}...")
+        # Lista de preguntas de prueba
+        preguntas = [
+            "¿Dónde puedo encontrar centros especializados en TEA en Sevilla?",
+            "¿Qué procedimientos debo seguir para solicitar una valoración de discapacidad?"
+        ]
+        
+        # Lista para almacenar resultados
+        resultados = []
+        try:
+            with open("resultados_prueba.json", "r", encoding="utf-8") as f:
+                resultados = json.load(f)
+        except FileNotFoundError:
+            pass
+        
+        for i, pregunta in enumerate(preguntas, 1):
+            print(f"\n>>> Pregunta {i}: {pregunta}")
+            respuesta_data = engine.get_answer(pregunta)
+            respuesta = respuesta_data["answer"]
+            chunks = [doc.page_content for doc in respuesta_data["source_documents"]]
+            
+            print(f"Respuesta {i}: {respuesta[:200]}...")
+            
+            # Agregar a resultados
+            resultados.append({
+                "pregunta": pregunta,
+                "respuesta": respuesta,
+                "chunks": chunks
+            })
+        
+        # Exportar a JSON
+        with open("resultados_prueba.json", "w", encoding="utf-8") as f:
+            json.dump(resultados, f, ensure_ascii=False, indent=4)
+        
+        print("\n✅ Resultados exportados a 'resultados_prueba.json' (información acumulada)")
 
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
