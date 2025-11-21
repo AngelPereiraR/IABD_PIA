@@ -1,0 +1,5 @@
+langchain
+langchain-google-community[gmail]
+langchain-google-genai
+python-dotenv
+pydantic
