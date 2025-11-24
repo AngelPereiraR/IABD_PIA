@@ -21,21 +21,42 @@ class TelegramNotifier:
     def send_match_alert(self, job_data: dict, analysis: dict) -> bool:
         """
         Formatea y envía una alerta de trabajo encontrado.
-        
-        Args:
-            job_data (dict): Datos básicos de la oferta (url, título extraído si lo hay).
-            analysis (dict): Resultado del análisis de Gemma (match, reasoning, etc).
         """
-        # Iconos para hacerlo visual
-        icon = "🚀" if analysis.get('match') else "⚠️"
+        # Extraemos datos
+        score = analysis.get('match_score', 0)
+        salary = analysis.get('salary', 'No especificado')
+        posted = analysis.get('posted_date', 'Fecha no detectada')
+        benefits = analysis.get('benefits', 'No especificados')
         
-        # Construimos el mensaje usando HTML para negritas y enlaces limpios
-        # Nota: Telegram soporta un subconjunto de HTML (b, i, a, code, pre)
+        # Lógica de Iconos
+        if score >= 90:
+            icon = "🔥" 
+            title = "CANDIDATO IDEAL"
+        elif score >= 80:
+            icon = "🚀" 
+            title = "CANDIDATO FUERTE"
+        elif score >= 70:
+            icon = "✅" 
+            title = "CANDIDATO APTO"
+        else:
+            icon = "⚠️" 
+            title = "MATCH DUDOSO"
+
+        # Barra de progreso
+        filled_blocks = int(score / 10)
+        progress_bar = "🟩" * filled_blocks + "⬜" * (10 - filled_blocks)
+
+        # Construcción del Mensaje Enriquecido
         message = (
-            f"{icon} <b>NUEVA OPORTUNIDAD DETECTADA</b>\n\n"
+            f"{icon} <b>{title} DETECTADO</b>\n"
+            f"<b>Afinidad: {score}%</b>\n"
+            f"{progress_bar}\n\n"
             f"💼 <b>Puesto:</b> {analysis.get('job_title', 'Puesto sin título')}\n"
             f"🏢 <b>Empresa:</b> {analysis.get('company', 'Empresa confidencial')}\n\n"
-            f"💡 <b>Por qué encaja:</b>\n<i>{analysis.get('summary', 'Sin análisis detallado.')}</i>\n\n"
+            f"💰 <b>Salario:</b> {salary}\n"
+            f"🎁 <b>Beneficios:</b> {benefits}\n\n"
+            f"📅 <b>Publicado:</b> {posted}\n\n"
+            f"💡 <b>Análisis:</b>\n<i>{analysis.get('summary', 'Sin análisis detallado.')}</i>\n\n"
             f"🔗 <a href='{job_data.get('url')}'>Ver Oferta en LinkedIn</a>"
         )
         
@@ -54,7 +75,7 @@ class TelegramNotifier:
             response = requests.post(self.base_url, json=payload, timeout=10)
             response.raise_for_status() # Lanza error si no es 200 OK
             
-            print("📨 Notificación enviada a Telegram correctamente.")
+            print("Notificación enviada a Telegram correctamente.")
             return True
             
         except requests.exceptions.RequestException as e:
@@ -76,7 +97,10 @@ if __name__ == "__main__":
             "match": True,
             "job_title": "Senior Python Developer",
             "company": "Tech Corp AI",
-            "summary": "Buscan experto en LangChain y Python. Pagan bien y es remoto. Coincide con tu experiencia en APIs."
+            "summary": "Buscan experto en LangChain y Python. Pagan bien y es remoto. Coincide con tu experiencia en APIs.",
+            "match_score": 88.5,
+            "salary": "50.000€ - 60.000€",
+            "benefits": "Contrato indefinido, 100% remoto, seguro médico privado"
         }
         
         notifier.send_match_alert(fake_job, fake_analysis)

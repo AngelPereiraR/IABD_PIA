@@ -10,15 +10,18 @@ load_dotenv()
 
 # Definimos la estructura exacta que queremos que devuelva la IA
 class RecruitmentDecision(BaseModel):
-    match: bool = Field(description="True si la oferta encaja con el perfil (>70%), False si no.")
-    job_title: str = Field(description="El título del puesto extraído de la oferta.")
-    company: str = Field(description="Nombre de la empresa ofertante.")
-    summary: str = Field(description="Breve justificación de por qué encaja o no (máx 2 frases).")
-    probability: float = Field(description="Probabilidad estimada de que la oferta encaje con el perfil (0 a 100) en porcentajes.")
+    match: bool = Field(description="True si supera AMBAS fases (ATS + Humano), False si cae en alguna.")
+    match_score: int = Field(description="0-59 (Fallo ATS), 60-69 (Fallo Humano), 70-89 (Apto), 90+ (Top).")
+    job_title: str = Field(description="El título del puesto normalizado extraído de la oferta.")
+    company: str = Field(description="Nombre de la empresa.")
+    salary: str = Field(description="Rango salarial detectado o 'No especificado'.")
+    posted_date: str = Field(description="Fecha de publicación o antigüedad extraída LITERALMENTE del texto (ej. 'Hace 2 días', 'Posted 3 hours ago').")
+    benefits: str = Field(description="Beneficios clave detectados.")
+    summary: str = Field(description="Justificación. Si falla en Fase 1: Tono ROBOTICO/ERROR. Si llega a Fase 2: Tono PROFESIONAL/RRHH.")
 
 class RecruitmentBrain:
     """
-    Clase que encapsula la lógica de decisión usando LLMs (Gemma-3).
+    Clase que encapsula la lógica de decisión usando LLMs (Gemini 2.5 Flash).
     """
     def __init__(self):
         api_key = os.getenv("GEMINI_API_KEY")
@@ -28,7 +31,7 @@ class RecruitmentBrain:
         # Configuración del modelo Gemma-3-27b
         # Usamos temperature=0 para máxima precisión y determinismo
         self.llm = ChatGoogleGenerativeAI(
-            model="gemma-3-27b-it",
+            model="gemini-2.5-flash",
             temperature=0,
             google_api_key=api_key
         )
@@ -39,26 +42,81 @@ class RecruitmentBrain:
         # Crear el Template del Prompt
         self.prompt = PromptTemplate(
             template="""
-            Actúa como un Reclutador Técnico Senior experto. Tu trabajo es filtrar ofertas de empleo para un candidato basándote en su CV.
+            Eres un Analista de Talento Experto y Universal.
             
-            CONTEXTO DEL CANDIDATO (CV):
+            ⚠️ **INSTRUCCIONES DE GROUNDING (ANTI-ALUCINACION):**
+            1. Tu analisis debe basarse **UNICA Y EXCLUSIVAMENTE** en el contenido de "TEXTO DE LA WEB".
+            2. **PROHIBIDO** usar conocimiento externo o suposiciones no presentes en el texto.
+            3. Debes extraer la fecha de publicacion real del texto para verificar su vigencia.
+            
+            DATOS DEL CANDIDATO (CV):
             ----------------------------------------
             {cv_context}
             ----------------------------------------
             
-            OFERTA DE TRABAJO (Markdown Scrapeado):
+            TEXTO DE LA WEB (JD - INFORMACION FRESCA):
             ----------------------------------------
             {offer_markdown}
             ----------------------------------------
             
-            INSTRUCCIONES:
-            1. Analiza los requisitos técnicos (Hard Skills) y experiencia requerida en la oferta.
-            2. Compáralos con el CV del candidato.
-            3. Ignora coincidencias genéricas (como "trabajo en equipo") si no hay match técnico.
-            4. El umbral de aprobación es del 70% de coincidencia en requisitos obligatorios.
-            5. Si falta información salarial o la empresa es confidencial, no penalices el match.
+            INSTRUCCIONES DE PROCESAMIENTO:
+
+            --- ETAPA 0: VALIDACION DE ESTADO (CRITICO - EJECUTAR PRIMERO) ---
+            Antes de leer cualquier requisito, determina si la oferta es válida o está cerrada.
             
-            FORMATO DE SALIDA:
+            1. **INDICADORES DE CIERRE (STOP WORDS):**
+               Busca frases que indiquen el fin del proceso:
+               - "No longer accepting applications" / "Ya no se aceptan solicitudes"
+               - "This job is no longer active" / "Esta oferta de empleo ha expirado"
+               - "Job closed" / "Oferta cerrada"
+            
+            2. **EXCEPCIONES (FALSOS POSITIVOS - NO DESCARTAR):**
+               Si encuentras estas frases, la oferta ESTÁ ACTIVA (solicitud externa):
+               - "Apply on company website" / "Solicitar en el sitio web de la empresa"
+               - "You will be redirected to..."
+               - "Start your application on..."
+               - "See full details on..."
+               - "Solicitar"
+               - Cualquier indicación de proceso en Workday, Greenhouse, Lever, etc.
+               -> **EN ESTOS CASOS: CONTINÚA EL ANÁLISIS NORMALMENTE.**
+            
+            3. **INDICADORES DE ERROR / PAGINA GENERICA:**
+               - Si el texto es solo un Login ("Sign in", "Join now") sin descripción de puesto -> DESCARTAR.
+               - Si es una lista genérica ("Jobs in Madrid") sin un puesto concreto -> DESCARTAR.
+
+            > **CONCLUSIÓN ETAPA 0:**
+            - Si es **Cerrada/Error**: Score 0, Match False, Summary "SYSTEM_BLOCK: OFERTA CERRADA".
+            - Si es **Activa/Externa**: Pasa a Etapa 1.
+
+            --- ETAPA 1: CALIBRACION Y FILTRO ATS (Solo si pasa Etapa 0) ---
+            
+            PASO A: DETECCION DE CONTEXTO
+            1. Identifica el **Sector** y **Nivel**.
+            2. **FECHA:** Extrae 'posted_date'.
+            
+            PASO B: KILLER QUESTIONS
+            1. **UBICACION:** Si es Presencial/Hibrido y la provincia no coincide (y no hay disponibilidad de traslado) -> FALLO.
+            2. **EXPERIENCIA:** Si piden Senior y es Junior -> FALLO.
+            3. **HARD SKILLS:** Si falta skill "Imprescindible" -> FALLO.
+            4. **IDIOMAS:** Si es excluyente -> FALLO.
+
+            > **SI FALLA LA ETAPA 1:**
+            - Score: 0-59. Match: False. Summary: "ATS_BLOCK: [MOTIVO]".
+
+            --- ETAPA 2: EVALUACION CUALITATIVA ---
+            1. **Coherencia:** ¿Tiene sentido este puesto para su trayectoria?
+            2. **Profundidad:** Valora logros tangibles vs requisitos.
+            
+            SISTEMA DE PUNTUACION FASE 2:
+            - **60-69 (Descarte):** Valido pero debil. Match: False.
+            - **70-79 (Apto):** Cumple. Match: True.
+            - **80-89 (Fuerte):** Destaca. Match: True.
+            - **90-100 (Ideal):** Perfecto. Match: True.
+
+            EXTRACCION DE DATOS:
+            - Salary, Benefits y Posted Date.
+
+            FORMATO DE SALIDA JSON:
             {format_instructions}
             """,
             input_variables=["cv_context", "offer_markdown"],
@@ -73,7 +131,7 @@ class RecruitmentBrain:
         Analiza una oferta frente al CV y devuelve una decisión estructurada.
         """
         try:
-            print("🧠 Gemma está analizando la oferta...")
+            print("Gemini está analizando la oferta...")
             
             # Ejecutar la cadena
             result = self.chain.invoke({
@@ -89,7 +147,7 @@ class RecruitmentBrain:
             return result
 
         except Exception as e:
-            print(f"Error en el análisis de Gemma: {e}")
+            print(f"Error en el análisis de Gemini: {e}")
             # Devolver un fallo seguro para no romper el bucle
             return {
                 "match": False, 
@@ -100,7 +158,7 @@ class RecruitmentBrain:
 
 if __name__ == "__main__":
     # --- PRUEBA UNITARIA ---
-    print("🧪 Iniciando prueba del Cerebro (Gemma-3)...")
+    print("🧪 Iniciando prueba del Cerebro (Gemini 2.5 Flash)...")
     
     # 1. Mock de CV (Simulando lo que vendría de loader.py)
     mock_cv = """

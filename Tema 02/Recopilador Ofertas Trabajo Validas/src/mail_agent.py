@@ -4,45 +4,98 @@ import base64
 from typing import List
 from dotenv import load_dotenv
 
-# Reutilizamos la lógica de autenticación de LangChain que ya tienes configurada
 from langchain_google_community import GmailToolkit
 
 load_dotenv()
 
 class GmailJobCollector:
     """
-    Clase encargada de interactuar con la API de Gmail para buscar, 
-    parsear y limpiar alertas de trabajo de LinkedIn.
+    Clase encargada de interactuar con la API de Gmail para buscar alertas nuevas
+    y limpiar automáticamente TODO el historial antiguo de LinkedIn (>14 días).
     """
     def __init__(self):
-        # Inicializamos el toolkit igual que en tu script original.
-        # Esto buscará 'credentials.json' y 'token.json' automáticamente.
         self.toolkit = GmailToolkit()
-        self.service = self.toolkit.api_resource  # Acceso directo al servicio de Google API
+        self.service = self.toolkit.api_resource
 
     def get_linkedin_offers(self, limit: int = 5) -> List[str]:
         """
-        Busca correos no leídos de LinkedIn Job Alerts, extrae las URLs
-        de las ofertas y marca los correos como leídos.
-
-        Args:
-            limit (int): Número máximo de correos a procesar por ciclo.
-
-        Returns:
-            List[str]: Lista de URLs de ofertas encontradas.
+        Orquesta el proceso de limpieza y recolección.
         """
-        found_urls = []
-        
-        # 1. Búsqueda eficiente usando sintaxis de Gmail
-        # from:linkedin busca correos de LinkedIn
-        # "job alert" asegura que sea una alerta de empleo
-        # label:UNREAD solo trae los nuevos
-        query = 'from:linkedin label:UNREAD ("Ver empleos similares" OR "alertas de empleo" OR "publicado el" OR "principales empleos")'
+        # 1. Limpieza masiva (Ofertas antiguas + Spam/Notificaciones viejas)
+        self._cleanup_old_emails()
+
+        # 2. Busqueda de lo nuevo y relevante
+        return self._fetch_recent_offers(limit)
+
+    def _cleanup_old_emails(self):
+        """
+        Busca y elimina (mueve a papelera) CUALQUIER correo de LinkedIn
+        que tenga más de 14 días (sean ofertas, notificaciones, mensajes, etc).
+        Estrategia: 'from:linkedin older_than:14d'
+        """
+        # Query Simplificada: Todo lo que venga de LinkedIn y sea viejo se va.
+        query = 'from:linkedin older_than:14d'
         
         try:
-            print(f"📧 Buscando alertas de LinkedIn nuevas (Query: '{query}')...")
+            page_token = None
+            total_deleted = 0
             
-            # Llamada directa a la API de Gmail (más rápido que un Agente LLM)
+            while True:
+                # Pedimos página de resultados
+                results = self.service.users().messages().list(
+                    userId='me', 
+                    q=query, 
+                    maxResults=500, # Máximo permitido por página
+                    pageToken=page_token
+                ).execute()
+                
+                messages = results.get('messages', [])
+                
+                if messages:
+                    batch_ids = [msg['id'] for msg in messages]
+                    
+                    # Borrado en bloque
+                    self.service.users().messages().batchModify(
+                        userId='me',
+                        body={
+                            'ids': batch_ids,
+                            'addLabelIds': ['TRASH'], 
+                            'removeLabelIds': []
+                        }
+                    ).execute()
+                    
+                    count = len(messages)
+                    total_deleted += count
+                    print(f"   [LIMPIEZA] Lote procesado: {count} correos antiguos de LinkedIn movidos a papelera...")
+                
+                # Verificamos si hay más páginas
+                page_token = results.get('nextPageToken')
+                if not page_token:
+                    break
+            
+            if total_deleted > 0:
+                print(f"      [OK] Limpieza completada. Total eliminados: {total_deleted}")
+            else:
+                # Opcional: avisar que no había nada que limpiar
+                pass
+                
+        except Exception as e:
+            print(f"[ERROR] Error durante la limpieza automática: {e}")
+
+    def _fetch_recent_offers(self, limit: int) -> List[str]:
+        """
+        Busca correos RECIENTES (<14 días) y NO LEÍDOS que sean ESPECÍFICAMENTE de ofertas.
+        """
+        found_urls = []
+        # Usamos un set auxiliar para comprobación instantánea de duplicados
+        seen_urls = set()
+        
+        # Query Específica: Solo queremos OFERTAS frescas, no mensajes de gente
+        query = 'from:linkedin label:UNREAD newer_than:14d ("Ver empleos similares" OR "alertas de empleo" OR "publicado el" OR "principales empleos")'
+        
+        try:
+            print(f"[BUSQUEDA] Buscando alertas recientes de empleo (<14 días)...")
+            
             results = self.service.users().messages().list(
                 userId='me', 
                 q=query, 
@@ -52,37 +105,45 @@ class GmailJobCollector:
             messages = results.get('messages', [])
             
             if not messages:
-                print("   ✓ No hay alertas nuevas.")
+                print("   [-] No hay alertas nuevas recientes.")
                 return []
 
-            print(f"   ✓ Se encontraron {len(messages)} alertas. Procesando...")
+            print(f"   [+] Se encontraron {len(messages)} mensajes de alerta. Procesando...")
 
             for msg in messages:
                 msg_id = msg['id']
                 
-                # 2. Obtener el contenido del mensaje
+                # Obtener contenido completo
                 message_data = self.service.users().messages().get(
-                    userId='me', 
-                    id=msg_id, 
-                    format='full'
+                    userId='me', id=msg_id, format='full'
                 ).execute()
                 
-                # Extraer cuerpo del correo (HTML o Texto)
-                body = self._get_message_body(message_data)
+                # Extracción recursiva robusta
+                body = self._get_message_body_recursive(message_data.get('payload', {}))
                 
-                # 3. Extraer URL con Regex (CORREGIDO PARA MULTIPLES OFERTAS)
-                # Usamos findall en lugar de search para obtener TODAS las coincidencias
-                urls_in_email = re.findall(r'https://www\.linkedin\.com/(?:comm/)?jobs/view/\d+', body)
+                # Regex IDs
+                job_ids = re.findall(r'jobs/view/(\d+)', body)
                 
-                if urls_in_email:
-                    # Eliminamos duplicados dentro del mismo correo (a veces el link sale 2 veces)
-                    unique_msg_urls = list(set(urls_in_email))
-                    found_urls.extend(unique_msg_urls)
-                    print(f"     + {len(unique_msg_urls)} Oferta(s) detectada(s) en mensaje {msg_id}")
+                if job_ids:
+                    new_urls_in_this_email = []
+                    
+                    for jid in job_ids:
+                        full_url = f"https://www.linkedin.com/jobs/view/{jid}"
+                        
+                        # VERIFICACIÓN DE DUPLICADOS ANTES DE AÑADIR
+                        if full_url not in seen_urls:
+                            seen_urls.add(full_url)
+                            new_urls_in_this_email.append(full_url)
+                    
+                    if new_urls_in_this_email:
+                        found_urls.extend(new_urls_in_this_email)
+                        print(f"     [+] {len(new_urls_in_this_email)} Oferta(s) NUEVA(S) extraída(s) del mensaje {msg_id}")
+                    else:
+                        print(f"     [.] Ofertas encontradas en mensaje {msg_id} pero ya eran duplicadas.")
                 else:
-                    print(f"     - No se encontró URL válida en el mensaje {msg_id}")
+                    print(f"     [-] No se detectaron IDs de oferta en mensaje {msg_id}")
 
-                # 4. Marcar como leído (Quitar etiqueta UNREAD)
+                # Marcar como leído
                 self.service.users().messages().modify(
                     userId='me',
                     id=msg_id,
@@ -90,57 +151,55 @@ class GmailJobCollector:
                 ).execute()
 
         except Exception as e:
-            print(f"❌ Error al procesar correos: {e}")
+            print(f"[ERROR] Error al procesar correos recientes: {e}")
         
         return found_urls
 
-    def _get_message_body(self, message_data) -> str:
-        """Decodifica el cuerpo del mensaje buscando partes HTML o Texto plano."""
+    def _get_message_body_recursive(self, payload) -> str:
+        """
+        Busca recursivamente en las partes del mensaje (MIME multipart)
+        hasta encontrar texto o HTML.
+        """
         try:
-            payload = message_data.get('payload', {})
-            parts = payload.get('parts', [])
-            body_data = None
-
-            # Estrategia: Buscar primero HTML, luego Texto plano
-            if not parts:
-                # Si no tiene partes (es un mensaje simple)
-                body_data = payload.get('body', {}).get('data')
-            else:
-                for part in parts:
-                    if part['mimeType'] == 'text/html':
-                        body_data = part['body'].get('data')
-                        break
-                
-                if not body_data:
-                    # Fallback a texto plano si no hay HTML
-                    for part in parts:
-                        if part['mimeType'] == 'text/plain':
-                            body_data = part['body'].get('data')
-                            break
-
-            if body_data:
-                # Decodificar Base64URL
-                return base64.urlsafe_b64decode(body_data).decode('utf-8')
+            # Caso base: Si tiene cuerpo directo
+            if 'body' in payload and payload['body'].get('data'):
+                return base64.urlsafe_b64decode(payload['body']['data']).decode('utf-8')
             
+            # Caso recursivo: Si tiene partes
+            if 'parts' in payload:
+                html_part = None
+                text_part = None
+                
+                for part in payload['parts']:
+                    mime_type = part.get('mimeType')
+                    
+                    # Prioridad 1: HTML
+                    if mime_type == 'text/html':
+                        html_part = part
+                    # Prioridad 2: Texto plano
+                    elif mime_type == 'text/plain':
+                        text_part = part
+                    # Prioridad 3: Contenedor anidado (multipart/alternative, related, etc)
+                    elif mime_type and 'multipart' in mime_type:
+                        # Llamada recursiva
+                        return self._get_message_body_recursive(part)
+
+                # Devolver lo mejor que encontramos en este nivel
+                target_part = html_part or text_part
+                if target_part:
+                    return self._get_message_body_recursive(target_part)
+                    
         except Exception:
             return ""
         return ""
 
 if __name__ == "__main__":
-    # --- PRUEBA UNITARIA ---
-    print("🧪 Iniciando prueba del Agente de Correo...")
-    
-    # Asegúrate de tener 'credentials.json' en la raíz (donde ejecutas el script)
-    # y de haber corrido 'gmail_tool.py' al menos una vez para generar 'token.json'
+    print("[TEST] Iniciando prueba del Agente de Correo (Limpieza TOTAL + Recientes)...")
     try:
         collector = GmailJobCollector()
-        urls = collector.get_linkedin_offers(limit=1)
-        
-        print("\n--- RESULTADO DE LA PRUEBA ---")
-        print(f"Ofertas extraídas: {len(urls)}")
-        for i, url in enumerate(urls, 1):
-            print(f"{i}. {url}")
-            
+        urls = collector.get_linkedin_offers(limit=5)
+        print(f"\n--- RESULTADO: {len(urls)} URLs únicas extraídas ---")
+        for u in urls:
+            print(f" -> {u}")
     except Exception as e:
-        print(f"\n🛑 Error: {e}")
-        print("💡 PISTA: Verifica que 'credentials.json' esté en la carpeta raíz.")
+        print(f"\n[ERROR] Error: {e}")

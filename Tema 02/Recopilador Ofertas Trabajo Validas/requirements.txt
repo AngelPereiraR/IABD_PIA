@@ -9,5 +9,4 @@ python-dotenv
 pydantic
 
 # Nuevas herramientas para el Workbench
-firecrawl-py
 pypdf
