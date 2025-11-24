@@ -1,0 +1,13 @@
+# Core de LangChain y Google
+langchain
+langchain-google-community[gmail]
+langchain-google-genai
+langchain-community
+
+# Utilidades base
+python-dotenv
+pydantic
+
+# Nuevas herramientas para el Workbench
+firecrawl-py
+pypdf
