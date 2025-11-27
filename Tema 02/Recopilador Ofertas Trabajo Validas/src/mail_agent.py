@@ -84,7 +84,7 @@ class GmailJobCollector:
         seen_urls = set()
         
         # Query optimizada para ambos proveedores
-        query = 'from:("linkedin" OR "infojobs") label:UNREAD newer_than:14d ("Ver empleos similares" OR "alertas de empleo" OR "publicado el" OR "principales empleos" OR "Alerta de empleo InfoJobs" OR "Nueva oferta de empleo")'
+        query = 'from:("linkedin" OR "infojobs") label:UNREAD newer_than:14d ("empleos similares" OR "alertas de empleo" OR "publicado el" OR "principales empleos" OR "Alerta de empleo InfoJobs" OR "Nueva oferta de empleo")'
         
         try:
             print(f"[BUSQUEDA] Buscando alertas recientes (<14 días)...")
