@@ -25,13 +25,15 @@ def scrape_offer_content(url: str) -> str:
     
     common_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     
+    # Selectores generales
     target_selector = "main, .core-rail, .description__text, #job-description"
     remove_selector = "nav, footer, script, style, iframe, .similar-jobs, .people-also-viewed, .contextual-sign-in-modal, .ad-banner, .header, #main-navigation"
 
     if "infojobs.net" in url:
-        target_selector = "#job-description-container, .job-description, .offer-body, .container-expanded"
-        # Quitamos .ij-Offer-apply de remove_selector para NO borrar el boton de inscribirse
-        remove_selector = "header, footer, .ij-Header, .ij-Footer, .ij-Share, .ij-Report, #demand-button-container, .sui-AtomButton"
+        # INFOJOBS: Capturamos cabecera de oferta (titulo, ubicacion) + cuerpo
+        target_selector = "#job-description-container, .job-description, .offer-body, .container-expanded, .ij-Offer-header, h1, .subtitle" 
+        # Eliminamos elementos de navegacion global, pero NO la cabecera de la oferta
+        remove_selector = "header.global-header, footer, .ij-Header-global, .ij-Footer, .ij-Share, .ij-Report, #demand-button-container, .sui-AtomButton"
 
     headers_jina = {
         "User-Agent": common_ua,
@@ -50,12 +52,11 @@ def scrape_offer_content(url: str) -> str:
         
         if response.status_code == 200:
             content = response.text
-            # Si Jina devuelve un bloqueo de navegador, pasamos al siguiente motor
+            # Check de bloqueo
             if "browser" in content.lower() and "enable javascript" in content.lower():
                 print("Jina bloqueado (JS Challenge). Pasando a FireCrawl...")
             elif len(content) > 200:
                 content = _post_clean_markdown(content)
-                # NUEVO: Aplanamos enlaces
                 content = _remove_markdown_links(content)
                 print(f"✅ Scraping Jina exitoso. Longitud: {len(content)}")
                 return content
@@ -68,7 +69,6 @@ def scrape_offer_content(url: str) -> str:
         print(f"Error conexión Jina: {e}")
 
     # --- 2. INTENTO CON FIRECRAWL (Motor Principal para InfoJobs) ---
-    # FireCrawl es el único que pasa fiablemente el bloqueo de InfoJobs
     if os.getenv("FIRECRAWL_API_KEY"):
         print("🔄 Activando Fallback: FireCrawl (Renderizado JS)...")
         try:
@@ -87,7 +87,6 @@ def scrape_offer_content(url: str) -> str:
                     md = _clean_infojobs_noise(md)
                 
                 md = _post_clean_markdown(md)
-                # NUEVO: Aplanamos enlaces (vital para InfoJobs y sus tags enlazados)
                 md = _remove_markdown_links(md)
                 
                 print(f"✅ Scraping FireCrawl exitoso. Longitud: {len(md)}")
@@ -141,18 +140,13 @@ def _direct_scrape_fallback(url: str, session: requests.Session, ua: str) -> str
 def _clean_infojobs_noise(text: str) -> str:
     """
     Limpieza quirúrgica para InfoJobs: Corta el texto SOLO cuando empiezan
-    las secciones finales irrelevantes, preservando el contenido.
+    las secciones finales irrelevantes, preservando el contenido y la CABECERA.
     """
-    # Marcadores de FIN de oferta. Usamos marcadores fuertes que solo aparecen al final.
     cutoff_markers = [
-        "### Ofertas similares", 
-        "Ofertas similares",
-        "### Top Subcategorías", 
-        "Top Subcategorías",
-        "### Top Búsquedas", 
-        "Top Búsquedas",
-        "### Top Puestos", 
-        "### Top Empresas",
+        "### Ofertas similares", "Ofertas similares",
+        "### Top Subcategorías", "Top Subcategorías",
+        "### Top Búsquedas", "Top Búsquedas",
+        "### Top Puestos", "### Top Empresas",
         "Los datos bancarios, de pago y datos personales nunca deben proporcionarse",
         "Consulta nuestros consejos para una búsqueda de empleo segura"
     ]
@@ -161,18 +155,16 @@ def _clean_infojobs_noise(text: str) -> str:
     cleaned_lines = []
     
     # Flag para saber si ya hemos pasado la descripcion principal
-    # (Evita falsos positivos si "Ofertas similares" aparece en un menú lateral al principio)
     body_started = False 
     
     for line in lines:
         stripped = line.strip()
         
-        # Detección básica de inicio de cuerpo (ej. Salario, Requisitos)
+        # Detección de inicio de cuerpo
         if "Requisitos" in stripped or "Descripción" in stripped:
             body_started = True
             
-        # Si encontramos un marcador de corte Y ya estamos en el cuerpo, cortamos.
-        # Si encontramos "Ofertas similares" en la línea 1, es un menú, lo ignoramos.
+        # Corte inteligente: Solo corta si estamos SEGUROS de que acabó la oferta
         if body_started and any(marker in stripped for marker in cutoff_markers):
             break
             
@@ -183,7 +175,6 @@ def _clean_infojobs_noise(text: str) -> str:
 def _remove_markdown_links(text: str) -> str:
     """
     Elimina los enlaces de Markdown [Texto](URL) dejando solo el Texto.
-    Ejemplo: [Gibbscam](...) -> Gibbscam
     """
     return re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
 
@@ -200,18 +191,17 @@ def _post_clean_markdown(text: str) -> str:
         "enable JavaScript", "support your browser", "Publicada Hace", "Más ofertas en"
     ]
     
-    # Frases que QUEREMOS MANTENER explícitamente (Whitelist)
+    # Whitelist para proteger datos clave
     keep_phrases = [
-        "Inscribirme en esta oferta", 
-        "Inscribirme", 
-        "Solicitar ahora",
-        "Apply now"
+        "Inscribirme en esta oferta", "Inscribirme", "Solicitar ahora", "Apply now",
+        "Madrid", "Barcelona", "Valencia", "Sevilla", "Bilbao", "Málaga", # Ciudades principales
+        "Presencial", "Híbrido", "Remoto", "Teletrabajo"
     ]
     
     for line in lines:
         stripped = line.strip()
         
-        # Si es una frase que queremos conservar, la añadimos sin filtrar
+        # Si es una frase clave (boton o ubicacion probable), la mantenemos
         if any(keep in stripped for keep in keep_phrases):
             cleaned_lines.append(line)
             continue
@@ -219,10 +209,7 @@ def _post_clean_markdown(text: str) -> str:
         if len(stripped) < 3: continue 
         if any(garbage in stripped for garbage in garbage_phrases): continue
         if stripped.startswith("[") and ("Agreement" in stripped or "Política" in stripped): continue
-        
-        # Filtramos botones irrelevantes pero mantenemos el de inscribirse (ya validado arriba)
-        if stripped.lower() in ["guardar", "compartir", "denunciar", "guardar oferta"]:
-            continue
+        if stripped.lower() in ["guardar", "compartir", "denunciar", "guardar oferta"]: continue
             
         cleaned_lines.append(line)
         
@@ -236,7 +223,7 @@ if __name__ == "__main__":
     if content:
         print("\n--- VISTA PREVIA ---")
         print("-" * 60)
-        print(content) # Mostramos todo para verificar el final
+        print(content) 
         print("-" * 60)
         print("Prueba exitosa.")
     else:

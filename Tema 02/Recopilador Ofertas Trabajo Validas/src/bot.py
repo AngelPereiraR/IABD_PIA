@@ -57,7 +57,7 @@ class TelegramNotifier:
             f"🎁 <b>Beneficios:</b> {benefits}\n\n"
             f"📅 <b>Publicado:</b> {posted}\n\n"
             f"💡 <b>Análisis:</b>\n<i>{analysis.get('summary', 'Sin análisis detallado.')}</i>\n\n"
-            f"🔗 <a href='{job_data.get('url')}'>Ver Oferta en LinkedIn</a>"
+            f"🔗 <a href='{job_data.get('url')}'>Ver Oferta</a>"
         )
         
         return self._send_message(message)
