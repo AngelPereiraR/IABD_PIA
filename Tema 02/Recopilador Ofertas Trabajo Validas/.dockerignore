@@ -1,0 +1,17 @@
+# Directorios de entorno virtual y cache
+
+.venv/
+pycache/
+*/pycache/
+.git/
+.gitignore
+
+# Archivos de entorno y secretos (IMPORTANTE)
+
+.env
+credentials.json
+token.json
+
+# Logs y temporales
+
+*.log

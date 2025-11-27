@@ -58,7 +58,7 @@ def main():
             print("="*50)
 
             # 1. Buscar Ofertas Nuevas
-            urls = gmail_agent.get_linkedin_offers(limit=3)
+            urls = gmail_agent.get_offers(limit=3)
 
             if not urls:
                 print(f"   Sin alertas nuevas. Próximo escaneo en {POLLING_INTERVAL/60:.0f} min.")

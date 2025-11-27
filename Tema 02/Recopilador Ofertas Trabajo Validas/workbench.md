@@ -13,20 +13,20 @@ El sistema funciona como un pipeline ETL (Extract, Transform, Load) enriquecido 
 1. **Contexto (Input Estático):** CV Usuario (PDF) → PyPDFLoader → Texto de Referencia.
 2. **Disparador (Trigger):** Email LinkedIn → GmailToolkit → URL de la Oferta.
 3. **Extracción (Scraping):** URL → FireCrawl → Markdown Limpio.
-4. **Análisis (Cerebro):** Markdown \+ Texto CV → Gemma-3-27b → Decisión (Match/No Match).
+4. **Análisis (Cerebro):** Markdown \+ Texto CV → Gemini 2.5 Flash Lite → Decisión (Match/No Match).
 5. **Notificación (Output):** Match Positivo → Telegram Bot API → Mensaje al usuario.
 
 ## **2\. Stack Tecnológico**
 
 Selección de herramientas basada en robustez y capacidad de integración con LangChain.
 
-| Componente                | Herramienta                           | Función Crítica                                                                                                       |
-| :------------------------ | :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- |
-| **Ingesta de Documentos** | **PyPDFLoader** (LangChain Community) | Transformar el CV en formato PDF a texto plano para inyectarlo en el System Prompt del LLM.                           |
-| **Fuente de Datos**       | **Gmail Toolkit** (LangChain Google)  | Leer correos, filtrar por remitente (linkedin) y estado (unread), extraer enlaces y gestionar el estado de lectura.   |
-| **Web Scraping**          | **FireCrawl**                         | Navegar páginas dinámicas de LinkedIn, evadir detecciones básicas y convertir HTML complejo en Markdown estructurado. |
-| **Motor de IA**           | **Gemma-3-27b** (Google AI Studio)    | Modelo orquestador. Compara semánticamente los requisitos de la oferta con las habilidades del CV.                    |
-| **Notificaciones**        | **Telegram Bot API**                  | Canal de comunicación directo y gratuito para enviar alertas urgentes al móvil del usuario.                           |
+| Componente                | Herramienta                                  | Función Crítica                                                                                                       |
+| :------------------------ | :------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| **Ingesta de Documentos** | **PyPDFLoader** (LangChain Community)        | Transformar el CV en formato PDF a texto plano para inyectarlo en el System Prompt del LLM.                           |
+| **Fuente de Datos**       | **Gmail Toolkit** (LangChain Google)         | Leer correos, filtrar por remitente (linkedin) y estado (unread), extraer enlaces y gestionar el estado de lectura.   |
+| **Web Scraping**          | **FireCrawl**                                | Navegar páginas dinámicas de LinkedIn, evadir detecciones básicas y convertir HTML complejo en Markdown estructurado. |
+| **Motor de IA**           | **Gemini 2.5 Flash Lite** (Google AI Studio) | Modelo orquestador. Compara semánticamente los requisitos de la oferta con las habilidades del CV.                    |
+| **Notificaciones**        | **Telegram Bot API**                         | Canal de comunicación directo y gratuito para enviar alertas urgentes al móvil del usuario.                           |
 
 ## **3\. Lógica Detallada del Pipeline**
 
@@ -61,10 +61,7 @@ Variables necesarias para la ejecución. **No compartir este archivo.**
 
 ```
 # Google AI Studio (LLM)
-GOOGLE_API_KEY="AIzaSy..."
-
-# Google Cloud / Gmail API
-GOOGLE_APPLICATION_CREDENTIALS="credentials.json"
+GEMINI_API_KEY="AIzaSy..."
 
 # FireCrawl (Scraping)
 FIRECRAWL_API_KEY="fc_..."
@@ -99,7 +96,8 @@ TELEGRAM_CHAT_ID="987654321"
 ## **6\. Siguientes Pasos de Implementación**
 
 1. **Configurar Credenciales:** Obtener credentials.json de Google Cloud Console (API Gmail habilitada).
-2. **Entorno Python:** Crear virtualenv e instalar paquetes (langchain, firecrawl-py, google-generativeai).
-3. **Prueba Unitaria 1:** Script simple que lea el PDF e imprima el texto.
-4. **Prueba Unitaria 2:** Script que lea el último email de LinkedIn y saque la URL.
-5. **Integración:** Conectar las piezas en main.py.
+2. **Generar token**: Generar token.json a partir de las credenciales.
+3. **Entorno Python:** Crear virtualenv e instalar paquetes (langchain, firecrawl-py, google-generativeai).
+4. **Prueba Unitaria 1:** Script simple que lea el PDF e imprima el texto.
+5. **Prueba Unitaria 2:** Script que lea el último email de LinkedIn y saque la URL.
+6. **Integración:** Conectar las piezas en main.py.

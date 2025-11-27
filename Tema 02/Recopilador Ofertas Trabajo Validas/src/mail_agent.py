@@ -1,6 +1,7 @@
 import os
 import re
 import base64
+import requests # Necesario para resolver redirecciones
 from typing import List
 from dotenv import load_dotenv
 
@@ -11,13 +12,14 @@ load_dotenv()
 class GmailJobCollector:
     """
     Clase encargada de interactuar con la API de Gmail para buscar alertas nuevas
-    y limpiar automáticamente TODO el historial antiguo de LinkedIn (>14 días).
+    y limpiar automáticamente TODO el historial antiguo (>14 días).
+    Soporta: LinkedIn e InfoJobs (con resolución de tracking links).
     """
     def __init__(self):
         self.toolkit = GmailToolkit()
         self.service = self.toolkit.api_resource
 
-    def get_linkedin_offers(self, limit: int = 5) -> List[str]:
+    def get_offers(self, limit: int = 5) -> List[str]:
         """
         Orquesta el proceso de limpieza y recolección.
         """
@@ -29,23 +31,19 @@ class GmailJobCollector:
 
     def _cleanup_old_emails(self):
         """
-        Busca y elimina (mueve a papelera) CUALQUIER correo de LinkedIn
-        que tenga más de 14 días (sean ofertas, notificaciones, mensajes, etc).
-        Estrategia: 'from:linkedin older_than:14d'
+        Busca y elimina correos antiguos de LinkedIn o InfoJobs (>14 días).
         """
-        # Query Simplificada: Todo lo que venga de LinkedIn y sea viejo se va.
-        query = 'from:linkedin older_than:14d'
+        query = 'from:"linkedin OR infojobs" older_than:14d'
         
         try:
             page_token = None
             total_deleted = 0
             
             while True:
-                # Pedimos página de resultados
                 results = self.service.users().messages().list(
                     userId='me', 
                     q=query, 
-                    maxResults=500, # Máximo permitido por página
+                    maxResults=500,
                     pageToken=page_token
                 ).execute()
                 
@@ -54,7 +52,6 @@ class GmailJobCollector:
                 if messages:
                     batch_ids = [msg['id'] for msg in messages]
                     
-                    # Borrado en bloque
                     self.service.users().messages().batchModify(
                         userId='me',
                         body={
@@ -66,35 +63,31 @@ class GmailJobCollector:
                     
                     count = len(messages)
                     total_deleted += count
-                    print(f"   [LIMPIEZA] Lote procesado: {count} correos antiguos de LinkedIn movidos a papelera...")
+                    print(f"   [LIMPIEZA] Lote procesado: {count} correos antiguos movidos a papelera...")
                 
-                # Verificamos si hay más páginas
                 page_token = results.get('nextPageToken')
                 if not page_token:
                     break
             
             if total_deleted > 0:
                 print(f"      [OK] Limpieza completada. Total eliminados: {total_deleted}")
-            else:
-                # Opcional: avisar que no había nada que limpiar
-                pass
                 
         except Exception as e:
             print(f"[ERROR] Error durante la limpieza automática: {e}")
 
     def _fetch_recent_offers(self, limit: int) -> List[str]:
         """
-        Busca correos RECIENTES (<14 días) y NO LEÍDOS que sean ESPECÍFICAMENTE de ofertas.
+        Busca correos RECIENTES (<14 días) y NO LEÍDOS.
+        Distingue entre LinkedIn e InfoJobs para extraer las URLs correctamente.
         """
         found_urls = []
-        # Usamos un set auxiliar para comprobación instantánea de duplicados
         seen_urls = set()
         
-        # Query Específica: Solo queremos OFERTAS frescas, no mensajes de gente
-        query = 'from:linkedin label:UNREAD newer_than:14d ("Ver empleos similares" OR "alertas de empleo" OR "publicado el" OR "principales empleos")'
+        # Query optimizada para ambos proveedores
+        query = 'from:("linkedin" OR "infojobs") label:UNREAD newer_than:14d ("Ver empleos similares" OR "alertas de empleo" OR "publicado el" OR "principales empleos" OR "Alerta de empleo InfoJobs" OR "Nueva oferta de empleo")'
         
         try:
-            print(f"[BUSQUEDA] Buscando alertas recientes de empleo (<14 días)...")
+            print(f"[BUSQUEDA] Buscando alertas recientes (<14 días)...")
             
             results = self.service.users().messages().list(
                 userId='me', 
@@ -108,41 +101,83 @@ class GmailJobCollector:
                 print("   [-] No hay alertas nuevas recientes.")
                 return []
 
-            print(f"   [+] Se encontraron {len(messages)} mensajes de alerta. Procesando...")
+            print(f"   [+] Se encontraron {len(messages)} mensajes. Procesando...")
 
             for msg in messages:
                 msg_id = msg['id']
                 
-                # Obtener contenido completo
+                # Obtener mensaje completo
                 message_data = self.service.users().messages().get(
                     userId='me', id=msg_id, format='full'
                 ).execute()
                 
-                # Extracción recursiva robusta
+                # Identificar origen
+                headers = message_data.get('payload', {}).get('headers', [])
+                sender = next((h['value'] for h in headers if h['name'] == 'From'), '').lower()
+                
                 body = self._get_message_body_recursive(message_data.get('payload', {}))
                 
-                # Regex IDs
-                job_ids = re.findall(r'jobs/view/(\d+)', body)
-                
-                if job_ids:
-                    new_urls_in_this_email = []
-                    
+                new_urls_in_this_email = []
+
+                # --- ESTRATEGIA LINKEDIN ---
+                if 'linkedin' in sender:
+                    job_ids = re.findall(r'jobs/view/(\d+)', body)
                     for jid in job_ids:
                         full_url = f"https://www.linkedin.com/jobs/view/{jid}"
-                        
-                        # VERIFICACIÓN DE DUPLICADOS ANTES DE AÑADIR
                         if full_url not in seen_urls:
                             seen_urls.add(full_url)
                             new_urls_in_this_email.append(full_url)
-                    
-                    if new_urls_in_this_email:
-                        found_urls.extend(new_urls_in_this_email)
-                        print(f"     [+] {len(new_urls_in_this_email)} Oferta(s) NUEVA(S) extraída(s) del mensaje {msg_id}")
-                    else:
-                        print(f"     [.] Ofertas encontradas en mensaje {msg_id} pero ya eran duplicadas.")
-                else:
-                    print(f"     [-] No se detectaron IDs de oferta en mensaje {msg_id}")
 
+                # --- ESTRATEGIA INFOJOBS (TRACKING RESOLVER) ---
+                elif 'infojobs' in sender:
+                    print("     [INFOJOBS] Detectado correo de InfoJobs. Buscando enlaces...")
+                    
+                    # 1. Buscar enlaces directos (limpios) si los hay
+                    # Regex actualizada: Captura la URL completa hasta el final del ID, ignorando query params.
+                    # El patrón [^"\s<>\']+ captura la ruta (ciudad/puesto) y se detiene ante comillas o espacios.
+                    # El final /of-[a-zA-Z0-9]+ asegura que es una oferta y se detiene antes de ? (ya que ? no es alfanumérico ni guión)
+                    clean_matches = re.findall(r'https?://(?:www\.)?infojobs\.net/[^"\s<>\']+/of-[a-zA-Z0-9]+', body)
+                    
+                    for url in clean_matches:
+                        # La URL capturada por regex ya debería estar limpia, pero aseguramos
+                        clean_url = url
+                        if clean_url not in seen_urls:
+                            seen_urls.add(clean_url)
+                            new_urls_in_this_email.append(clean_url)
+
+                    # 2. Buscar enlaces de TRACKING (link.push.infojobs.net)
+                    # El regex busca URLs que empiecen por el dominio de tracking hasta encontrar un espacio o comilla
+                    tracking_matches = re.findall(r'https?://link\.push\.infojobs\.net/ls/click\?[^\s"\'<>]+', body)
+                    
+                    if tracking_matches:
+                        print(f"     [INFOJOBS] Resolviendo {len(tracking_matches)} enlaces de seguimiento...")
+                        
+                        for t_url in tracking_matches:
+                            try:
+                                # Resolvemos la redirección sin descargar el contenido (stream=True)
+                                response = requests.get(t_url, allow_redirects=True, timeout=5, stream=True)
+                                final_url = response.url
+                                response.close() # Cerramos conexión rápido
+                                
+                                # Verificamos si la URL final es una oferta válida (tiene 'of-XXXX')
+                                if "/of-" in final_url:
+                                    # Usamos la URL final real (con ciudad/titulo) pero quitamos los parámetros (?...)
+                                    clean_url = final_url.split('?')[0]
+                                    
+                                    if clean_url not in seen_urls:
+                                        seen_urls.add(clean_url)
+                                        new_urls_in_this_email.append(clean_url)
+                            except Exception as e:
+                                # Si falla una redirección, seguimos con la siguiente
+                                print(f"     [WARN] Fallo al resolver enlace InfoJobs: {e}")
+                                pass
+
+                # --- LOGGING Y MARCADO ---
+                if new_urls_in_this_email:
+                    found_urls.extend(new_urls_in_this_email)
+                    provider = "LinkedIn" if "linkedin" in sender else "InfoJobs"
+                    print(f"     [+] {len(new_urls_in_this_email)} Oferta(s) de {provider} extraída(s) en mensaje {msg_id}")
+                
                 # Marcar como leído
                 self.service.users().messages().modify(
                     userId='me',
@@ -157,34 +192,25 @@ class GmailJobCollector:
 
     def _get_message_body_recursive(self, payload) -> str:
         """
-        Busca recursivamente en las partes del mensaje (MIME multipart)
-        hasta encontrar texto o HTML.
+        Busca recursivamente en las partes del mensaje (MIME multipart).
         """
         try:
-            # Caso base: Si tiene cuerpo directo
             if 'body' in payload and payload['body'].get('data'):
                 return base64.urlsafe_b64decode(payload['body']['data']).decode('utf-8')
             
-            # Caso recursivo: Si tiene partes
             if 'parts' in payload:
                 html_part = None
                 text_part = None
                 
                 for part in payload['parts']:
                     mime_type = part.get('mimeType')
-                    
-                    # Prioridad 1: HTML
                     if mime_type == 'text/html':
                         html_part = part
-                    # Prioridad 2: Texto plano
                     elif mime_type == 'text/plain':
                         text_part = part
-                    # Prioridad 3: Contenedor anidado (multipart/alternative, related, etc)
                     elif mime_type and 'multipart' in mime_type:
-                        # Llamada recursiva
                         return self._get_message_body_recursive(part)
 
-                # Devolver lo mejor que encontramos en este nivel
                 target_part = html_part or text_part
                 if target_part:
                     return self._get_message_body_recursive(target_part)
@@ -194,10 +220,10 @@ class GmailJobCollector:
         return ""
 
 if __name__ == "__main__":
-    print("[TEST] Iniciando prueba del Agente de Correo (Limpieza TOTAL + Recientes)...")
+    print("[TEST] Iniciando prueba del Agente Multi-Plataforma...")
     try:
         collector = GmailJobCollector()
-        urls = collector.get_linkedin_offers(limit=5)
+        urls = collector.get_offers(limit=2) 
         print(f"\n--- RESULTADO: {len(urls)} URLs únicas extraídas ---")
         for u in urls:
             print(f" -> {u}")

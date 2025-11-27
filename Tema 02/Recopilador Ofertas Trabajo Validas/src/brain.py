@@ -28,10 +28,10 @@ class RecruitmentBrain:
         if not api_key:
             raise ValueError("Faltan credenciales de Google (GEMINI_API_KEY) en .env")
 
-        # Configuración del modelo Gemma-3-27b
+        # Configuración del modelo Gemini 2.5 Flash
         # Usamos temperature=0 para máxima precisión y determinismo
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model="gemini-2.5-flash-lite",
             temperature=0,
             google_api_key=api_key
         )
