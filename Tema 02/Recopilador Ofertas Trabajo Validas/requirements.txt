@@ -10,3 +10,6 @@ pydantic
 
 # Nuevas herramientas para el Workbench
 pypdf
+firecrawl-py
+flask
+gunicorn
