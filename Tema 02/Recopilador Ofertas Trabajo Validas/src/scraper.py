@@ -14,8 +14,8 @@ load_dotenv()
 def scrape_offer_content(url: str) -> str:
     """
     Estrategia en Cascada:
-    1. Jina AI (Rápido, pero a veces bloqueado).
-    2. FireCrawl (Potente, renderiza JS. Ideal para InfoJobs).
+    1. Jina AI (Rápido).
+    2. FireCrawl (Potente - InfoJobs).
     3. Directo (Último recurso).
     """
     # --- 1. INTENTO CON JINA AI ---
@@ -49,27 +49,46 @@ def scrape_offer_content(url: str) -> str:
         
         if response.status_code == 200:
             content = response.text
-            # Si Jina devuelve un bloqueo de navegador, pasamos al siguiente motor
-            if "browser" in content.lower() and "enable javascript" in content.lower():
-                print("Jina bloqueado (JS Challenge). Pasando a FireCrawl...")
+            content_lower = content.lower()
+            
+            # --- DETECCIÓN DE BLOQUEO MEJORADA (Español/Inglés) ---
+            blocking_phrases = [
+                "enable javascript", 
+                "browser", 
+                "identificar tu navegador", 
+                "javascript esté habilitado",
+                "human verification",
+                "challenge-platform",
+                "access denied"
+            ]
+            
+            is_blocked = any(phrase in content_lower for phrase in blocking_phrases)
+            
+            if is_blocked:
+                print("⚠️ Jina devolvió página de BLOQUEO/CAPTCHA. Activando Fallback...")
+                # No retornamos nada aquí para que el código siga hacia abajo (FireCrawl)
             elif len(content) > 200:
                 content = _post_clean_markdown(content)
-                # NUEVO: Aplanamos enlaces
-                content = _remove_markdown_links(content)
-                print(f"Scraping Jina exitoso. Longitud: {len(content)}")
-                return content
+                # Segunda verificación: A veces la limpieza deja el texto vacío si era solo basura
+                if len(content) > 100:
+                    # Limpieza extra de enlaces markdown
+                    content = _remove_markdown_links(content)
+                    print(f"✅ Scraping Jina exitoso. Longitud: {len(content)}")
+                    return content
+                else:
+                    print("⚠️ Contenido Jina irrelevante tras limpieza. Activando Fallback...")
             else:
-                print("Contenido Jina insuficiente.")
+                print("⚠️ Contenido Jina insuficiente (<200 chars). Activando Fallback...")
         else:
-            print(f"Jina falló con código {response.status_code}.")
+            print(f"❌ Jina falló con código {response.status_code}.")
 
     except Exception as e:
-        print(f"Error conexión Jina: {e}")
+        print(f"❌ Error conexión Jina: {e}")
 
     # --- 2. INTENTO CON FIRECRAWL (Motor Principal para InfoJobs) ---
     # FireCrawl es el único que pasa fiablemente el bloqueo de InfoJobs
     if os.getenv("FIRECRAWL_API_KEY"):
-        print("Activando Fallback: FireCrawl (Renderizado JS)...")
+        print("🔄 Activando Fallback: FireCrawl (Renderizado JS)...")
         try:
             app = Firecrawl(api_key=os.getenv("FIRECRAWL_API_KEY"))
             response = app.scrape(url, formats=['markdown'])
@@ -81,24 +100,26 @@ def scrape_offer_content(url: str) -> str:
                 md = getattr(response, 'markdown', '')
             
             if md:
-                # Limpieza específica para InfoJobs
                 if "infojobs.net" in url:
                     md = _clean_infojobs_noise(md)
                 
                 md = _post_clean_markdown(md)
-                # NUEVO: Aplanamos enlaces (vital para InfoJobs y sus tags enlazados)
                 md = _remove_markdown_links(md)
                 
-                print(f"Scraping FireCrawl exitoso. Longitud: {len(md)}")
-                return md
+                # Verificación final de que FireCrawl no nos ha devuelto el bloqueo también
+                if "identificar tu navegador" in md.lower() or "enable javascript" in md.lower():
+                     print("⚠️ FireCrawl también recibió bloqueo. Pasando a directo.")
+                elif len(md) > 100:
+                    print(f"✅ Scraping FireCrawl exitoso. Longitud: {len(md)}")
+                    return md
             else:
-                print("FireCrawl no devolvió markdown.")
+                print("⚠️ FireCrawl no devolvió markdown.")
                 
         except Exception as e:
-            print(f"Fallo FireCrawl: {e}")
+            print(f"❌ Fallo FireCrawl: {e}")
 
     # --- 3. INTENTO DIRECTO (Último recurso) ---
-    print("Activando Fallback Final: Petición Directa Mejorada...")
+    print("🔄 Activando Fallback Final: Petición Directa Mejorada...")
     return _direct_scrape_fallback(url, session, common_ua)
 
 def _direct_scrape_fallback(url: str, session: requests.Session, ua: str) -> str:
@@ -115,7 +136,7 @@ def _direct_scrape_fallback(url: str, session: requests.Session, ua: str) -> str
         if response.status_code == 200:
             html = response.text
             if "enable javascript" in html.lower() or "identificar tu navegador" in html.lower():
-                print("Bloqueo WAF (Cloudflare/Datadome) detectado en directo.")
+                print("⚠️ Bloqueo WAF (Cloudflare/Datadome) detectado en directo.")
                 return None
                 
             text = re.sub(r'<(script|style).*?>.*?</\1>', '', html, flags=re.DOTALL)
@@ -126,57 +147,43 @@ def _direct_scrape_fallback(url: str, session: requests.Session, ua: str) -> str
                 text = _clean_infojobs_noise(text)
                 
             text = _post_clean_markdown(text)
+            text = _remove_markdown_links(text)
             
-            print(f"Scraping Directo exitoso. Longitud: {len(text)}")
+            print(f"✅ Scraping Directo exitoso. Longitud: {len(text)}")
             return text
         else:
-            print(f"Fallo directo. Código: {response.status_code}")
+            print(f"❌ Fallo directo. Código: {response.status_code}")
             return None
     except Exception as e:
-        print(f"Error en directo: {e}")
+        print(f"❌ Error en directo: {e}")
         return None
 
 def _clean_infojobs_noise(text: str) -> str:
-    """
-    Limpieza quirúrgica para InfoJobs: Corta el texto en cuanto empiezan
-    las secciones de relleno.
-    """
+    """Limpieza quirúrgica para InfoJobs."""
     cutoff_markers = [
-        "### Ofertas similares",
-        "Ofertas similares",
-        "### Top Subcategorías",
-        "Top Subcategorías",
-        "### Top Búsquedas",
-        "Top Búsquedas",
-        "### Top Puestos",
-        "### Top Empresas",
-        "Los datos bancarios, de pago y datos personales nunca deben proporcionarse",
-        "Nuestro consejo: inscríbete si tienes el perfil"
+        "### Ofertas similares", "Ofertas similares",
+        "### Top Subcategorías", "Top Subcategorías",
+        "### Top Búsquedas", "Top Búsquedas",
+        "### Top Puestos", "### Top Empresas",
+        "Los datos bancarios, de pago y datos personales",
+        "Nuestro consejo: inscríbete"
     ]
-    
     lines = text.split('\n')
     cleaned_lines = []
-    
     for line in lines:
         if any(marker in line for marker in cutoff_markers):
             break
         cleaned_lines.append(line)
-        
     return "\n".join(cleaned_lines)
 
 def _remove_markdown_links(text: str) -> str:
-    """
-    Elimina los enlaces de Markdown [Texto](URL) dejando solo el Texto.
-    Ejemplo: [Gibbscam](...) -> Gibbscam
-    """
-    # Regex para capturar [Texto](URL) y sustituirlo por el grupo 1 (Texto)
+    """Elimina los enlaces de Markdown dejando solo el texto."""
     return re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
 
 def _post_clean_markdown(text: str) -> str:
-    """Limpieza final de líneas sueltas y basura común."""
+    """Limpieza final de líneas sueltas."""
     lines = text.split('\n')
     cleaned_lines = []
-    
     garbage_phrases = [
         "Sign in", "Join now", "Forgot password?", "LinkedIn Corporation", 
         "Cookie Policy", "Agree & Join", "Skip to main content",
@@ -185,30 +192,24 @@ def _post_clean_markdown(text: str) -> str:
         "Denunciar oferta", "Quiénes somos", "enable JavaScript", 
         "support your browser", "Publicada Hace", "Más ofertas en"
     ]
-    
     for line in lines:
         stripped = line.strip()
         if len(stripped) < 3: continue 
         if any(garbage in stripped for garbage in garbage_phrases): continue
         if stripped.startswith("[") and ("Agreement" in stripped or "Política" in stripped): continue
-        
-        if stripped.lower() in ["guardar", "inscribirme", "compartir", "denunciar"]:
-            continue
-            
+        if stripped.lower() in ["guardar", "inscribirme", "compartir", "denunciar"]: continue
         cleaned_lines.append(line)
-        
     return "\n".join(cleaned_lines)
 
 if __name__ == "__main__":
     # --- PRUEBA UNITARIA ---
-    test_url = "https://www.linkedin.com/jobs/view/4338750688/"
-    print("Iniciando prueba de Scraping (Cascada: Jina -> FireCrawl -> Directo)...")
+    test_url = "https://www.infojobs.net/getafe/programador-gibbscam-junior-10625/of-id59fb5a76f40d09df2cf8426627ec3"
+    print("Iniciando prueba de Scraping (Cascada)...")
     content = scrape_offer_content(test_url)
-    
     if content:
         print("\n--- VISTA PREVIA ---")
         print("-" * 60)
-        print(content[:1000] + "...")
+        print(content[:500] + "...")
         print("-" * 60)
         print("Prueba exitosa.")
     else:
