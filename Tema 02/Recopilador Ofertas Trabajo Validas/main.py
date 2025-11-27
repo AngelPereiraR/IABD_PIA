@@ -31,33 +31,27 @@ def health():
 def run_bot_logic():
     # 0. Cargar variables de entorno (ya cargadas, pero por seguridad)
     load_dotenv()
-    print("\n" + "="*50)
-    print(" INICIANDO RECLUTADOR IA PERSONAL (Modo Web Service)")
-    print("="*50 + "\n")
+    print(" [INIT] Iniciando hilo del bot...", flush=True)
 
-    # --- FASE 1: INICIALIZACION ---
-    print(" [INFO] Fase 1: Inicializando componentes...")
-
+    # --- FASE 1: CARGA DE CONTEXTO (ESTÁTICO) ---
+    # El CV y el Brain (Modelo) no necesitan reiniciarse constantemente
+    # porque el CV no cambia y el cliente de Gemini gestiona bien su propia sesión.
     try:
         user_cv_context = load_cv_context(CV_PATH)
         if not user_cv_context:
-            print(" [ERROR] Error Critico: El CV esta vacio.")
-            return # Salimos del hilo, no del programa
-        print(" [OK] Contexto de CV cargado.")
-    except Exception as e:
-        print(f" [ERROR] Error al cargar CV: {e}")
-        return
-
-    try:
-        gmail_agent = GmailJobCollector()
+            print(" [ERROR] Error Critico: El CV esta vacio.", flush=True)
+            return
+        
+        # Inicializamos componentes estáticos una vez
         brain = RecruitmentBrain()
         bot = TelegramNotifier()
-        print(" [OK] Agentes listos.")
+        print(" [OK] Contexto y Cerebro listos.", flush=True)
+        
     except Exception as e:
-        print(f" [ERROR] Error al inicializar agentes: {e}")
+        print(f" [ERROR] Error de inicializacion: {e}", flush=True)
         return
 
-    print("\n [SISTEMA] OPERATIVO. Iniciando bucle...\n")
+    print("\n [SISTEMA] OPERATIVO. Iniciando bucle infinito...\n", flush=True)
 
     # --- FASE 2: BUCLE ---
     loop_count = 0
@@ -65,7 +59,19 @@ def run_bot_logic():
     while True:
         try:
             loop_count += 1
-            print(f" [LOOP #{loop_count}] Escaneando bandeja...")
+            print(f" [LOOP #{loop_count}] Iniciando ciclo...", flush=True)
+
+            # --- REINICIO DE AGENTE GMAIL ---
+            # Creamos una nueva instancia del colector en cada vuelta.
+            # Esto fuerza a recargar credenciales/tokens y evita timeouts de sesión.
+            try:
+                print("    [AUTH] Refrescando cliente de Gmail...", flush=True)
+                gmail_agent = GmailJobCollector()
+            except Exception as e:
+                print(f"    [ERROR] Fallo al conectar con Gmail: {e}", flush=True)
+                print("    [WAIT] Reintentando en 60s...", flush=True)
+                time.sleep(60)
+                continue # Saltamos al siguiente ciclo del while
 
             urls = gmail_agent.get_offers(limit=5)
 
