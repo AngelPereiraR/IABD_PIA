@@ -94,15 +94,16 @@ def run_bot_logic():
             print(f" [CRITICAL] Error en bucle: {e}")
             time.sleep(60)
 
-# --- PUNTO DE ENTRADA ---
-if __name__ == "__main__":
-    # 1. Arrancar el Bot en un hilo separado
-    # Daemon=True significa que si el servidor web muere, el bot tambien.
+# --- CORRECCION CRITICA PARA GUNICORN ---
+# Arrancamos el hilo aqui, FUERA del bloque main, para que Gunicorn lo ejecute al importar
+# Usamos una variable global para evitar arrancar hilos duplicados si Gunicorn reinicia workers
+if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    # Verificacion simple para evitar doble ejecucion en modo debug local
     bot_thread = threading.Thread(target=run_bot_logic, daemon=True)
     bot_thread.start()
-    
-    # 2. Arrancar el Servidor Web (Bloqueante)
-    # Render asigna un puerto en la variable PORT
+    print(" [SYSTEM] Hilo de Bot lanzado en segundo plano.", flush=True)
+
+if __name__ == "__main__":
+    # Esto solo se ejecuta si lanzas 'python main.py' localmente
     port = int(os.environ.get("PORT", 10000))
-    # Usamos 0.0.0.0 para que sea visible desde fuera del contenedor
     app.run(host="0.0.0.0", port=port)
