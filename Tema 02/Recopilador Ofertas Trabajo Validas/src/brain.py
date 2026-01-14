@@ -61,14 +61,18 @@ class RecruitmentBrain:
             
             INSTRUCCIONES DE PROCESAMIENTO:
 
-            --- ETAPA 0: VALIDACION DE ESTADO (CRITICO - EJECUTAR PRIMERO) ---
-            Antes de leer cualquier requisito, determina si la oferta es válida o está cerrada.
+            --- ETAPA 0: VALIDACIÓN DE ESTADO (CRÍTICO - EJECUTAR PRIMERO) ---
+            Antes de leer cualquier requisito, busca **LITERALMENTE** estas frases o indicadores de que la oferta NO es válida.
             
-            1. **INDICADORES DE CIERRE (STOP WORDS):**
-               Busca frases que indiquen el fin del proceso:
-               - "No longer accepting applications" / "Ya no se aceptan solicitudes"
-               - "This job is no longer active" / "Esta oferta de empleo ha expirado"
-               - "Job closed" / "Oferta cerrada"
+            1. **INDICADORES DE CIERRE:**
+               - "No longer accepting applications"
+               - "This job is no longer active"
+               - "Job closed"
+               - "Ya no se aceptan solicitudes"
+               - "Esta oferta de empleo ha expirado"
+               - "Oferta cerrada"
+               - "Dejó de admitir solicitudes"
+               - "No admite más candidatos"
             
             2. **EXCEPCIONES (FALSOS POSITIVOS - NO DESCARTAR):**
                Si encuentras estas frases, la oferta ESTÁ ACTIVA (solicitud externa):
@@ -79,29 +83,36 @@ class RecruitmentBrain:
                - "Solicitar"
                - Cualquier indicación de proceso en Workday, Greenhouse, Lever, etc.
                -> **EN ESTOS CASOS: CONTINÚA EL ANÁLISIS NORMALMENTE.**
-            
-            3. **INDICADORES DE ERROR / PAGINA GENERICA:**
-               - Si el texto es solo un Login ("Sign in", "Join now") sin descripción de puesto -> DESCARTAR.
-               - Si es una lista genérica ("Jobs in Madrid") sin un puesto concreto -> DESCARTAR.
 
-            > **CONCLUSIÓN ETAPA 0:**
-            - Si es **Cerrada/Error**: Score 0, Match False, Summary "SYSTEM_BLOCK: OFERTA CERRADA".
-            - Si es **Activa/Externa**: Pasa a Etapa 1.
+            3. **INDICADORES DE ERROR / PÁGINA GENÉRICA:**
+               - Si el texto parece ser una página de Login ("Sign in", "Join now").
+               - Si el texto es una lista de empleos genérica ("Jobs in Madrid", "Similar jobs") y no la descripción de UN puesto concreto.
+               - Si el texto es muy corto (<200 caracteres) o irrelevante.
+
+            > **SI ENCUENTRAS ALGUNO DE ESTOS INDICADORES:**
+            - **DETÉN EL ANÁLISIS INMEDIATAMENTE.**
+            - **Score: 0.**
+            - **Match: False.**
+            - **Summary:** "SYSTEM_BLOCK: OFERTA CERRADA O NO DISPONIBLE."
 
             --- ETAPA 1: CALIBRACION Y FILTRO ATS (Solo si pasa Etapa 0) ---
             
             PASO A: DETECCION DE CONTEXTO
-            1. Identifica el **Sector** y **Nivel**.
-            2. **FECHA:** Extrae 'posted_date'.
+            1. Identifica el **Sector** de la oferta (ej. Sanidad, Ventas, IT).
+            2. Identifica el **Nivel Requerido** (Becario, Junior, Mid, Senior, Manager).
+            3. **FECHA:** Extrae 'posted_date'.
             
-            PASO B: KILLER QUESTIONS
+            PASO B: KILLER QUESTIONS (FILTROS ELIMINATORIOS)
             1. **UBICACION:** Si es Presencial/Hibrido y la provincia no coincide (y no hay disponibilidad de traslado) -> FALLO.
-            2. **EXPERIENCIA:** Si piden Senior y es Junior -> FALLO.
-            3. **HARD SKILLS:** Si falta skill "Imprescindible" -> FALLO.
-            4. **IDIOMAS:** Si es excluyente -> FALLO.
+            2. **EXPERIENCIA (CRÍTICO):** - Extrae los años de experiencia solicitados en la descripción (ej. "3 años", "+5 años").
+               - Compara con la experiencia TOTAL del candidato en ese rol/tecnología.
+               - **REGLA ESTRICTA:** Si Exp_Candidato < Exp_Requerida -> FALLO AUTOMÁTICO. 
+               - No redondees hacia arriba. 2.5 años NO son 3 años para este filtro.
+            3. **HARD SKILLS:** Si falta alguna skill marcada como "Imprescindible/Must" -> FALLO.
+            4. **IDIOMAS:** Si es requisito excluyente -> FALLO.
 
             > **SI FALLA LA ETAPA 1:**
-            - Score: 0-59. Match: False. Summary: "ATS_BLOCK: [MOTIVO]".
+            - Score: 0-59. Match: False. Summary: "ATS_BLOCK: [MOTIVO EXACTO, ej. Experiencia Insuficiente (Tiene 2, Piden 3)]".
 
             --- ETAPA 2: EVALUACION CUALITATIVA ---
             1. **Coherencia:** ¿Tiene sentido este puesto para su trayectoria?
