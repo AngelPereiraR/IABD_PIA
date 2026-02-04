@@ -6,3 +6,5 @@ Pruebas/
 *token.json
 
 *.env
+
+venv_tf_gpu/
