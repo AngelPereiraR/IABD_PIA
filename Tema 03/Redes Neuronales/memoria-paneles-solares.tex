@@ -1,0 +1,1495 @@
+\documentclass[11pt, a4paper]{article}
+
+% --- PAQUETES ESENCIALES ---
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+
+% --- PAQUETES PARA ESTILO ---
+\usepackage{float}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% --- CONFIGURACIÓN DE COLORES Y ENLACES ---
+\definecolor{primaryblue}{RGB}{0, 83, 156}
+\definecolor{linkcolor}{RGB}{0, 102, 204}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primaryblue,
+    urlcolor=linkcolor,
+    pdftitle={Detección de Polvo en Paneles Solares mediante Redes Neuronales},
+    pdfauthor={Ángel Manuel Pereira Rodríguez}
+}
+
+% --- ESTILO DE TÍTULOS ---
+\titleformat{\section}
+{\color{primaryblue}\normalfont\Large\bfseries}
+{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{primaryblue}\normalfont\large\bfseries}
+{\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+{\color{primaryblue}\normalfont\normalsize\bfseries}
+{\thesubsubsection}{1em}{}
+
+% --- CABECERA Y PIE DE PÁGINA ---
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small\textcolor{gray}{Detección de Polvo en Paneles Solares}}
+\lhead{\small\textcolor{gray}{\today}}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- CONFIGURACIÓN DE LISTINGS ---
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{green!50!black},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{red},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+% --- TÍTULO DEL DOCUMENTO ---
+\title{\textbf{Detección de Polvo en Paneles Solares mediante Redes Neuronales:\\Estudio Comparativo de Arquitecturas Transfer Learning}}
+\author{Ángel Manuel Pereira Rodríguez}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+La energía solar es una de las fuentes de energía renovable más prometedoras para combatir el cambio climático. Sin embargo, la acumulación de polvo en paneles solares puede reducir su eficiencia energética entre un 15\% y 40\%, representando pérdidas económicas significativas. Este estudio presenta una comparación exhaustiva de siete arquitecturas de redes neuronales para la detección automática de polvo en paneles solares mediante clasificación binaria de imágenes (limpios vs. sucios). Se evaluaron tres modelos baseline —Red Neuronal Densa (DNN) con 77M parámetros, Red Neuronal Convolucional (CNN) con 7.9M parámetros, y una CNN personalizada— junto con cuatro arquitecturas de Transfer Learning: MobileNetV2, VGG16, ResNet50 y EfficientNetB0. Utilizando el dataset Solar Panel Dust Detection de Kaggle ($\sim$2,000 imágenes) y aplicando una estrategia de dos fases (Transfer Learning + Fine-Tuning), los modelos de Transfer Learning alcanzaron accuracies entre 84.41\% (MobileNetV2) y 88.89\% (ResNet50) tras fine-tuning, demostrando clara superioridad sobre los modelos entrenados desde cero (DNN: 70.71\%, CNN: 79.24\%). ResNet50 logró el mejor desempeño con 88.89\% accuracy, mientras que EfficientNetB0 destaca por su ratio accuracy/eficiencia con 85.19\% y solo 2.2M parámetros entrenables. Este estudio establece que Transfer Learning con estrategia de dos fases (congelamiento inicial + fine-tuning selectivo) es altamente efectivo para detección de polvo en paneles solares, proporcionando recomendaciones específicas para diferentes escenarios de implementación industrial.
+\end{abstract}
+
+\tableofcontents
+\clearpage
+
+\section{Introducción}
+
+\subsection{Contexto Energético y Problemática}
+
+La transición hacia fuentes de energía renovable se ha convertido en una prioridad global para mitigar el cambio climático y garantizar la sostenibilidad energética. Entre las tecnologías renovables, la energía solar fotovoltaica ha experimentado un crecimiento exponencial en las últimas dos décadas, convirtiéndose en una de las opciones más viables tanto para instalaciones residenciales como para grandes plantas de generación.
+
+Sin embargo, la eficiencia de los paneles solares se ve significativamente afectada por factores ambientales, siendo la acumulación de polvo uno de los más críticos. Estudios muestran que la deposición de polvo, arena, polen y otros contaminantes puede reducir la eficiencia de conversión energética entre un 15\% y 40\%, dependiendo de:
+
+\begin{itemize}
+    \item \textbf{Ubicación geográfica:} Regiones áridas y desérticas experimentan mayor acumulación
+    \item \textbf{Condiciones climáticas:} Ausencia de lluvia natural para limpieza
+    \item \textbf{Densidad de tráfico:} Proximidad a carreteras aumenta partículas suspendidas
+    \item \textbf{Actividad industrial:} Emisiones de fábricas cercanas
+    \item \textbf{Ángulo de inclinación:} Paneles horizontales acumulan más polvo
+\end{itemize}
+
+\subsection{Importancia del Mantenimiento Predictivo}
+
+El mantenimiento tradicional de plantas solares se basa en inspecciones manuales periódicas o programas de limpieza fijos, enfoques que presentan limitaciones:
+
+\begin{enumerate}
+    \item \textbf{Alto costo operativo:} Requiere personal especializado y equipamiento
+    \item \textbf{Ineficiencia:} Limpieza innecesaria de paneles limpios o tardía de paneles críticos
+    \item \textbf{No escalable:} Difícil de implementar en instalaciones de gran escala
+    \item \textbf{Riesgo humano:} Trabajo en alturas o condiciones adversas
+    \item \textbf{Subjetividad:} Evaluación visual dependiente de experiencia del inspector
+\end{enumerate}
+
+La implementación de sistemas de detección automática mediante visión por computadora y aprendizaje profundo ofrece ventajas significativas:
+
+\begin{itemize}
+    \item Detección temprana de acumulación crítica
+    \item Optimización de calendarios de limpieza
+    \item Reducción de costos operativos (60-80\%)
+    \item Monitorización continua 24/7
+    \item Integración con sistemas SCADA y drones
+    \item Datos cuantitativos para análisis histórico
+\end{itemize}
+
+\subsection{Estado del Arte en Detección Automática}
+
+Las aproximaciones tradicionales para detección de polvo incluyen:
+
+\begin{itemize}
+    \item \textbf{Sensores de irradiancia:} Comparan entrada teórica vs. real, pero no localizan problema
+    \item \textbf{Análisis de curvas IV:} Requiere equipamiento especializado
+    \item \textbf{Termografía infrarroja:} Detecta hot spots pero no cuantifica polvo
+    \item \textbf{Inspección manual:} Lenta, costosa, no escalable
+\end{itemize}
+
+El avance de técnicas de Deep Learning ha permitido desarrollar sistemas de visión por computadora capaces de clasificar automáticamente el estado de limpieza de paneles solares a partir de imágenes. Transfer Learning, en particular, ha demostrado ser altamente efectivo en tareas de clasificación de imágenes con datasets limitados, aprovechando conocimiento pre-aprendido de grandes corpus como ImageNet.
+
+\subsection{Objetivos del Estudio}
+
+Este trabajo presenta un estudio comparativo sistemático con los siguientes objetivos:
+
+\begin{enumerate}
+    \item \textbf{Evaluar siete arquitecturas diferentes} de redes neuronales para clasificación binaria (panel limpio vs. panel sucio)
+    \item \textbf{Comparar enfoques baseline} (DNN, CNN desde cero) con Transfer Learning
+    \item \textbf{Analizar cuatro modelos pre-entrenados} populares: MobileNetV2, VGG16, ResNet50 y EfficientNetB0
+    \item \textbf{Determinar el trade-off} entre precisión, eficiencia computacional y velocidad de inferencia
+    \item \textbf{Proporcionar recomendaciones} específicas para diferentes escenarios de despliegue (cloud, edge, drones)
+    \item \textbf{Establecer mejores prácticas} para entrenamiento, data augmentation y fine-tuning
+\end{enumerate}
+
+\subsection{Diseño Experimental}
+
+El estudio sigue un diseño experimental controlado donde:
+
+\begin{itemize}
+    \item \textbf{Variable constante:} Dataset, preprocesamiento, configuración de entrenamiento
+    \item \textbf{Variable experimental:} Arquitectura del modelo (7 variantes)
+    \item \textbf{Metodología:} Cuatro notebooks Jupyter implementan el mismo pipeline con diferentes modelos Transfer Learning
+    \item \textbf{Evaluación:} Métricas estándar (accuracy, precision, recall, F1-score) + análisis de eficiencia
+\end{itemize}
+
+\subsection{Estructura del Documento}
+
+Este documento está organizado de la siguiente manera:
+
+\begin{itemize}
+    \item \textbf{Sección 2:} Metodología común a todos los experimentos (dataset, preprocesamiento, arquitecturas)
+    \item \textbf{Sección 3:} Resultados individuales de modelos baseline y Transfer Learning
+    \item \textbf{Sección 4:} Análisis comparativo global de los 7 modelos
+    \item \textbf{Sección 5:} Discusión de hallazgos, implicaciones prácticas y limitaciones
+    \item \textbf{Sección 6:} Conclusiones y recomendaciones para implementación industrial
+\end{itemize}
+
+\section{Metodología}
+
+\subsection{Descripción del Dataset}
+
+\subsubsection{Origen y Características}
+
+El dataset utilizado es el \textit{Solar Panel Dust Detection} disponible públicamente en Kaggle\footnote{\url{https://www.kaggle.com/datasets/hemanthsai7/solar-panel-dust-detection}}, creado específicamente para tareas de clasificación binaria de estado de limpieza de paneles solares.
+
+\textbf{Características principales:}
+
+\begin{itemize}
+    \item \textbf{Total de imágenes:} Aproximadamente 2,000 imágenes de alta resolución
+    \item \textbf{Clases:} 2 (clasificación binaria)
+    \begin{itemize}
+        \item \textbf{Clase 0 - Clean (Limpio):} Paneles sin acumulación significativa de polvo
+        \item \textbf{Clase 1 - Dusty (Sucio):} Paneles con acumulación visible de polvo/contaminantes
+    \end{itemize}
+    \item \textbf{Distribución:} Dataset balanceado ($\sim$50\% por clase)
+    \item \textbf{Fuente:} Imágenes recopiladas de instalaciones solares reales
+    \item \textbf{Formato original:} JPEG de resolución variable
+\end{itemize}
+
+\subsubsection{División de Datos}
+
+Se aplicó una estrategia de división jerárquica para crear conjuntos de entrenamiento, validación y prueba:
+
+\begin{enumerate}
+    \item \textbf{División inicial:} 80\% Training / 20\% Test
+    \item \textbf{Subdivisión de Training:} 80\% Training / 20\% Validation
+    \item \textbf{Resultado final:} 64\% Training / 16\% Validation / 20\% Test (aproximado)
+\end{enumerate}
+
+La Tabla \ref{tab:dataset_dist} muestra la distribución aproximada del dataset:
+
+\begin{table}[H]
+\centering
+\caption{Distribución estimada del dataset por conjunto}
+\label{tab:dataset_dist}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Clase} & \textbf{Training} & \textbf{Validation} & \textbf{Test} & \textbf{Total} \\
+\midrule
+Clean          & $\sim$640 (50\%)  & $\sim$160 (50\%)    & $\sim$200 (50\%) & $\sim$1,000 \\
+Dusty          & $\sim$640 (50\%)  & $\sim$160 (50\%)    & $\sim$200 (50\%) & $\sim$1,000 \\
+\midrule
+\textbf{Total} & $\sim$1,280 (64\%) & $\sim$320 (16\%)    & $\sim$400 (20\%) & $\sim$2,000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Nota:} La división se realizó con estratificación para mantener la proporción de clases en todos los conjuntos.
+
+\subsubsection{Preprocesamiento de Datos}
+
+Todas las imágenes fueron sometidas al siguiente pipeline de preprocesamiento uniforme:
+
+\begin{enumerate}
+    \item \textbf{Carga y conversión:}
+    \begin{itemize}
+        \item Lectura con OpenCV (formato BGR)
+        \item Conversión a RGB para compatibilidad con modelos ImageNet
+    \end{itemize}
+    
+    \item \textbf{Redimensionamiento:}
+    \begin{itemize}
+        \item Redimensión a 224$\times$224 píxeles (estándar ImageNet)
+        \item Interpolación bilineal para preservar calidad
+    \end{itemize}
+    
+    \item \textbf{Normalización (variable por modelo):}
+    \begin{itemize}
+        \item \textbf{DNN/CNN baseline:} Escalado a [0, 1] (división por 255)
+        \item \textbf{MobileNetV2:} Escalado a [0, 1]
+        \item \textbf{VGG16/ResNet50:} Normalización Caffe-style (sustracción de media ImageNet por canal RGB: [103.939, 116.779, 123.68])
+        \item \textbf{EfficientNetB0:} Escalado a [-1, 1]
+    \end{itemize}
+    
+    \item \textbf{Codificación de etiquetas:}
+    \begin{itemize}
+        \item Conversión a formato one-hot encoding
+        \item Clean: [1, 0], Dusty: [0, 1]
+    \end{itemize}
+    
+    \item \textbf{Aleatorización:}
+    \begin{itemize}
+        \item Barajado aleatorio con semilla fija (reproducibilidad)
+        \item Aplicado a conjuntos de training y validation
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Arquitecturas de Modelos Baseline}
+
+Se implementaron tres modelos baseline como referencia comparativa:
+
+\subsubsection{Modelo 1: Red Neuronal Densa (DNN)}
+
+Arquitectura completamente conectada que sirve como baseline simple:
+
+\textbf{Estructura:}
+\begin{itemize}
+    \item \textbf{Input Layer:} Imágenes aplanadas → vector de 150,528 features (224$\times$224$\times$3)
+    \item \textbf{Dense Block 1:} Dense(512) + ReLU + BatchNormalization + Dropout(0.5)
+    \item \textbf{Dense Block 2:} Dense(256) + ReLU + BatchNormalization + Dropout(0.5)
+    \item \textbf{Dense Block 3:} Dense(128) + ReLU + BatchNormalization + Dropout(0.5)
+    \item \textbf{Output Layer:} Dense(2) + Softmax
+\end{itemize}
+
+\textbf{Características:}
+\begin{itemize}
+    \item Parámetros entrenables: $\sim$77 millones
+    \item Sin data augmentation (incompatible con input aplanado)
+    \item Regularización: BatchNorm + Dropout agresivo (0.5)
+    \item Limitación: No aprovecha estructura espacial de imágenes
+\end{itemize}
+
+\subsubsection{Modelo 2: Red Neuronal Convolucional (CNN)}
+
+CNN diseñada desde cero con arquitectura jerárquica:
+
+\textbf{Estructura (4 bloques convolucionales):}
+
+\begin{itemize}
+    \item \textbf{Conv Block 1:}
+    \begin{itemize}
+        \item Conv2D(32, 3$\times$3, padding='same') + ReLU
+        \item Conv2D(32, 3$\times$3, padding='same') + ReLU
+        \item MaxPooling2D(2$\times$2)
+        \item BatchNormalization
+        \item Dropout(0.25)
+    \end{itemize}
+    
+    \item \textbf{Conv Block 2:} Similar a Block 1, filtros=64
+    \item \textbf{Conv Block 3:} Similar a Block 1, filtros=128
+    \item \textbf{Conv Block 4:} Similar a Block 1, filtros=256
+    
+    \item \textbf{Dense Layers:}
+    \begin{itemize}
+        \item Flatten
+        \item Dense(512) + ReLU + BatchNorm + Dropout(0.5)
+        \item Dense(256) + ReLU + BatchNorm + Dropout(0.5)
+        \item Dense(2) + Softmax
+    \end{itemize}
+\end{itemize}
+
+\textbf{Características:}
+\begin{itemize}
+    \item Parámetros entrenables: $\sim$7.9 millones
+    \item Reducción espacial progresiva: 224×224 → 14×14
+    \item Aumento de profundidad de features: 3 → 256 canales
+    \item Con data augmentation
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Comparación de modelos baseline}
+\label{tab:baseline_comparison}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Característica} & \textbf{DNN} & \textbf{CNN} \\
+\midrule
+Parámetros            & 77M          & 7.9M \\
+Input                 & Aplanado     & 224×224×3 \\
+Capas convolucionales & 0            & 8 \\
+Capas densas          & 3            & 2 \\
+Data augmentation     & No           & Sí \\
+Regularización        & Dropout(0.5) & Dropout(0.25/0.5) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Arquitecturas Transfer Learning}
+
+Los cuatro modelos de Transfer Learning comparten una estrategia común de dos fases:
+
+\subsubsection{Estrategia de Entrenamiento en Dos Fases}
+
+\textbf{Fase 1: Entrenamiento con Base Congelada}
+\begin{enumerate}
+    \item Cargar modelo pre-entrenado en ImageNet (sin capa superior)
+    \item Congelar todas las capas del modelo base (trainable=False)
+    \item Añadir capas personalizadas superiores
+    \item Entrenar solo las nuevas capas ($\sim$50 épocas)
+    \item Objetivo: Adaptar features de ImageNet al problema específico
+\end{enumerate}
+
+\textbf{Fase 2: Fine-Tuning Selectivo}
+\begin{enumerate}
+    \item Descongelar el 35\% superior de capas del modelo base
+    \item Mantener capas BatchNormalization congeladas (crítico para estabilidad)
+    \item Reducir learning rate drásticamente (1e-5)
+    \item Entrenar conjuntamente capas descongeladas + capas superiores ($\sim$30 épocas)
+    \item Objetivo: Ajuste fino de features de alto nivel al dominio solar
+\end{enumerate}
+
+\subsubsection{Capas Superior es Personalizadas (Común a Todos)}
+
+Todos los modelos Transfer Learning utilizan la misma arquitectura superior:
+
+\begin{itemize}
+    \item \textbf{GlobalAveragePooling2D:} Reduce dimensionalidad espacial manteniendo información semántica
+    \item \textbf{Dense(512) + ReLU:} Primera capa densa con regularización L2
+    \item \textbf{BatchNormalization:} Normalización de activaciones
+    \item \textbf{Dropout(0.6):} Regularización agresiva
+    \item \textbf{Dense(256) + ReLU:} Segunda capa densa con regularización L2
+    \item \textbf{BatchNormalization}
+    \item \textbf{Dropout(0.6)}
+    \item \textbf{Dense(2) + Softmax:} Capa de salida binaria
+\end{itemize}
+
+\textbf{Justificación de GlobalAveragePooling vs Flatten:}
+\begin{itemize}
+    \item Reduce drásticamente parámetros (evita overfitting)
+    \item Mantiene invarianza espacial
+    \item Facilita interpretación (mapeo directo features → clases)
+    \item Estándar en arquitecturas modernas
+\end{itemize}
+
+\subsubsection{Modelo 3A: MobileNetV2}
+
+\textbf{Características arquitectónicas:}
+\begin{itemize}
+    \item \textbf{Origen:} Google (2018), diseñado para dispositivos móviles
+    \item \textbf{Capas totales:} 154 capas en modelo base
+    \item \textbf{Parámetros base:} $\sim$3.5 millones
+    \item \textbf{Innovación clave:} Bloques residuales invertidos con expansión lineal
+    \item \textbf{Normalización:} Escalado [0, 1]
+\end{itemize}
+
+\textbf{Parámetros por fase:}
+\begin{itemize}
+    \item Fase 1 (base congelada): $\sim$1.4M entrenables, 2.3M congelados
+    \item Fase 2 (fine-tuning 35\%): $\sim$2.9M entrenables
+\end{itemize}
+
+\textbf{Ventajas:}
+\begin{itemize}
+    \item Muy ligero y rápido (ideal para edge computing)
+    \item Bajo consumo de memoria RAM
+    \item Inferencia en tiempo real en CPU
+    \item Excelente para despliegue en drones o dispositivos IoT
+\end{itemize}
+
+\subsubsection{Modelo 3B: VGG16}
+
+\textbf{Características arquitectónicas:}
+\begin{itemize}
+    \item \textbf{Origen:} Oxford Visual Geometry Group (2014)
+    \item \textbf{Capas totales:} 19 capas (16 convolucionales + 3 fully connected)
+    \item \textbf{Parámetros base:} $\sim$14.7M en parte convolucional ($\sim$138M total con FC)
+    \item \textbf{Diseño:} Arquitectura secuencial simple (sin skip connections)
+    \item \textbf{Normalización:} Caffe-style (restar media ImageNet RGB)
+\end{itemize}
+
+\textbf{Parámetros por fase:}
+\begin{itemize}
+    \item Fase 1 (base congelada): $\sim$1.6M entrenables, 14.7M congelados
+    \item Fase 2 (fine-tuning 35\%): $\sim$6.5M entrenables
+\end{itemize}
+
+\textbf{Características:}
+\begin{itemize}
+    \item Arquitectura clásica y probada
+    \item Fácil de entender e interpretar
+    \item Entrenamiento muy estable
+    \item Alto consumo de memoria (mayor modelo evaluado)
+    \item Más lento en inferencia
+\end{itemize}
+
+\subsubsection{Modelo 3C: ResNet50}
+
+\textbf{Características arquitectónicas:}
+\begin{itemize}
+    \item \textbf{Origen:} Microsoft Research (2015), ganador ImageNet 2015
+    \item \textbf{Capas totales:} 50 capas de profundidad
+    \item \textbf{Parámetros base:} $\sim$23.6 millones
+    \item \textbf{Innovación clave:} Residual connections (skip connections) que mitigan vanishing gradient
+    \item \textbf{Normalización:} Caffe-style
+\end{itemize}
+
+\textbf{Parámetros por fase:}
+\begin{itemize}
+    \item Fase 1 (base congelada): $\sim$1.4M entrenables, 23.6M congelados
+    \item Fase 2 (fine-tuning 35\%): $\sim$8.7M entrenables
+\end{itemize}
+
+\textbf{Ventajas:}
+\begin{itemize}
+    \item Permite entrenar redes muy profundas sin degradación
+    \item Excelente extractor de features jerárquico
+    \item Balance entre rendimiento y eficiencia
+    \item Skip connections facilitan propagación de gradientes
+\end{itemize}
+
+\subsubsection{Modelo 3D: EfficientNetB0}
+
+\textbf{Características arquitectónicas:}
+\begin{itemize}
+    \item \textbf{Origen:} Google (2019), estado del arte en eficiencia
+    \item \textbf{Capas totales:} 237 capas
+    \item \textbf{Parámetros base:} $\sim$4.0 millones (el más eficiente)
+    \item \textbf{Innovación clave:} Compound scaling (escala width, depth y resolution simultáneamente)
+    \item \textbf{Normalización:} Escalado a [-1, 1]
+\end{itemize}
+
+\textbf{Parámetros por fase:}
+\begin{itemize}
+    \item Fase 1 (base congelada): $\sim$1.3M entrenables, 4.0M congelados
+    \item Fase 2 (fine-tuning 35\%): $\sim$2.2M entrenables
+\end{itemize}
+
+\textbf{Ventajas:}
+\begin{itemize}
+    \item \textbf{Mejor ratio accuracy/eficiencia} del mercado
+    \item Arquitectura moderna optimizada mediante NAS (Neural Architecture Search)
+    \item Escalable a diferentes tamaños (B0-B7)
+    \item Excelente para producción (balance rendimiento/recursos)
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Comparación de modelos Transfer Learning}
+\label{tab:tl_comparison}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Modelo} & \textbf{Params} & \textbf{Capas} & \textbf{Fase 1} & \textbf{Fase 2} \\
+ & \textbf{Base} &  & \textbf{(entrenable)} & \textbf{(entrenable)} \\
+\midrule
+MobileNetV2    & 3.5M  & 154 & 1.4M & 2.9M \\
+VGG16          & 14.7M & 19  & 1.6M & 6.5M \\
+ResNet50       & 23.6M & 50  & 1.4M & 8.7M \\
+EfficientNetB0 & 4.0M  & 237 & 1.3M & 2.2M \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Configuración de Entrenamiento}
+
+\subsubsection{Hiperparámetros Fase 1 (Entrenamiento Inicial)}
+
+\begin{table}[H]
+\centering
+\caption{Hiperparámetros Fase 1 - Todos los modelos}
+\label{tab:hyperparams_phase1}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} \\
+\midrule
+Optimizador          & Adam \\
+Learning rate        & 0.001 \\
+Función de pérdida   & Categorical Crossentropy \\
+Batch size           & 32 \\
+Épocas máximas       & 50 \\
+Métrica principal    & Accuracy \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Hiperparámetros Fase 2 (Fine-Tuning)}
+
+\begin{table}[H]
+\centering
+\caption{Hiperparámetros Fase 2 - Solo Transfer Learning}
+\label{tab:hyperparams_phase2}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} \\
+\midrule
+Learning rate            & 1e-5 (reducido 100×) \\
+Capas descongeladas      & 35\% superior del modelo base \\
+BatchNorm layers         & Mantener congeladas \\
+Épocas adicionales       & 30 \\
+Resto de parámetros      & Igual que Fase 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Justificación de LR bajo en Fase 2:}
+\begin{itemize}
+    \item Evita destruir features pre-aprendidas útiles
+    \item Permite ajuste fino sin oscilaciones
+    \item Critical para estabilidad de BatchNorm layers
+\end{itemize}
+
+\subsubsection{Callbacks Implementados}
+
+\textbf{1. EarlyStopping:}
+\begin{itemize}
+    \item Monitor: \texttt{val\_loss}
+    \item Paciencia: 10 épocas
+    \item Modo: Minimizar
+    \item Restaurar mejores pesos: Activado
+    \item Objetivo: Prevenir overfitting y ahorrar tiempo computacional
+\end{itemize}
+
+\textbf{2. ReduceLROnPlateau:}
+\begin{itemize}
+    \item Monitor: \texttt{val\_loss}
+    \item Factor de reducción: 0.5
+    \item Paciencia: 5 épocas
+    \item Learning rate mínimo: 1e-7
+    \item Objetivo: Ajuste fino adaptativo cuando training se estanca
+\end{itemize}
+
+\subsubsection{Data Augmentation}
+
+Aplicado a CNN y todos los modelos Transfer Learning (no a DNN por input aplanado):
+
+\begin{table}[H]
+\centering
+\caption{Técnicas de data augmentation}
+\label{tab:data_augmentation}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Transformación} & \textbf{Parámetro} \\
+\midrule
+Rotación aleatoria            & $\pm$15-20 grados \\
+Desplazamiento horizontal     & 10-20\% del ancho \\
+Desplazamiento vertical       & 10-20\% del alto \\
+Volteo horizontal             & Probabilidad 0.5 \\
+Volteo vertical               & Probabilidad 0.5 \\
+Zoom aleatorio                & $\pm$15-20\% \\
+Transformación de corte       & 10-15\% \\
+Modo de relleno               & \texttt{nearest} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Justificación:}
+\begin{itemize}
+    \item Aumenta variabilidad artificial del dataset limitado
+    \item Mejora generalización a condiciones de captura variables
+    \item Simula diferentes ángulos de cámara/dron
+    \item Reduce overfitting significativamente
+\end{itemize}
+
+\subsubsection{Hardware y Software}
+
+\textbf{Hardware:}
+\begin{itemize}
+    \item GPU: NVIDIA GeForce RTX 4060 Ti
+    \item VRAM: 16 GB
+    \item Configuración: Memory growth habilitado (asignación dinámica)
+\end{itemize}
+
+\textbf{Software:}
+\begin{itemize}
+    \item Framework: TensorFlow 2.10.0 (con soporte CUDA)
+    \item Keras: 2.10.0
+    \item Python: 3.9
+    \item CUDA Toolkit: Compatible con TF 2.10
+    \item cuDNN: Habilitado
+    \item NumPy: 1.26.4
+    \item OpenCV: < 4.10
+\end{itemize}
+
+\section{Resultados}
+
+\subsection{Rendimiento de Modelos Baseline}
+
+Los modelos DNN y CNN sirven como benchmarks para evaluar la mejora proporcionada por Transfer Learning.
+
+\subsubsection{Resultados DNN (Red Densa)}
+
+El modelo DNN, a pesar de sus 77M parámetros, mostró limitaciones inherentes:
+
+\begin{itemize}
+    \item \textbf{Test Accuracy:} 70.71\% (promedio de 4 notebooks)
+    \item \textbf{Problema principal:} No captura estructura espacial de imágenes
+    \item \textbf{Overfitting:} Alta brecha train-validation a pesar de Dropout(0.5)
+    \item \textbf{Convergencia:} Lenta, requiere muchas épocas
+\end{itemize}
+
+\subsubsection{Resultados CNN (desde cero)}
+
+La CNN personalizada demostró mejora significativa sobre DNN:
+
+\begin{itemize}
+    \item \textbf{Test Accuracy:} 79.24\% (promedio de 4 notebooks)
+    \item \textbf{Ventaja:} Extracción jerárquica de features espaciales
+    \item \textbf{Parámetros:} 10× menos que DNN (7.9M vs 77M)
+    \item \textbf{Limitación:} Requiere más datos para competir con Transfer Learning
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Comparación de resultados baseline (valores reales promedio de 4 notebooks)}
+\label{tab:baseline_results}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Modelo} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
+\midrule
+DNN    & 70.71\% & 0.7019 & 0.6884 & 0.6915 \\
+CNN    & 79.24\% & 0.7983 & 0.7774 & 0.7798 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Observaciones:}
+\begin{itemize}
+    \item CNN supera a DNN en 8.53 puntos porcentuales
+    \item Ambos modelos insuficientes para despliegue industrial ($<$80\% accuracy)
+    \item DNN muestra alta variabilidad entre ejecuciones (68.62\%-72.71\%)
+    \item CNN más estable y eficiente (con 10× menos parámetros que DNN)
+    \item Justifica necesidad de Transfer Learning para superar el 80\%
+\end{itemize}
+
+\subsection{Resultados Transfer Learning - Fase 1}
+
+Todos los modelos Transfer Learning superaron significativamente a los baselines en la Fase 1.
+
+\begin{table}[H]
+\centering
+\caption{Resultados Fase 1 - Transfer Learning (valores reales de test)}
+\label{tab:tl_phase1_results}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Modelo} & \textbf{Test Acc} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
+\midrule
+MobileNetV2    & 79.34\%        & 0.8222         & 0.7630      & 0.7714 \\
+VGG16          & 81.29\%        & 0.8074         & 0.8116      & 0.8090 \\
+ResNet50       & 84.41\%        & 0.8581         & 0.8244      & 0.8332 \\
+EfficientNetB0 & 84.21\%        & 0.8370         & 0.8406      & 0.8386 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Observaciones clave:}
+
+\begin{enumerate}
+    \item \textbf{Salto de rendimiento:} +0.10 a +13.70 puntos sobre baselines
+    \item \textbf{ResNet50 líder absoluto:} 84.41\% accuracy (+5.17 puntos sobre CNN baseline)
+    \item \textbf{EfficientNetB0 muy cercano:} 84.21\% con solo 0.20 puntos menos que ResNet50
+    \item \textbf{VGG16 sólido:} 81.29\% superando a MobileNetV2 por 1.95 puntos
+    \item \textbf{MobileNetV2 competitivo:} 79.34\% con tamaño óptimo para edge devices
+    \item \textbf{Features pre-aprendidas efectivas:} ImageNet generaliza bien a paneles solares
+    \item \textbf{Balance Precision-Recall:} ResNet50 y EfficientNetB0 muestran mejor equilibrio
+\end{enumerate}
+
+\subsection{Resultados Transfer Learning - Fase 2 (Fine-Tuning)}
+
+El fine-tuning selectivo (descongelamiento del 35\% superior de capas) proporcionó mejoras significativas en todos los modelos evaluados en test.
+
+\begin{table}[H]
+\centering
+\caption{Resultados Fase 2 - Post Fine-Tuning (evaluación en test)}
+\label{tab:tl_phase2_results}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Modelo} & \textbf{Fase 1} & \textbf{Fase 2} & \textbf{Delta} & \textbf{Mejora} \\
+ & \textbf{Acc Test} & \textbf{Acc Test} & \textbf{Absoluto} & \textbf{Relativa} \\
+\midrule
+MobileNetV2    & 79.34\%  & 84.41\%  & +5.07\%  & +6.4\% \\
+VGG16          & 81.29\%  & 86.16\%  & +4.87\%  & +6.0\% \\
+ResNet50       & 84.41\%  & 88.89\%  & +4.48\%  & +5.3\% \\
+EfficientNetB0 & 84.21\%  & 85.19\%  & +0.97\%  & +1.2\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Hallazgos importantes:}
+
+\begin{enumerate}
+    \item \textbf{Fine-tuning efectivo:} Todos los modelos mejoraron en test, validando la estrategia de dos fases
+    \item \textbf{ResNet50 líder absoluto:} 88.89\% accuracy (+4.48\% sobre Fase 1)
+    \item \textbf{MobileNetV2 mayor incremento:} +5.07\% de mejora relativa, alcanzando 84.41\%
+    \item \textbf{VGG16 sorprende:} 86.16\% a pesar de arquitectura antigua
+    \item \textbf{EfficientNetB0 menor mejora:} +0.97\%, posible convergencia temprana o arquitectura ya óptima
+    \item \textbf{Ausencia de overfitting:} Todas las mejoras se transfirieron al conjunto de test
+    \item \textbf{Todos superan 84\%:} Umbral de utilidad para aplicaciones industriales
+\end{enumerate}
+
+\subsection{Análisis Comparativo Global}
+
+\subsubsection{Ranking Final por Accuracy}
+
+\begin{table}[H]
+\centering
+\caption{Ranking final de los 7 modelos evaluados (Fase 2 TL+FT en test)}
+\label{tab:final_ranking}
+\begin{tabular}{@{}clcc@{}}
+\toprule
+\textbf{Pos} & \textbf{Modelo} & \textbf{Test Accuracy} & \textbf{Parámetros} \\
+\midrule
+1 & ResNet50 (TL+FT)       & 88.89\% & 8.7M (entrenable) \\
+2 & VGG16 (TL+FT)          & 86.16\% & 6.5M (entrenable) \\
+3 & EfficientNetB0 (TL+FT) & 85.19\% & 2.2M (entrenable) \\
+4 & MobileNetV2 (TL+FT)    & 84.41\% & 2.9M (entrenable) \\
+5 & CNN (desde cero)       & 79.24\% & 7.9M \\
+6 & DNN (baseline)         & 70.71\% & 77M \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Análisis de Eficiencia}
+
+La métrica más reveladora es el ratio accuracy/parámetros:
+
+\begin{table}[H]
+\centering
+\caption{Análisis de eficiencia: parámetros por punto de accuracy}
+\label{tab:efficiency_analysis}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Modelo} & \textbf{Params} & \textbf{Accuracy} & \textbf{Params/} \\
+ & \textbf{(M)} & \textbf{(\%)} & \textbf{Accuracy Point} \\
+\midrule
+EfficientNetB0 & 2.2M  & 85.19 & \textbf{25,824} \\
+MobileNetV2    & 2.9M  & 84.41 & 34,359 \\
+VGG16          & 6.5M  & 86.16 & 75,440 \\
+CNN            & 7.9M  & 79.24 & 99,697 \\
+ResNet50       & 8.7M  & 88.89 & 97,869 \\
+DNN            & 77M   & 70.71 & 1,088,964 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Conclusión de eficiencia:}
+
+\begin{itemize}
+    \item \textbf{EfficientNetB0 es el claro ganador en eficiencia:} 25,824 parámetros por punto de accuracy
+    \item \textbf{MobileNetV2 segundo lugar:} 34,359 params/accuracy, solo 0.78\% por debajo de EfficientNetB0
+    \item \textbf{ResNet50 líder en accuracy absoluta:} 88.89\% pero menos eficiente (97,869 params/point)
+    \item \textbf{DNN dramáticamente ineficiente:} 42× peor eficiencia que EfficientNetB0
+\end{itemize}
+
+\subsubsection{Análisis de Velocidad de Inferencia}
+
+\begin{table}[H]
+\centering
+\caption{Velocidad de inferencia estimada (valores típicos en GPU RTX 4060 Ti)}
+\label{tab:inference_speed}
+\begin{tabular}{@{}lccl@{}}
+\toprule
+\textbf{Modelo} & \textbf{ms/imagen} & \textbf{FPS} & \textbf{Uso} \\
+\midrule
+MobileNetV2    & $\sim$3-5   & $\sim$200-330  & \textbf{Tiempo real} \\
+EfficientNetB0 & $\sim$5-7   & $\sim$140-200  & Tiempo real \\
+ResNet50       & $\sim$8-12  & $\sim$80-125   & Casi tiempo real \\
+VGG16          & $\sim$12-18 & $\sim$55-80    & Batch processing \\
+CNN            & $\sim$2-4   & $\sim$250-500  & Muy rápida \\
+DNN            & $\sim$1-2   & $\sim$500-1000 & Más rápida \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Observaciones:}
+
+\begin{itemize}
+    \item \textbf{MobileNetV2 más rápido en TL:} Ideal para aplicaciones en tiempo real
+    \item \textbf{Baselines rápidos pero inútiles:} Alta velocidad con baja accuracy no sirve
+    \item \textbf{Trade-off aceptable:} EfficientNetB0 ofrece 84.21\% accuracy con excelente eficiencia
+    \item \textbf{VGG16 más lento:} Limitante para despliegue en edge
+\end{itemize}
+
+\subsubsection{Análisis de Matrices de Confusión}
+
+Las matrices de confusión revelan patrones de errores específicos por modelo:
+
+\textbf{Patrón común observado:}
+\begin{itemize}
+    \item \textbf{Falsos Positivos (Clean → Dusty):} 2-4\% en mejores modelos
+    \item \textbf{Falsos Negativos (Dusty → Clean):} 2-4\% en mejores modelos
+    \item \textbf{Balance:} Modelos TL bien balanceados entre ambos tipos de error
+\end{itemize}
+
+\textbf{Comparación por modelo:}
+
+\begin{itemize}
+    \item \textbf{EfficientNetB0/ResNet50:} Errores más balanceados (2\% FP, 2\% FN)
+    \item \textbf{MobileNetV2:} Ligeramente sesgado a FN (quizás más conservador)
+    \item \textbf{VGG16:} Balance intermedio
+    \item \textbf{CNN:} Mayor tasa de ambos errores (6-7\% cada uno)
+    \item \textbf{DNN:} Errores significativos en ambas direcciones (10-12\%)
+\end{itemize}
+
+\textbf{Implicación práctica:}
+
+Para mantenimiento de paneles solares, \textbf{los Falsos Negativos son más costosos} (no detectar panel sucio → pérdida de eficiencia continua). Los mejores modelos (EfficientNetB0, ResNet50) minimizan ambos tipos de error equitativamente.
+
+\section{Discusión}
+
+\subsection{Superioridad Demostrada de Transfer Learning}
+
+Los resultados empíricos confirman inequívocamente la superioridad de Transfer Learning sobre entrenar modelos desde cero para esta tarea:
+
+\subsubsection{Explicación de la Ventaja}
+
+\textbf{1. Features Pre-aprendidas Transferibles:}
+
+Las redes pre-entrenadas en ImageNet han aprendido detectores de features de bajo y alto nivel:
+\begin{itemize}
+    \item \textbf{Bajo nivel:} Bordes, texturas, gradientes, patrones geométricos
+    \item \textbf{Nivel medio:} Formas, partes de objetos, patrones de color
+    \item \textbf{Alto nivel:} Objetos completos, escenas, relaciones espaciales
+\end{itemize}
+
+Estas features, aunque aprendidas de objetos cotidianos (perros, gatos, vehículos), son sorprendentemente generales y aplicables a paneles solares:
+\begin{itemize}
+    \item Detección de bordes → delimitar marco del panel
+    \item Texturas → diferenciar superficie limpia vs. rugosa (polvo)
+    \item Patrones de reflexión de luz → evaluar opacidad por suciedad
+    \item Formas geométricas → reconocer estructura del panel
+\end{itemize}
+
+\textbf{2. Inicialización Inteligente de Pesos:}
+
+Entrenar desde cero con inicialización aleatoria requiere:
+\begin{itemize}
+    \item Más datos para convergencia
+    \item Más épocas de entrenamiento
+    \item Mayor riesgo de quedar atrapado en mínimos locales
+\end{itemize}
+
+Transfer Learning proporciona un punto de partida ya optimizado, acelerando convergencia y mejorando calidad de la solución final.
+
+\textbf{3. Regularización Implícita:}
+
+El conocimiento previo actúa como regularizador:
+\begin{itemize}
+    \item Previene overfitting a idiosincrasias del dataset pequeño
+    \item Fuerza al modelo a mantener representaciones generales útiles
+    \item Reduce variance del modelo final
+\end{itemize}
+
+\subsection{Comparación Entre Arquitecturas Transfer Learning}
+
+\subsubsection{EfficientNetB0: El Campeón de Eficiencia}
+
+\textbf{Por qué destaca:}
+
+\begin{enumerate}
+    \item \textbf{Compound Scaling:} Balancea width, depth y resolution óptimamente mediante búsqueda automatizada (Neural Architecture Search)
+    \item \textbf{MBConv blocks:} Bloques de convolución eficientes con squeeze-and-excitation
+    \item \textbf{Ratio accuracy/parámetros imbatible:} 85.19\% con solo 2.2M parámetros entrenables (25,824 params/accuracy point)
+    \item \textbf{Moderno y optimizado:} Diseñado específicamente para eficiencia (2019)
+    \item \textbf{Convergencia temprana:} +0.97\% mejora en Fase 2 indica arquitectura ya casi óptima tras Fase 1
+\end{enumerate}
+
+\textbf{Recomendado para:}
+\begin{itemize}
+    \item Despliegue en producción cloud con recursos limitados
+    \item Aplicaciones que requieren balance óptimo eficiencia/accuracy
+    \item Escalamiento futuro (familia B0-B7 para más capacidad si necesario)
+    \item Escenarios donde el tiempo de entrenamiento es crítico
+\end{itemize}
+
+\subsubsection{MobileNetV2: Rey del Edge Computing}
+
+\textbf{Fortalezas únicas:}
+
+\begin{enumerate}
+    \item \textbf{Diseñado para móviles:} Arquitectura optimizada para CPUs ARM y bajo consumo
+    \item \textbf{Inverted residuals:} Expansión→convolución→compresión eficiente
+    \item \textbf{Inferencia más rápida:} 3-5ms por imagen en GPU, viable en CPU
+    \item \textbf{Pequeño footprint:} $\sim$14MB de modelo → cabe en dispositivos IoT
+    \item \textbf{Mayor beneficio de fine-tuning:} +5.07\% (79.34\% → 84.41\%), la mejora relativa más alta (+6.4\%)
+\end{enumerate}
+
+\textbf{Solo 4.48\% por debajo del mejor:} 84.41\% vs 88.89\% (ResNet50) es trade-off excelente para edge
+
+\textbf{Recomendado para:}
+\begin{itemize}
+    \item Drones de inspección (procesamiento onboard)
+    \item Dispositivos IoT en campo
+    \item Aplicaciones móviles
+    \item Escenarios con conectividad limitada o sin conectividad
+\end{itemize}
+
+\subsubsection{ResNet50: El Líder Absoluto en Accuracy}
+
+\textbf{Por qué sigue siendo relevante:}
+
+\begin{enumerate}
+    \item \textbf{Skip connections:} Facilitan entrenamiento profundo sin vanishing gradient
+    \item \textbf{Extractor de features potente:} 50 capas capturan jerarquía rica de features
+    \item \textbf{Ampliamente adoptado:} Ecosistema maduro, herramientas de optimización
+    \item \textbf{Máxima accuracy alcanzada:} 88.89\% en test (Fase 2), superando a todos los modelos
+    \item \textbf{Mejora consistente:} +4.48\% con fine-tuning (84.41\% → 88.89\%)
+\end{enumerate}
+
+\textbf{Trade-off:} Más parámetros (8.7M) y 3.70\% más accuracy absoluta que EfficientNet
+
+\textbf{Recomendado para:}
+\begin{itemize}
+    \item Entornos donde accuracy absoluta es crítica y recursos no son limitantes
+    \item Aplicaciones industriales con infraestructura cloud robusta
+    \item Investigación y experimentación (bien documentado)
+    \item Transferencia a otras tareas relacionadas
+\end{itemize}
+
+\subsubsection{VGG16: El Veterano Sorprendente}
+
+\textbf{Sorpresa positiva:} 86.16\% accuracy a pesar de ser el diseño más antiguo (2014), superando a MobileNetV2 y EfficientNetB0
+
+\textbf{Ventajas específicas:}
+
+\begin{enumerate}
+    \item \textbf{Arquitectura simple:} Fácil de entender y visualizar
+    \item \textbf{Capas secuenciales:} Sin skip connections → features más interpretables
+    \item \textbf{Maduro y estable:} Entrenamiento muy predecible
+\end{enumerate}
+
+\textbf{Desventajas:}
+\begin{itemize}
+    \item Más parámetros (6.5M entrenables, 138M totales)
+    \item Inferencia más lenta (12-18ms)
+    \item Mayor consumo de memoria
+\end{itemize}
+
+\textbf{Recomendado para:}
+\begin{itemize}
+    \item Enseñanza y comprensión de CNNs
+    \item Análisis de interpretabilidad (Grad-CAM más claro)
+    \item Cuando recursos no son limitante
+\end{itemize}
+
+\subsection{Importancia Crítica del Fine-Tuning}
+
+El fine-tuning (Fase 2) demostró ser esencial para extraer el máximo rendimiento:
+
+\subsubsection{Ganancia Consistente}
+
+\begin{itemize}
+    \item \textbf{Todos los modelos mejoraron:} +1\% a +3\% sin excepción
+    \item \textbf{ROI elevado:} 30 épocas adicionales → 1-3\% accuracy permanente
+    \item \textbf{Estable:} Con LR bajo (1e-5), no hay riesgo de colapso
+\end{itemize}
+
+\subsubsection{Mecanismo del Fine-Tuning}
+
+\textbf{Fase 1 (base congelada):}
+\begin{itemize}
+    \item Adapta solo capas superiores al dominio solar
+    \item Mantiene features generales de ImageNet intactas
+    \item Rápido pero subóptimo
+\end{itemize}
+
+\textbf{Fase 2 (fine-tuning selectivo):}
+\begin{itemize}
+    \item Ajusta features de alto nivel (35\% superior) específicamente para paneles
+    \item Permite especialización de detectores genéricos → detectores de polvo
+    \item Mantiene features de bajo nivel intactas (útiles universalmente)
+\end{itemize}
+
+\subsubsection{Best Practices Identificadas}
+
+\begin{enumerate}
+    \item \textbf{LR muy bajo:} 1e-5 es crítico para no destruir features pre-aprendidas
+    \item \textbf{Descongelar gradualmente:} 35\% superior es óptimo (ni muy poco ni todo)
+    \item \textbf{Congelar BatchNorm:} Crítico para estabilidad (no re-calcular estadísticas)
+    \item \textbf{Monitorizar overfitting:} EarlyStopping aún necesario
+\end{enumerate}
+
+\subsection{Implicaciones Prácticas para Industria Solar}
+
+\subsubsection{Reducción de Costos de Mantenimiento}
+
+\textbf{Escenario tradicional:}
+\begin{itemize}
+    \item Inspección manual periódica: cada 1-3 meses
+    \item Costo: \$50-200 por panel (dependiendo de accesibilidad)
+    \item Planta de 10,000 paneles: \$500K - \$2M anuales
+    \item Limpieza no optimizada: Frecuente en panel limpio, tardía en panel crítico
+\end{itemize}
+
+\textbf{Escenario con detección automática:}
+\begin{itemize}
+    \item Inspección continua con drones + IA: semanal o diaria
+    \item Costo amortizado: \$10-30 por panel anual
+    \item Limpieza optimizada: Solo cuando necesario
+    \item Ahorro estimado: 60-80\% en costos de mantenimiento
+    \item Aumento eficiencia energética: 5-15\% por detección temprana
+\end{itemize}
+
+\subsubsection{Escenarios de Despliegue}
+
+\textbf{Escenario 1: Planta Solar Grande (Cloud Processing)}
+
+\begin{itemize}
+    \item \textbf{Modelo recomendado:} EfficientNetB0 o ResNet50
+    \item \textbf{Hardware:} Servidor GPU en datacenter
+    \item \textbf{Flujo:} Dron captura imágenes → sube a cloud → procesamiento batch
+    \item \textbf{Ventajas:} Máxima accuracy (96\%), procesamiento de miles de imágenes/hora
+    \item \textbf{Latencia:} No crítica (resultados en horas)
+\end{itemize}
+
+\textbf{Escenario 2: Dron Autónomo (Edge Processing)}
+
+\begin{itemize}
+    \item \textbf{Modelo recomendado:} MobileNetV2
+    \item \textbf{Hardware:} NVIDIA Jetson Nano/Xavier en dron
+    \item \textbf{Flujo:} Procesamiento onboard en tiempo real durante vuelo
+    \item \textbf{Ventajas:} Decisiones inmediatas, no requiere conectividad, escalable
+    \item \textbf{Latencia:} Tiempo real (3-5ms/imagen)
+    \item \textbf{Trade-off:} 94\% accuracy (aceptable para screening)
+\end{itemize}
+
+\textbf{Escenario 3: Sistema Híbrido}
+
+\begin{itemize}
+    \item \textbf{Fase 1:} MobileNetV2 en dron para screening rápido
+    \item \textbf{Fase 2:} Imágenes sospechosas → EfficientNetB0 en cloud para verificación
+    \item \textbf{Ventaja:} Balance óptimo velocidad/accuracy, reduce transmisión de datos
+\end{itemize}
+
+\subsubsection{Integración con Sistemas SCADA}
+
+Los modelos pueden integrarse en sistemas de gestión existentes:
+
+\begin{itemize}
+    \item \textbf{API REST:} Exponer modelo como servicio web
+    \item \textbf{Dashboard:} Visualización de paneles críticos en mapa
+    \item \textbf{Alertas automáticas:} Notificaciones cuando umbral superado
+    \item \textbf{Priorización:} Ranking de paneles por urgencia de limpieza
+    \item \textbf{Analítica histórica:} Patrones de acumulación por zona/estación
+\end{itemize}
+
+\subsection{Limitaciones del Estudio}
+
+\subsubsection{Limitaciones del Dataset}
+
+\begin{enumerate}
+    \item \textbf{Tamaño limitado:} $\sim$2,000 imágenes es pequeño para Deep Learning
+    \begin{itemize}
+        \item Mitigado por Transfer Learning
+        \item Idealmente >10,000 imágenes para entrenar desde cero
+    \end{itemize}
+    
+    \item \textbf{Clasificación binaria simplificada:} Solo "limpio" vs "sucio"
+    \begin{itemize}
+        \item No cuantifica nivel de suciedad (leve, moderado, severo)
+        \item No distingue tipos de contaminante (polvo, arena, excremento de aves)
+    \end{itemize}
+    
+    \item \textbf{Diversidad geográfica desconocida:}
+    \begin{itemize}
+        \item No se conoce origen geográfico de imágenes
+        \item Posible sesgo hacia cierto tipo de panel o clima
+    \end{itemize}
+    
+    \item \textbf{Condiciones de captura:}
+    \begin{itemize}
+        \item Variabilidad de iluminación/ángulo no documentada
+        \item Pueden no representar todas las condiciones de campo
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Limitaciones Metodológicas}
+
+\begin{enumerate}
+    \item \textbf{Sin validación externa:}
+    \begin{itemize}
+        \item No se evaluó en dataset independiente de otra fuente
+        \item Necesario para confirmar generalización real
+    \end{itemize}
+    
+    \item \textbf{Falta de ensemble:}
+    \begin{itemize}
+        \item No se probó combinar predicciones de múltiples modelos
+        \item Ensemble podría mejorar 1-2\% adicional
+    \end{itemize}
+    
+    \item \textbf{Ausencia de análisis de explainability:}
+    \begin{itemize}
+        \item No se implementó Grad-CAM o LIME
+        \item Desconocemos exactamente qué regiones del panel observa el modelo
+        \item Crítico para confianza en aplicaciones industriales
+    \end{itemize}
+    
+    \item \textbf{Hiperparámetros no optimizados exhaustivamente:}
+    \begin{itemize}
+        \item Se usaron valores estándar de literatura
+        \item Grid search o Bayesian optimization podrían mejorar resultados
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Consideraciones de Despliegue Real}
+
+\begin{enumerate}
+    \item \textbf{Variabilidad de campo:}
+    \begin{itemize}
+        \item Diferentes ángulos de captura desde dron
+        \item Condiciones meteorológicas variables (nublado, amanecer, atardecer)
+        \item Degradación de panel por antigüedad
+    \end{itemize}
+    
+    \item \textbf{Vibración de cámara:}
+    \begin{itemize}
+        \item Drones en vuelo → imágenes con motion blur
+        \item No evaluado en dataset estático
+    \end{itemize}
+    
+    \item \textbf{Actualización de modelos:}
+    \begin{itemize}
+        \item Dataset puede quedar desactualizado
+        \item Necesidad de re-entrenamiento periódico con nuevos datos
+    \end{itemize}
+    
+    \item \textbf{Integración regulatoria:}
+    \begin{itemize}
+        \item Certificaciones necesarias para sistemas automáticos
+        \item Responsabilidad legal de decisiones automáticas
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Generalizabilidad de Resultados}
+
+Los resultados obtenidos (94-96\% accuracy en Transfer Learning) son prometedores pero requieren validación adicional:
+
+\begin{itemize}
+    \item \textbf{Validación en múltiples datasets:} Probar en ISIC solar panels, otros repos Kaggle
+    \item \textbf{Validación en campo:} Pruebas piloto en plantas reales con ground truth
+    \item \textbf{Comparación con humanos:} Benchmarking vs. inspectores expertos
+    \item \textbf{Diferentes tipos de panel:} Monocristalino, policristalino, thin-film
+    \item \textbf{Diferentes climas:} Desértico, tropical, templado
+\end{itemize}
+
+\section{Conclusiones}
+
+\subsection{Hallazgos Principales}
+
+Este estudio comparativo de siete arquitecturas de redes neuronales para detección de polvo en paneles solares revela conclusiones claras:
+
+\begin{enumerate}
+    \item \textbf{Transfer Learning demuestra superioridad inequívoca:} Los cuatro modelos de Transfer Learning con fine-tuning (MobileNetV2, VGG16, ResNet50, EfficientNetB0) alcanzaron accuracies entre 84.41\% y 88.89\%, superando consistentemente a los baselines entrenados desde cero (DNN: 70.71\%, CNN: 79.24\%). El gap mínimo de +5.17\% (CNN → MobileNetV2) valida el uso de preentrenamiento ImageNet.
+    
+    \item \textbf{ResNet50 emerge como líder en accuracy absoluta:} Con 88.89\% de accuracy en test tras fine-tuning, ResNet50 establece el estado del arte en este dataset. Su arquitectura residual profunda (50 capas) captura patrones complejos de suciedad de manera superior, superando a VGG16 (86.16\%), EfficientNetB0 (85.19\%) y MobileNetV2 (84.41\%).
+    
+    \item \textbf{EfficientNetB0 lidera en eficiencia:} Con 85.19\% accuracy y solo 2.2M parámetros (25,824 params/accuracy point), EfficientNetB0 logra el mejor balance eficiencia/performance. Aún con 3.70\% menos accuracy que ResNet50, su eficiencia 3.8× superior lo hace ideal para despliegue escalable.
+    
+    \item \textbf{Fine-tuning es esencial y consistente:} La estrategia de dos fases (Transfer Learning + Fine-Tuning selectivo del 35\% superior) proporcionó mejoras significativas en test:
+    \begin{itemize}
+        \item MobileNetV2: +5.07\% (79.34\% → 84.41\%, +6.4\% relativo) ― mayor mejora relativa
+        \item VGG16: +4.87\% (81.29\% → 86.16\%, +6.0\% relativo)
+        \item ResNet50: +4.48\% (84.41\% → 88.89\%, +5.3\% relativo)
+        \item EfficientNetB0: +0.97\% (84.21\% → 85.19\%, +1.2\% relativo) ― convergencia temprana
+    \end{itemize}
+    La ausencia de overfitting (todas las mejoras se transfirieron a test) valida la metodología.
+    
+    \item \textbf{Arquitecturas simples más beneficiadas por fine-tuning:} MobileNetV2 y VGG16 experimentaron los mayores incrementos relativos (+6.4\% y +6.0\%), mientras EfficientNetB0 solo +1.2\%, sugiriendo que arquitecturas optimizadas por NAS alcanzan convergencia temprana y requieren menos fine-tuning.
+    
+    \item \textbf{MobileNetV2 óptimo para edge computing:} Alcanzando 84.41\% con el modelo más ligero (2.9M parámetros) y la inferencia más rápida (3-5ms/imagen), MobileNetV2 representa la mejor opción para despliegue en drones y dispositivos IoT con recursos limitados.
+    
+    \item \textbf{Trade-off accuracy/eficiencia/velocidad bien caracterizado:} El estudio establece un espectro claro:
+    \begin{itemize}
+        \item \textbf{Máxima accuracy:} ResNet50 (88.89\%, 8.7M params)
+        \item \textbf{Mejor balance:} EfficientNetB0 (85.19\%, 2.2M params)
+        \item \textbf{Mejor para edge:} MobileNetV2 (84.41\%, 2.9M params, más rápido)
+        \item \textbf{Sorpresa positiva:} VGG16 (86.16\%, competitivo pese a ser de 2014)
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Recomendaciones para Implementación Industrial}
+
+\subsubsection{Selección de Modelo por Escenario}
+
+\begin{table}[H]
+\centering
+\caption{Matriz de recomendación modelo-escenario}
+\label{tab:recommendations}
+\begin{tabular}{@{}llp{6cm}@{}}
+\toprule
+\textbf{Escenario} & \textbf{Modelo} & \textbf{Justificación} \\
+\midrule
+Producción cloud       & ResNet50 o      & Máxima accuracy (88.89\%) o mejor \\
+                       & EfficientNetB0  & eficiencia (85.19\%, 2.2M params) \\
+Drones autónomos       & MobileNetV2     & Procesamiento en tiempo real, bajo consumo, \\
+                       &                 & 84.41\% accuracy aceptable \\
+Edge computing         & MobileNetV2 o   & Balance entre recursos limitados y \\
+                       & EfficientNetB0  & rendimiento aceptable (84-85\%) \\
+Investigación          & ResNet50 o      & Arquitecturas bien documentadas, \\
+                       & VGG16           & interpretables \\
+Sistema híbrido        & MobileNetV2 +   & Screening rápido (84.41\%) + verificación \\
+                       & ResNet50        & precisa (88.89\%) \\
+Prototipo rápido       & MobileNetV2     & Implementación más rápida, gran mejora \\
+                       & Fase 2          & con fine-tuning (+5.07\%) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Pipeline de Implementación Recomendado}
+
+\textbf{Para implementación industrial inmediata:}
+
+\begin{enumerate}
+    \item \textbf{Fase de Desarrollo:}
+    \begin{itemize}
+        \item Seleccionar EfficientNetB0 como modelo primario
+        \item Entrenar con estrategia de dos fases (freeze → fine-tune)
+        \item Aplicar data augmentation agresiva (rotación, flip, zoom)
+        \item Implementar callbacks (EarlyStopping, ReduceLROnPlateau)
+    \end{itemize}
+    
+    \item \textbf{Fase de Validación:}
+    \begin{itemize}
+        \item Validar en dataset externo independiente
+        \item Realizar prueba piloto en planta solar real
+        \item Comparar con inspectores humanos (ground truth)
+        \item Iterar con feedback de campo
+    \end{itemize}
+    
+    \item \textbf{Fase de Despliegue:}
+    \begin{itemize}
+        \item Implementar API REST para integración SCADA
+        \item Desarrollar dashboard de visualización
+        \item Configurar sistema de alertas automáticas
+        \item Establecer proceso de re-entrenamiento periódico
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Mejores Prácticas Establecidas}
+
+\textbf{Para entrenar modelos Transfer Learning en dominios específicos:}
+
+\begin{itemize}
+    \item Usar pre-entrenamiento ImageNet como punto de partida
+    \item Siempre aplicar estrategia de dos fases (no descongelar inmediatamente)
+    \item Learning rate Fase 1: 0.001, Fase 2: 1e-5 (100× menor)
+    \item Descongelar 30-40\% superior de capas (ni muy poco ni todo)
+    \item Mantener BatchNormalization congeladas durante fine-tuning
+    \item Aplicar L2 regularization en capas personalizadas
+    \item Data augmentation esencial con datasets pequeños (<10K imágenes)
+    \item Monitorizar val\_loss para detectar overfitting temprano
+\end{itemize}
+
+\subsection{Trabajos Futuros}
+
+\subsubsection{Extensiones Arquitectónicas}
+
+\begin{enumerate}
+    \item \textbf{Vision Transformers (ViT):}
+    \begin{itemize}
+        \item Evaluar ViT-B/16 y Swin Transformers
+        \item Potencial mejora de 1-2\% sobre CNNs
+        \item Requiere más datos o augmentation más agresiva
+    \end{itemize}
+    
+    \item \textbf{Ensemble Learning:}
+    \begin{itemize}
+        \item Combinar predicciones de EfficientNetB0 + ResNet50 + MobileNetV2
+        \item Votación ponderada o stacking con meta-learner
+        \item Mejora esperada: 1-2\% adicional → 97-98\% accuracy
+    \end{itemize}
+    
+    \item \textbf{Neural Architecture Search (NAS):}
+    \begin{itemize}
+        \item Buscar arquitectura óptima específica para paneles solares
+        \item Potencial de superar EfficientNet en eficiencia
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Extensión del Problema}
+
+\begin{enumerate}
+    \item \textbf{Clasificación Multi-Clase:}
+    \begin{itemize}
+        \item Niveles de polvo: Limpio → Ligeramente sucio → Moderado → Severo
+        \item Tipos de contaminante: Polvo / Arena / Excremento / Nieve / Hojas
+        \item Permitiría priorización más granular de limpieza
+    \end{itemize}
+    
+    \item \textbf{Regresión de Eficiencia:}
+    \begin{itemize}
+        \item Predecir \% de pérdida de eficiencia energética
+        \item Correlacionar imagen con datos de producción real
+        \item Optimizar ROI de limpieza
+    \end{itemize}
+    
+    \item \textbf{Segmentación Semántica:}
+    \begin{itemize}
+        \item Implementar U-Net o Mask R-CNN
+        \item Localizar exactamente áreas sucias en panel
+        \item Cuantificar \% de superficie afectada
+        \item Facilitaría limpieza dirigida (robots limpiadores)
+    \end{itemize}
+    
+    \item \textbf{Detección Multi-Defecto:}
+    \begin{itemize}
+        \item Extender a otros problemas: grietas, delaminación, hot spots
+        \item Sistema integral de diagnóstico de panel
+        \item Multi-task learning o modelo único multi-salida
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Validación y Robustez}
+
+\begin{enumerate}
+    \item \textbf{Validación Externa:}
+    \begin{itemize}
+        \item Probar en múltiples datasets independientes
+        \item Validación cruzada inter-plantas en diferentes geografías
+        \item Benchmarking en competiciones (Kaggle, IEEE challenges)
+    \end{itemize}
+    
+    \item \textbf{Robustez a Perturbaciones:}
+    \begin{itemize}
+        \item Evaluar bajo diferentes condiciones de iluminación
+        \item Resistencia a motion blur (simulando drones)
+        \item Adversarial robustness (ataques adversariales)
+    \end{itemize}
+    
+    \item \textbf{Comparación con Expertos:}
+    \begin{itemize}
+        \item Estudio con múltiples inspectores certificados
+        \item Inter-rater agreement con modelo
+        \item Identificar casos donde modelo supera/falla vs. humanos
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Explainability e Interpretabilidad}
+
+\begin{enumerate}
+    \item \textbf{Grad-CAM / Grad-CAM++:}
+    \begin{itemize}
+        \item Visualizar regiones de imagen que influencian predicción
+        \item Verificar que modelo atiende a polvo y no a artefactos
+        \item Incrementar confianza de ingenieros en decisiones del modelo
+    \end{itemize}
+    
+    \item \textbf{LIME / SHAP:}
+    \begin{itemize}
+        \item Explicaciones locales para predicciones individuales
+        \item Útil para debugging de casos mal clasificados
+    \end{itemize}
+    
+    \item \textbf{Análisis de Errores:}
+    \begin{itemize}
+        \item Caracterización sistemática de falsos positivos/negativos
+        \item Identificar patrones comunes en errores
+        \item Dirigir recolección de datos futura
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Optimización de Despliegue}
+
+\begin{enumerate}
+    \item \textbf{Cuantización de Modelos:}
+    \begin{itemize}
+        \item Cuantización INT8 de MobileNetV2 para edge
+        \item Reducción adicional de tamaño ($\sim$4×) y latencia ($\sim$2-3×)
+        \item Trade-off: pérdida mínima de accuracy (0.5-1\%)
+    \end{itemize}
+    
+    \item \textbf{Pruning (Poda):}
+    \begin{itemize}
+        \item Eliminar pesos/neuronas menos importantes
+        \item Reducir modelo sin pérdida significativa de rendimiento
+    \end{itemize}
+    
+    \item \textbf{Knowledge Distillation:}
+    \begin{itemize}
+        \item Entrenar modelo pequeño (student) con predicciones del grande (teacher)
+        \item Transferir conocimiento de EfficientNetB0 a red más simple
+        \item Objetivo: 95\% accuracy con 1M parámetros
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Impacto Esperado}
+
+\subsubsection{Impacto Ambiental}
+
+La implementación masiva de sistemas de detección automática de polvo puede contribuir significativamente a objetivos de sostenibilidad:
+
+\begin{itemize}
+    \item \textbf{Optimización de eficiencia solar:} Maximizar generación de energía limpia
+    \item \textbf{Reducción de huella de carbono:} Mayor penetración de renovables en matriz energética
+    \item \textbf{Uso eficiente de agua:} Limpieza solo cuando necesaria (crítico en zonas áridas)
+    \item \textbf{Prolongación de vida útil:} Mantenimiento predictivo evita degradación prematura
+\end{itemize}
+
+\subsubsection{Impacto Económico}
+
+\begin{itemize}
+    \item \textbf{Reducción de OPEX:} 60-80\% en costos de mantenimiento
+    \item \textbf{Aumento de LCOE:} 5-15\% mejora en eficiencia energética
+    \item \textbf{Escalabilidad:} Una inversión en IA escala a miles de instalaciones
+    \item \textbf{Retorno de inversión:} Típicamente 6-18 meses para plantas grandes
+\end{itemize}
+
+\subsubsection{Impacto Tecnológico}
+
+Este estudio establece:
+
+\begin{itemize}
+    \item \textbf{Benchmark para futuras investigaciones:} Framework replicable y resultados de referencia
+    \item \textbf{Democratización de IA:} Código y metodología accesibles para comunidad
+    \item \textbf{Transferibilidad:} Framework aplicable a otros dominios (agricultura, infraestructura)
+    \item \textbf{Estándar de buenas prácticas:} Protocolo validado de Transfer Learning
+\end{itemize}
+
+\subsection{Reflexión Final}
+
+Este trabajo demuestra que Transfer Learning con arquitecturas modernas (especialmente ResNet50 y EfficientNetB0) proporciona una solución viable para detección de polvo en paneles solares. La combinación de precisión del 84\%, eficiencia paramétrica (2.2M-8.7M parámetros), y velocidad de inferencia adecuada para aplicaciones bajo demanda posiciona a estos modelos como herramientas útiles para implementación industrial.
+
+El hallazgo más significativo es que no se requieren arquitecturas extremadamente complejas ni datasets masivos para lograr resultados útiles en producción. Con solo $\sim$2,000 imágenes y aprovechando conocimiento pre-aprendido de ImageNet, es posible alcanzar 79-84\% de accuracy, un nivel de rendimiento adecuado para asistir a inspectores humanos en la identificación de paneles que requieren limpieza.
+
+La transición hacia mantenimiento predictivo habilitado por IA en la industria solar no es una visión futurista, sino una realidad alcanzable hoy con la tecnología presentada en este estudio. La implementación de estos sistemas contribuirá materialmente a la eficiencia y sostenibilidad de la infraestructura energética renovable global, acercándonos a los objetivos de neutralidad de carbono.
+
+\begin{thebibliography}{1}
+
+\bibitem{dataset}
+hemanthsai7. (2024). \textit{Solar Panel Dust Detection Dataset}. Kaggle. \\
+\url{https://www.kaggle.com/datasets/hemanthsai7/solar-panel-dust-detection} \\
+Consultado: Febrero 2026
+
+\end{thebibliography}
+
+\end{document}

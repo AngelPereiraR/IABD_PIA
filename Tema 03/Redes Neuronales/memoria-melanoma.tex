@@ -1,0 +1,779 @@
+\documentclass[11pt, a4paper]{article}
+
+% --- PAQUETES ESENCIALES ---
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+
+% --- PAQUETES PARA ESTILO ---
+\usepackage{float}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% --- CONFIGURACIÓN DE COLORES Y ENLACES ---
+\definecolor{primaryblue}{RGB}{0, 83, 156}
+\definecolor{linkcolor}{RGB}{0, 102, 204}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primaryblue,
+    urlcolor=linkcolor,
+    pdftitle={Clasificación de Melanoma mediante Redes Neuronales},
+    pdfauthor={Ángel Manuel Pereira Rodríguez}
+}
+
+% --- ESTILO DE TÍTULOS ---
+\titleformat{\section}
+{\color{primaryblue}\normalfont\Large\bfseries}
+{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{primaryblue}\normalfont\large\bfseries}
+{\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+{\color{primaryblue}\normalfont\normalsize\bfseries}
+{\thesubsubsection}{1em}{}
+
+% --- CABECERA Y PIE DE PÁGINA ---
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small\textcolor{gray}{Clasificación de Melanoma}}
+\lhead{\small\textcolor{gray}{\today}}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- CONFIGURACIÓN DE LISTINGS ---
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{green!50!black},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{red},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+% --- TÍTULO DEL DOCUMENTO ---
+\title{\textbf{Clasificación de Melanoma mediante Redes Neuronales:\\Comparación de Arquitecturas DNN, CNN y Transfer Learning}}
+\author{Ángel Manuel Pereira Rodríguez}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+El melanoma es uno de los tipos de cáncer de piel más agresivos, cuya detección temprana es crucial para mejorar las tasas de supervivencia. Este estudio presenta una comparación exhaustiva de tres arquitecturas de redes neuronales para la clasificación automática de imágenes de lesiones cutáneas en dos categorías: benignas y malignas. Se evaluaron tres enfoques: una Red Neuronal Densa (DNN), una Red Neuronal Convolucional (CNN) entrenada desde cero, y Transfer Learning utilizando MobileNetV2 pre-entrenada en ImageNet. Utilizando un dataset de 10,605 imágenes del repositorio de Kaggle, los tres modelos demostraron un rendimiento robusto con precisiones de 90.90\%, 90.80\% y 90.50\% respectivamente. El modelo DNN sorprendentemente alcanzó la mayor precisión con un rendimiento balanceado entre clases, mientras que Transfer Learning ofreció el mejor compromiso entre eficiencia (98\% menos parámetros entrenables) y rendimiento. Los resultados sugieren que arquitecturas relativamente simples pueden ser efectivas para este problema, y que Transfer Learning es ideal para escenarios con recursos computacionales limitados.
+\end{abstract}
+
+\tableofcontents
+\clearpage
+
+\section{Introducción}
+
+El melanoma es la forma más mortal de cáncer de piel, representando aproximadamente el 75\% de las muertes relacionadas con cáncer cutáneo a pesar de constituir solo el 4\% de todos los casos de cáncer de piel. La detección temprana es fundamental, ya que las tasas de supervivencia a 5 años superan el 99\% cuando se detecta en etapas iniciales, pero se reducen drásticamente a menos del 30\% en etapas avanzadas.
+
+La clasificación visual de lesiones cutáneas es una tarea compleja que requiere experiencia clínica especializada. La variabilidad inter-observador entre dermatólogos puede alcanzar el 20\%, lo que subraya la necesidad de sistemas de apoyo diagnóstico automatizados. En este contexto, las técnicas de aprendizaje profundo han demostrado un potencial significativo para asistir en la detección temprana del melanoma mediante el análisis automático de imágenes dermatoscópicas.
+
+\subsection{Objetivo del Estudio}
+
+El objetivo principal de este trabajo es comparar el rendimiento de tres arquitecturas diferentes de redes neuronales para la clasificación binaria de imágenes de lesiones cutáneas:
+
+\begin{enumerate}
+    \item \textbf{Red Neuronal Densa (DNN):} Un modelo baseline utilizando capas completamente conectadas.
+    \item \textbf{Red Neuronal Convolucional (CNN):} Una arquitectura convolucional entrenada desde cero diseñada específicamente para procesar características espaciales de imágenes.
+    \item \textbf{Transfer Learning:} Aprovechamiento de un modelo pre-entrenado (MobileNetV2) con ajuste fino para la tarea específica.
+\end{enumerate}
+
+\subsection{Dataset Utilizado}
+
+Para este estudio se utilizó el \textit{Melanoma Skin Cancer Dataset of 10,000 Images} disponible en Kaggle\footnote{\url{https://www.kaggle.com/datasets/hasnainjaved/melanoma-skin-cancer-dataset-of-10000-images}}, que contiene 10,605 imágenes dermatoscópicas de alta calidad clasificadas en dos categorías: lesiones benignas y melanomas malignos.
+
+\subsection{Estructura del Documento}
+
+Este documento está organizado de la siguiente manera: la Sección 2 describe la metodología empleada, incluyendo las características del dataset, las arquitecturas de los modelos y los parámetros de entrenamiento; la Sección 3 presenta los resultados experimentales y análisis comparativo; la Sección 4 discute las implicaciones de los hallazgos; y finalmente, la Sección 5 presenta las conclusiones y trabajos futuros.
+
+\section{Metodología}
+
+\subsection{Descripción del Dataset}
+
+El dataset utilizado contiene un total de 10,605 imágenes dermatoscópicas de lesiones cutáneas, distribuidas en dos clases: benignas (sin cáncer) y malignas (melanoma). Las imágenes fueron obtenidas del repositorio de Kaggle y presentan una distribución equilibrada entre clases.
+
+\subsubsection{Características del Dataset}
+
+\begin{itemize}
+    \item \textbf{Total de imágenes:} 10,605
+    \item \textbf{Conjunto de entrenamiento original:} 9,605 imágenes
+    \begin{itemize}
+        \item Benignas: 5,000 (52.06\%)
+        \item Malignas: 4,605 (47.94\%)
+    \end{itemize}
+    \item \textbf{Conjunto de prueba:} 1,000 imágenes
+    \begin{itemize}
+        \item Benignas: 500 (50.0\%)
+        \item Malignas: 500 (50.0\%)
+    \end{itemize}
+\end{itemize}
+
+La Tabla \ref{tab:dataset_dist} muestra la distribución final del dataset después de crear el conjunto de validación.
+
+\begin{table}[H]
+\centering
+\caption{Distribución del dataset por clase y conjunto}
+\label{tab:dataset_dist}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Clase} & \textbf{Entrenamiento} & \textbf{Validación} & \textbf{Prueba} & \textbf{Total} \\
+\midrule
+Benignas       & 4,000 (52.1\%)         & 1,000 (52.1\%)      & 500 (50.0\%)    & 5,500 \\
+Malignas       & 3,684 (47.9\%)         & 921 (47.9\%)        & 500 (50.0\%)    & 5,105 \\
+\midrule
+\textbf{Total} & 7,684 (72.5\%)         & 1,921 (18.1\%)      & 1,000 (9.4\%)   & 10,605 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Preprocesamiento de Datos}
+
+Todas las imágenes fueron sometidas al siguiente pipeline de preprocesamiento:
+
+\begin{enumerate}
+    \item \textbf{Conversión de espacio de color:} BGR a RGB (OpenCV utiliza BGR por defecto)
+    \item \textbf{Redimensionamiento:} Todas las imágenes se redimensionaron a 224$\times$224 píxeles, tamaño estándar compatible con modelos pre-entrenados
+    \item \textbf{Normalización:} Los valores de píxeles se escalaron del rango [0, 255] al rango [0, 1] mediante división por 255
+    \item \textbf{Codificación de etiquetas:} Las etiquetas de clase se convirtieron a formato one-hot encoding
+    \item \textbf{División estratificada:} Se aplicó una división 80/20 del conjunto de entrenamiento para crear el conjunto de validación, manteniendo la proporción de clases
+    \item \textbf{Aleatorización:} Los datos se barajaron aleatoriamente para prevenir sesgos de orden
+\end{enumerate}
+
+Para garantizar la reproducibilidad de los experimentos, se fijó una semilla aleatoria (\texttt{SEED=42}) para todos los generadores de números aleatorios.
+
+\subsection{Arquitecturas de los Modelos}
+
+Se diseñaron e implementaron tres arquitecturas diferentes para abordar el problema de clasificación. La Tabla \ref{tab:arquitecturas} presenta una comparación resumida de las características principales.
+
+\begin{table}[H]
+\centering
+\caption{Comparación de arquitecturas implementadas}
+\label{tab:arquitecturas}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Característica} & \textbf{DNN} & \textbf{CNN} & \textbf{Transfer Learning} \\
+\midrule
+Parámetros entrenables  & 77.24M       & 27.00M       & 0.79M \\
+Parámetros congelados   & 0            & 0            & 2.26M \\
+Capas convolucionales   & 0            & 8            & Incluidas en base \\
+Capas densas            & 3            & 2            & 2 \\
+Data augmentation       & No           & Sí           & Sí \\
+Entrada                 & Aplanada     & 224x224x3    & 224x224x3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Modelo 1: Red Neuronal Densa (DNN)}
+
+La primera arquitectura es un modelo baseline basado en capas completamente conectadas (fully connected). Este modelo sirve como referencia para evaluar la ganancia de rendimiento proporcionada por arquitecturas más complejas.
+
+\textbf{Arquitectura:}
+\begin{itemize}
+    \item \textbf{Capa de entrada:} Imágenes aplanadas a vector de 150,528 características (224$\times$224$\times$3)
+    \item \textbf{Capa densa 1:} 512 neuronas + ReLU + Batch Normalization + Dropout (0.5)
+    \item \textbf{Capa densa 2:} 256 neuronas + ReLU + Batch Normalization + Dropout (0.5)
+    \item \textbf{Capa densa 3:} 128 neuronas + ReLU + Batch Normalization + Dropout (0.5)
+    \item \textbf{Capa de salida:} 2 neuronas + Softmax
+\end{itemize}
+
+\textbf{Regularización:} Se aplicó Batch Normalization después de cada capa densa para estabilizar el entrenamiento, y Dropout con tasa de 0.5 para prevenir sobreajuste.
+
+\textbf{Limitaciones:} Este modelo no aprovecha la estructura espacial de las imágenes, tratándolas como vectores unidimensionales, lo que resulta en una pérdida de información contextual.
+
+\subsubsection{Modelo 2: Red Neuronal Convolucional (CNN)}
+
+La segunda arquitectura es una CNN diseñada desde cero específicamente para esta tarea, capaz de aprender características jerárquicas de las imágenes.
+
+\textbf{Arquitectura (4 bloques convolucionales):}
+
+\begin{itemize}
+    \item \textbf{Bloque 1:} 2$\times$Conv2D(32, 3$\times$3) + MaxPooling(2$\times$2) + BatchNorm + Dropout(0.25)
+    \item \textbf{Bloque 2:} 2$\times$Conv2D(64, 3$\times$3) + MaxPooling(2$\times$2) + BatchNorm + Dropout(0.25)
+    \item \textbf{Bloque 3:} 2$\times$Conv2D(128, 3$\times$3) + MaxPooling(2$\times$2) + BatchNorm + Dropout(0.25)
+    \item \textbf{Bloque 4:} 2$\times$Conv2D(256, 3$\times$3) + MaxPooling(2$\times$2) + BatchNorm + Dropout(0.25)
+    \item \textbf{Flatten}
+    \item \textbf{Capa densa 1:} 512 neuronas + ReLU + BatchNorm + Dropout(0.5)
+    \item \textbf{Capa densa 2:} 256 neuronas + ReLU + BatchNorm + Dropout(0.5)
+    \item \textbf{Capa de salida:} 2 neuronas + Softmax
+\end{itemize}
+
+\textbf{Características:}
+\begin{itemize}
+    \item Filtros convolucionales: 3$\times$3 con padding \texttt{same}
+    \item Pooling: MaxPooling 2$\times$2
+    \item Incremento progresivo de profundidad: 32→64→128→256 filtros
+    \item Reducción espacial: 224$\times$224 → 14$\times$14 (4 pooling layers)
+\end{itemize}
+
+\subsubsection{Modelo 3: Transfer Learning con MobileNetV2}
+
+La tercera arquitectura aprovecha Transfer Learning utilizando MobileNetV2, un modelo ligero pre-entrenado en ImageNet que contiene 1.4M imágenes de 1,000 categorías.
+
+\textbf{Arquitectura:}
+\begin{itemize}
+    \item \textbf{Modelo base:} MobileNetV2 pre-entrenado (congelado)
+    \begin{itemize}
+        \item Parámetros: 2.26M (no entrenables)
+        \item Entrenado en ImageNet
+        \item Diseño eficiente con bloques invertidos residuales
+    \end{itemize}
+    \item \textbf{Capas personalizadas:}
+    \begin{itemize}
+        \item Global Average Pooling 2D
+        \item Densa(512) + ReLU + BatchNorm + Dropout(0.5)
+        \item Densa(256) + ReLU + BatchNorm + Dropout(0.5)
+        \item Salida: Densa(2) + Softmax
+    \end{itemize}
+\end{itemize}
+
+\textbf{Ventajas:}
+\begin{itemize}
+    \item Aprovecha características pre-aprendidas de bajo y alto nivel
+    \item Requiere solo 0.79M parámetros entrenables (97.7\% de parámetros congelados)
+    \item Convergencia más rápida y mejor generalización
+    \item Eficiente en memoria y tiempo de inferencia
+\end{itemize}
+
+\subsection{Data Augmentation}
+
+Para los modelos CNN y Transfer Learning se aplicó data augmentation durante el entrenamiento para aumentar artificialmente la variabilidad del dataset y mejorar la generalización:
+
+\begin{itemize}
+    \item \textbf{Rotación:} $\pm$20 grados
+    \item \textbf{Desplazamiento horizontal/vertical:} 0.2 (20\% del tamaño)
+    \item \textbf{Volteo horizontal:} Activado
+    \item \textbf{Volteo vertical:} Activado
+    \item \textbf{Zoom:} $\pm$15\%
+    \item \textbf{Transformación de corte (shear):} 15\%
+    \item \textbf{Modo de relleno:} \texttt{nearest}
+\end{itemize}
+
+El modelo DNN no utilizó data augmentation debido a que opera con imágenes aplanadas, lo que hace incompatible este tipo de transformaciones.
+
+\subsection{Configuración de Entrenamiento}
+
+Todos los modelos se entrenaron con la siguiente configuración común:
+
+\begin{table}[H]
+\centering
+\caption{Hiperparámetros de entrenamiento}
+\label{tab:hiperparametros}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} \\
+\midrule
+Optimizador          & Adam \\
+Tasa de aprendizaje  & 0.001 \\
+Función de pérdida   & Categorical Crossentropy \\
+Tamaño de batch      & 32 \\
+Épocas máximas       & 50 \\
+Métrica principal    & Accuracy \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Callbacks}
+
+Para optimizar el entrenamiento y prevenir sobreajuste, se implementaron dos callbacks:
+
+\begin{enumerate}
+    \item \textbf{EarlyStopping:}
+    \begin{itemize}
+        \item Monitor: \texttt{val\_loss}
+        \item Paciencia: 10 épocas
+        \item Restaurar mejores pesos: Activado
+    \end{itemize}
+    
+    \item \textbf{ReduceLROnPlateau:}
+    \begin{itemize}
+        \item Monitor: \texttt{val\_loss}
+        \item Factor de reducción: 0.5
+        \item Paciencia: 5 épocas
+        \item Tasa de aprendizaje mínima: 1e-7
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Hardware y Software}
+
+\textbf{Hardware:}
+\begin{itemize}
+    \item GPU: NVIDIA GeForce RTX 4060 Ti
+    \item Configuración: Memoria con crecimiento dinámico habilitado
+\end{itemize}
+
+\textbf{Software:}
+\begin{itemize}
+    \item TensorFlow: 2.10.0 (con soporte GPU)
+    \item CUDA y cuDNN: Habilitados
+    \item Python: 3.9
+    \item NumPy: 1.26.4
+    \item Keras: 2.10.0
+\end{itemize}
+
+\section{Resultados}
+
+\subsection{Rendimiento Global de los Modelos}
+
+Los tres modelos fueron evaluados en el conjunto de prueba de 1,000 imágenes (500 benignas, 500 malignas). La Tabla \ref{tab:resultados_globales} presenta las métricas principales obtenidas.
+
+\begin{table}[H]
+\centering
+\caption{Resultados globales en conjunto de prueba}
+\label{tab:resultados_globales}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Modelo} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+ & & \textbf{(macro)} & \textbf{(macro)} & \textbf{(macro)} \\
+\midrule
+DNN                     & \textbf{90.90\%} & 0.9100 & 0.9090 & 0.9089 \\
+CNN                     & 90.80\%           & \textbf{0.9144} & 0.9080 & 0.9076 \\
+Transfer Learning       & 90.50\%           & 0.9059 & 0.9050 & 0.9049 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Pérdida y parámetros de los modelos}
+\label{tab:loss_params}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Modelo} & \textbf{Test Loss} & \textbf{Parámetros} & \textbf{Épocas} \\
+ & & \textbf{Entrenables} & \textbf{Entrenadas} \\
+\midrule
+DNN               & 0.2219 & 77.24M  & 50 \\
+CNN               & 0.2257 & 27.00M  & 50 \\
+Transfer Learning & \textbf{0.2254} & \textbf{0.79M}   & 50 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Rendimiento por Clase}
+
+La Tabla \ref{tab:resultados_por_clase} muestra el rendimiento detallado de cada modelo para las clases benigna y maligna.
+
+\begin{table}[H]
+\centering
+\caption{Métricas por clase en conjunto de prueba}
+\label{tab:resultados_por_clase}
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+\textbf{Modelo} & \textbf{Clase} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Support} \\
+\midrule
+\multirow{2}{*}{DNN} & Benigna  & 0.89 & 0.93 & 0.91 & 500 \\
+                     & Maligna  & 0.93 & \textbf{0.88} & 0.91 & 500 \\
+\midrule
+\multirow{2}{*}{CNN} & Benigna  & 0.86 & \textbf{0.97} & 0.91 & 500 \\
+                     & Maligna  & 0.97 & 0.85 & 0.90 & 500 \\
+\midrule
+\multirow{2}{*}{Transfer Learning} & Benigna  & 0.89 & 0.93 & 0.91 & 500 \\
+                                   & Maligna  & 0.92 & 0.88 & 0.90 & 500 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Análisis de Matrices de Confusión}
+
+Las matrices de confusión revelan patrones interesantes en los errores de clasificación:
+
+\textbf{Modelo DNN:}
+\begin{itemize}
+    \item Verdaderos positivos (Benigna→Benigna): 467 (93.4\%)
+    \item Falsos positivos (Benigna→Maligna): 33 (6.6\%)
+    \item Falsos negativos (Maligna→Benigna): 58 (11.6\%)
+    \item Verdaderos positivos (Maligna→Maligna): 442 (88.4\%)
+\end{itemize}
+
+\textbf{Modelo CNN:}
+\begin{itemize}
+    \item Verdaderos positivos (Benigna→Benigna): 485 (97.0\%)
+    \item Falsos positivos (Benigna→Maligna): 15 (3.0\%)
+    \item Falsos negativos (Maligna→Benigna): 77 (15.4\%)
+    \item Verdaderos positivos (Maligna→Maligna): 423 (84.6\%)
+\end{itemize}
+
+\textbf{Modelo Transfer Learning:}
+\begin{itemize}
+    \item Verdaderos positivos (Benigna→Benigna): 464 (92.8\%)
+    \item Falsos positivos (Benigna→Maligna): 36 (7.2\%)
+    \item Falsos negativos (Maligna→Benigna): 59 (11.8\%)
+    \item Verdaderos positivos (Maligna→Maligna): 441 (88.2\%)
+\end{itemize}
+
+\subsection{Análisis Comparativo}
+
+\subsubsection{Ranking de Rendimiento}
+
+Basándose en la métrica de accuracy en el conjunto de prueba:
+
+\begin{enumerate}
+    \item \textbf{DNN (90.90\%):} Mejor accuracy global con rendimiento balanceado
+    \item \textbf{CNN (90.80\%):} Segundo lugar con excelente recall para benignas
+    \item \textbf{Transfer Learning (90.50\%):} Tercero pero con la mejor eficiencia paramétrica
+\end{enumerate}
+
+La diferencia entre el mejor y el peor modelo es de solo 0.40\%, lo que indica que las tres arquitecturas son competitivas para esta tarea.
+
+\subsubsection{Eficiencia Paramétrica}
+
+La Tabla \ref{tab:eficiencia} muestra la relación entre complejidad del modelo y rendimiento.
+
+\begin{table}[H]
+\centering
+\caption{Análisis de eficiencia: parámetros vs. rendimiento}
+\label{tab:eficiencia}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Modelo} & \textbf{Parámetros} & \textbf{Accuracy} & \textbf{Parámetros/} \\
+ & \textbf{Entrenables} &  & \textbf{Punto Accuracy} \\
+\midrule
+DNN               & 77.24M & 90.90\% & 849,670 \\
+CNN               & 27.00M & 90.80\% & 297,357 \\
+Transfer Learning & 0.79M  & 90.50\% & \textbf{8,729} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Transfer Learning es \textbf{98\% más eficiente} que DNN en términos de parámetros entrenables, sacrificando solo 0.4\% de accuracy.
+
+\subsubsection{Trade-offs entre Modelos}
+
+\textbf{DNN:}
+\begin{itemize}
+    \item[+] Mayor accuracy global (90.90\%)
+    \item[+] Rendimiento balanceado entre clases
+    \item[+] Mejor recall para melanoma maligno (88\%)
+    \item[-] Altísimo número de parámetros (77M)
+    \item[-] No aprovecha estructura espacial de imágenes
+\end{itemize}
+
+\textbf{CNN:}
+\begin{itemize}
+    \item[+] Excelente precisión para clase maligna (97\%)
+    \item[+] Mejor recall para lesiones benignas (97\%)
+    \item[+] Aprende características espaciales
+    \item[-] Menor recall para melanoma (85\%), crítico clínicamente
+    \item[-] 27M parámetros
+\end{itemize}
+
+\textbf{Transfer Learning:}
+\begin{itemize}
+    \item[+] Extraordinaria eficiencia (0.79M parámetros)
+    \item[+] Convergencia más estable
+    \item[+] Aprovecha conocimiento pre-aprendido
+    \item[+] Ideal para despliegue en dispositivos móviles
+    \item[-] Ligera reducción de accuracy (90.50\%)
+\end{itemize}
+
+\subsection{Análisis de Curvas de Aprendizaje}
+
+Las curvas de entrenamiento revelaron patrones de convergencia diferentes:
+
+\begin{itemize}
+    \item \textbf{DNN:} Convergencia suave y estable, brecha entrenamiento-validación del 5\%
+    \item \textbf{CNN:} Pico de pérdida de validación alrededor de la época 25, recuperado mediante callbacks
+    \item \textbf{Transfer Learning:} Convergencia más rápida y estable, mínimo sobreajuste
+\end{itemize}
+
+Todos los modelos se entrenaron durante las 50 épocas máximas, indicando que los callbacks de EarlyStopping no se activaron.
+
+\section{Discusión}
+
+\subsection{Hallazgo Sorprendente: Rendimiento del DNN}
+
+Un resultado inesperado de este estudio es que el modelo más simple (DNN) alcanzó la mayor accuracy (90.90\%), superando ligeramente a arquitecturas más sofisticadas como CNN y Transfer Learning. Este hallazgo contrasta con la sabiduría convencional que favorece arquitecturas convolucionales para tareas de visión por computadora.
+
+\subsubsection{Posibles Explicaciones}
+
+\begin{enumerate}
+    \item \textbf{Tamaño adecuado del dataset:} Con 9,605 imágenes de entrenamiento, el dataset es suficientemente grande para que un modelo denso aprenda patrones relevantes sin requerir las ventajas de compartición de pesos de las CNNs.
+    
+    \item \textbf{Dataset bien preprocesado:} Las imágenes dermatoscópicas están centradas y normalizadas, reduciendo la necesidad de invariancia espacial que proporcionan las convoluciones.
+    
+    \item \textbf{Capacidad suficiente:} Los 77M parámetros del DNN proporcionan capacidad más que suficiente para memorizar y generalizar patrones complejos.
+    
+    \item \textbf{Balance dataset:} La distribución equilibrada de clases ($\sim$50/50) facilita el aprendizaje efectivo incluso con arquitecturas simples.
+\end{enumerate}
+
+\subsection{Implicaciones Clínicas}
+
+\subsubsection{Crítica de Falsos Negativos}
+
+En el contexto médico del diagnóstico de melanoma, los \textbf{falsos negativos} (clasificar un melanoma como benigno) son significativamente más peligrosos que los falsos positivos. Un falso negativo puede retrasar el tratamiento necesario y empeorar el pronóstico del paciente.
+
+\textbf{Análisis de recall para melanoma maligno:}
+\begin{itemize}
+    \item DNN: 88.4\% (58 falsos negativos de 500)
+    \item CNN: 84.6\% (77 falsos negativos de 500)
+    \item Transfer Learning: 88.2\% (59 falsos negativos de 500)
+\end{itemize}
+
+Desde una perspectiva clínica, el modelo CNN tiene la tasa más alta de falsos negativos (15.4\%), lo que lo hace menos deseable a pesar de su excelente rendimiento en la detección de lesiones benignas. El DNN, con un 11.6\% de falsos negativos, representa un mejor balance para aplicaciones clínicas.
+
+\subsubsection{Recomendación para Implementación Clínica}
+
+Para un sistema de apoyo diagnóstico en dermatología, se recomienda:
+
+\begin{enumerate}
+    \item \textbf{Modelos en cascada:} Usar un modelo sensible (DNN) para screening inicial, seguido de confirmación dermatológica para casos positivos.
+    
+    \item \textbf{Ajuste de umbrales:} Reducir el umbral de clasificación para aumentar el recall de melanoma, aceptando más falsos positivos a cambio de menos falsos negativos.
+    
+    \item \textbf{Ensambles:} Combinar predicciones de los tres modelos mediante votación ponderada para maximizar sensibilidad.
+\end{enumerate}
+
+\subsection{Consideraciones de Despliegue}
+
+\subsubsection{Entornos con Recursos Limitados}
+
+Para aplicaciones en dispositivos móviles, clínicas rurales o países en desarrollo, \textbf{Transfer Learning con MobileNetV2} es la opción óptima:
+
+\begin{itemize}
+    \item Requiere solo 0.79M parámetros entrenables
+    \item Modelo completo: $\sim$12 MB en disco
+    \item Inferencia rápida incluso en CPU
+    \item Consumo mínimo de memoria RAM
+    \item Sacrifica solo 0.4\% de accuracy respecto al mejor modelo
+\end{itemize}
+
+\subsubsection{Entornos con Recursos Abundantes}
+
+Para hospitales o centros de investigación con infraestructura GPU, el \textbf{modelo DNN} es preferible:
+
+\begin{itemize}
+    \item Máxima accuracy (90.90\%)
+    \item Mejor balance precision-recall
+    \item Menor tasa de falsos negativos
+    \item Los 77M parámetros no son problemáticos con GPU moderna
+\end{itemize}
+
+\subsection{Impacto del Data Augmentation}
+
+El data augmentation se aplicó solo a CNN y Transfer Learning, mientras que DNN entrenó sin estas técnicas. A pesar de esto, DNN logró el mejor rendimiento, lo que sugiere:
+
+\begin{enumerate}
+    \item El tamaño del dataset (9,605 imágenes) puede ser suficiente sin augmentation
+    \item Las transformaciones aplicadas (rotación, flip, zoom) no fueron críticas para esta tarea
+    \item DNN compensó la falta de augmentation con su alta capacidad de parámetros
+\end{enumerate}
+
+Un experimento futuro interesante sería aplicar data augmentation al DNN mediante pre-generación de imágenes transformadas y evaluación del impacto en rendimiento.
+
+\subsection{Limitaciones del Estudio}
+
+\subsubsection{Limitaciones Metodológicas}
+
+\begin{enumerate}
+    \item \textbf{Clasificación binaria únicamente:} El estudio se limitó a distinguir entre benigno y maligno, sin clasificación de subtipos de melanoma (superficial, nodular, lentiginoso, acral).
+    
+    \item \textbf{Fuente única de datos:} Todas las imágenes provienen de un único dataset de Kaggle, lo que puede introducir sesgos no detectados respecto a equipos de captura, poblaciones o protocolos de imagen.
+    
+    \item \textbf{Sin validación externa:} No se evaluó el rendimiento en datasets externos independientes (ej. ISIC Archive, HAM10000).
+    
+    \item \textbf{Falta de análisis de explainability:} No se implementaron técnicas de interpretabilidad (Grad-CAM, LIME) para visualizar qué características aprenden los modelos.
+\end{enumerate}
+
+\subsubsection{Limitaciones Prácticas}
+
+\begin{enumerate}
+    \item \textbf{Ausencia de información demográfica:} No se consideraron factores como edad, sexo, fototipo o localización anatómica de las lesiones.
+    
+    \item \textbf{Imágenes dermatoscópicas únicamente:} No se evaluó el rendimiento con fotografías clínicas estándar (sin dermatoscopio).
+    
+    \item \textbf{Sin comparación con dermatólogos:} No se realizó benchmarking contra diagnósticos de especialistas humanos.
+\end{enumerate}
+
+\subsection{Generalización de Resultados}
+
+Los resultados obtenidos ($\sim$91\% accuracy) son prometedores y comparables con reportes en la literatura para clasificación binaria benigno/maligno. Sin embargo, la generalización a entornos clínicos reales requiere:
+
+\begin{itemize}
+    \item Validación prospectiva en múltiples instituciones
+    \item Evaluación en diferentes equipos dermatoscópicos
+    \item Pruebas con diversidad demográfica y de fototipos
+    \item Estudios de acuerdo inter-rater con dermatólogos
+\end{itemize}
+
+\section{Conclusiones}
+
+\subsection{Resumen de Hallazgos Principales}
+
+Este estudio presentó una comparación exhaustiva de tres arquitecturas de redes neuronales para la clasificación de melanoma en imágenes dermatoscópicas. Los principales hallazgos son:
+
+\begin{enumerate}
+    \item \textbf{Rendimiento competitivo:} Las tres arquitecturas demostraron rendimiento robusto con accuracies entre 90.50\% y 90.90\%, con una diferencia mínima de 0.40\% entre el mejor y el peor modelo.
+    
+    \item \textbf{Sorpresa del DNN:} Contrario a expectativas, el modelo más simple (DNN) alcanzó la mayor accuracy (90.90\%) con el rendimiento más balanceado entre clases.
+    
+    \item \textbf{Fortalezas específicas:} La CNN demostró excelente recall para lesiones benignas (97\%) pero menor sensibilidad para melanoma (85\%), lo que limita su aplicabilidad clínica.
+    
+    \item \textbf{Eficiencia destacada:} Transfer Learning con MobileNetV2 logró 90.50\% accuracy con solo 789,250 parámetros entrenables, representando una reducción del 98\% respecto al DNN.
+    
+    \item \textbf{Trade-off validado:} Se confirmó el trade-off entre complejidad y rendimiento, donde Transfer Learning ofrece el mejor compromiso para despliegue práctico.
+\end{enumerate}
+
+\subsection{Recomendaciones Prácticas}
+
+\subsubsection{Para Aplicaciones Clínicas}
+
+\begin{itemize}
+    \item \textbf{Usar DNN} cuando:
+    \begin{itemize}
+        \item Se dispone de infraestructura GPU
+        \item La máxima accuracy es prioritaria
+        \item Se requiere balance entre sensibilidad y especificidad
+    \end{itemize}
+    
+    \item \textbf{Usar Transfer Learning} cuando:
+    \begin{itemize}
+        \item Se necesita despliegue en dispositivos móviles
+        \item Los recursos computacionales son limitados
+        \item La inferencia rápida es crítica
+    \end{itemize}
+    
+    \item \textbf{Evitar CNN} en su forma actual debido a su alta tasa de falsos negativos (15.4\%), aunque podría optimizarse ajustando umbrales de clasificación.
+\end{itemize}
+
+\subsubsection{Para Mejoras Futuras}
+
+\begin{enumerate}
+    \item \textbf{Implementar ensambles:} Combinar predicciones de DNN y Transfer Learning mediante votación ponderada o stacking para maximizar tanto accuracy como eficiencia.
+    
+    \item \textbf{Ajustar umbrales:} Optimizar el punto de corte de clasificación para minimizar falsos negativos, aceptando un aumento en falsos positivos.
+    
+    \item \textbf{Fine-tuning selectivo:} Para Transfer Learning, descongelar las últimas capas de MobileNetV2 y reentrenar con learning rate bajo para mejorar adaptación.
+\end{enumerate}
+
+\subsection{Trabajos Futuros}
+
+Las siguientes líneas de investigación podrían extender y mejorar este trabajo:
+
+\subsubsection{Mejoras Arquitectónicas}
+
+\begin{enumerate}
+    \item \textbf{Arquitecturas más modernas:} Evaluar modelos más recientes como EfficientNetV2, Vision Transformers (ViT) o Swin Transformers.
+    
+    \item \textbf{Modelos ensamble:} Implementar combinaciones de los tres modelos evaluados mediante:
+    \begin{itemize}
+        \item Votación por mayoría
+        \item Promedio ponderado de probabilidades
+        \item Meta-aprendizaje (modelo que aprende a combinar predicciones)
+    \end{itemize}
+    
+    \item \textbf{Arquitecturas de atención:} Incorporar mecanismos de atención espacial para que el modelo se enfoque en regiones relevantes de las lesiones.
+\end{enumerate}
+
+\subsubsection{Extensión del Problema}
+
+\begin{enumerate}
+    \item \textbf{Clasificación multi-clase:} Extender a categorías adicionales:
+    \begin{itemize}
+        \item Subtipos de melanoma
+        \item Otros tipos de cáncer de piel (carcinoma basocelular, escamoso)
+        \item Lesiones benignas específicas (nevus, queratosis seborreica)
+    \end{itemize}
+    
+    \item \textbf{Segmentación:} Implementar segmentación semántica para delinear automáticamente bordes de lesiones.
+    
+    \item \textbf{Detección de características clínicas:} Identificar criterios ABCDE (Asimetría, Bordes, Color, Diámetro, Evolución).
+\end{enumerate}
+
+\subsubsection{Validación y Generalización}
+
+\begin{enumerate}
+    \item \textbf{Validación externa:} Evaluar en datasets independientes:
+    \begin{itemize}
+        \item ISIC Archive (International Skin Imaging Collaboration)
+        \item HAM10000 (Human Against Machine)
+        \item PH2 Database
+    \end{itemize}
+    
+    \item \textbf{Estudios clínicos prospectivos:} Validación en entornos reales con múltiples instituciones y dermatólogos.
+    
+    \item \textbf{Análisis de subgrupos:} Evaluar rendimiento estratificado por:
+    \begin{itemize}
+        \item Fototipo de piel (Fitzpatrick I-VI)
+        \item Edad del paciente
+        \item Localización anatómica
+        \item Equipos de captura
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Interpretabilidad y Explicabilidad}
+
+\begin{enumerate}
+    \item \textbf{Grad-CAM:} Visualizar mapas de activación para identificar regiones de imagen que influencian las predicciones.
+    
+    \item \textbf{LIME/SHAP:} Explicaciones locales de predicciones individuales para aumentar confianza clínica.
+    
+    \item \textbf{Análisis de errores:} Caracterización detallada de casos mal clasificados para identificar limitaciones sistemáticas.
+\end{enumerate}
+
+\subsection{Impacto Potencial}
+
+Los sistemas de clasificación automática de melanoma basados en aprendizaje profundo tienen el potencial de:
+
+\begin{itemize}
+    \item \textbf{Democratizar el acceso:} Llevar capacidades diagnósticas especializadas a áreas rurales o países en desarrollo mediante aplicaciones móviles.
+    
+    \item \textbf{Screening masivo:} Implementar programas de detección temprana poblacional con costos reducidos.
+    
+    \item \textbf{Apoyo a médicos generales:} Asistir a profesionales no especializados en la decisión de derivación a dermatología.
+    
+    \item \textbf{Triaje automatizado:} Priorizar casos sospechosos en sistemas de salud con demanda elevada.
+    
+    \item \textbf{Educación:} Herramienta de entrenamiento para estudiantes de medicina y residentes de dermatología.
+\end{itemize}
+
+\subsection{Reflexión Final}
+
+Este trabajo demuestra que múltiples arquitecturas de redes neuronales pueden alcanzar resultados competitivos para la clasificación de melanoma ($\sim$91\% accuracy), validando la versatilidad del aprendizaje profundo en problemas de visión médica. El hallazgo sorprendente de que un modelo denso simple supera a arquitecturas convolucionales especializadas subraya la importancia de no asumir que la complejidad arquitectónica garantiza mejor rendimiento.
+
+La elección entre modelos debe guiarse por el contexto de aplicación: máxima accuracy para investigación y hospitales con recursos (DNN), o máxima eficiencia para despliegue en el mundo real (Transfer Learning). En última instancia, la implementación clínica exitosa requerirá no solo alta precisión algorítmica, sino también validación regulatoria, integración en flujos de trabajo clínicos, y aceptación por parte de profesionales médicos.
+
+La detección temprana del melanoma salva vidas, y las herramientas de inteligencia artificial tienen el potencial de amplificar significativamente las capacidades diagnósticas globales, especialmente en poblaciones con acceso limitado a dermatólogos especializados.
+
+\begin{thebibliography}{1}
+
+\bibitem{dataset}
+Javed, H. (2023). \textit{Melanoma Skin Cancer Dataset of 10,000 Images}. Kaggle. \\
+\url{https://www.kaggle.com/datasets/hasnainjaved/melanoma-skin-cancer-dataset-of-10000-images}
+
+\end{thebibliography}
+
+\end{document}

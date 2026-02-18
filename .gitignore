@@ -8,3 +8,7 @@ Pruebas/
 *.env
 
 venv_tf_gpu/
+
+# Build files (LaTeX auxiliary files)
+**/build/*
+!**/build/*.pdf
