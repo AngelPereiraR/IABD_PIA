@@ -6,6 +6,8 @@ Espacio de búsqueda:
   - doclayout / yolo11 : conf_threshold × nms_iou × merge_distance
   - paddleocr / docling: nms_iou × merge_distance
                          (sin conf configurable — hardcodeado a 0.3 en el modelo)
+  - opencv             : merge_distance
+                         (sin conf ni nms_iou — proyección de histograma de columnas)
 
 Uso:
     py -3.11 experiment_models.py
@@ -35,8 +37,8 @@ import post_processing as pp
 # ============================================================================
 
 EXPERIMENT_GRID: Dict[str, Any] = {
-    # ✅ Métodos viables tras FASE 2.2
-    "methods": ["doclayout", "yolo11", "paddleocr", "docling"],
+    # ✅ Métodos viables tras FASE 2.2 + opencv como referencia base (sin modelo DL)
+    "methods": ["doclayout", "yolo11", "paddleocr", "docling", "opencv"],
     "conf_thresholds": [0.1, 0.2, 0.3, 0.4],
     "nms_iou": [0.3, 0.4, 0.5, 0.6],
     "merge_distance": [5, 10, 15, 20],
@@ -47,6 +49,9 @@ METHODS_WITH_CONF = {"doclayout", "yolo11"}
 
 # Métodos sin umbral de confianza (fijado internamente a 0.3 en LayoutPredictor)
 METHODS_WITHOUT_CONF = {"paddleocr", "docling"}
+
+# Métodos sin conf_threshold ni nms_iou — solo merge_distance varía
+METHODS_ONLY_MERGE = {"opencv"}
 
 # Rutas por defecto
 IMAGES_DIR = Path(__file__).parent / "imgs"
@@ -96,16 +101,20 @@ def run_single_experiment(
         # según el método (doclayout_conf vs yolo11_conf).
         kwargs: Dict[str, Any] = dict(
             method=method,
-            nms_iou=config["nms_iou"],
             merge_distance=config["merge_distance"],
             debug=False,
             image_path=image_path,   # solo para nombrar la carpeta de debug si debug=True
         )
         if method == "doclayout":
             kwargs["doclayout_conf"] = config["conf"]
+            kwargs["nms_iou"] = config["nms_iou"]
         elif method == "yolo11":
             kwargs["yolo11_conf"] = config["conf"]
-        # paddleocr y docling: sin parámetro de conf, hardcoded a 0.3 en LayoutPredictor
+            kwargs["nms_iou"] = config["nms_iou"]
+        elif method in METHODS_WITHOUT_CONF:
+            # paddleocr y docling: sin conf, hardcoded a 0.3 en LayoutPredictor
+            kwargs["nms_iou"] = config["nms_iou"]
+        # opencv: solo merge_distance — sin nms_iou ni conf_threshold
 
         # detect_columns devuelve ((width, height), List[ColumnBox])
         _size, boxes = detect_columns(img, **kwargs)
@@ -153,6 +162,11 @@ def iter_configs(
     """
     methods = methods or EXPERIMENT_GRID["methods"]
     for method in methods:
+        if method in METHODS_ONLY_MERGE:
+            # opencv: sin conf_threshold ni nms_iou — solo merge_distance varía
+            for merge in EXPERIMENT_GRID["merge_distance"]:
+                yield method, {"merge_distance": merge}
+            continue
         for nms in EXPERIMENT_GRID["nms_iou"]:
             for merge in EXPERIMENT_GRID["merge_distance"]:
                 if method in METHODS_WITH_CONF:
@@ -247,10 +261,11 @@ def run_grid_search(
                 continue  # Ya procesado en sesión anterior
 
             exp_id += 1
-            conf_str = f"conf={config['conf']:.2f}  " if "conf" in config else "conf=N/A(0.3)"
+            conf_str = f"conf={config['conf']:.2f}" if "conf" in config else "conf=N/A "
+            nms_str  = f"nms={config['nms_iou']}" if "nms_iou" in config else "nms=N/A "
             print(
-                f"[{exp_id:>5}/{total}] {method:12s} | {conf_str} "
-                f"nms={config['nms_iou']}  merge={config['merge_distance']:>2d} | {img_name}"
+                f"[{exp_id:>5}/{total}] {method:12s} | {conf_str}  "
+                f"{nms_str}  merge={config['merge_distance']:>2d} | {img_name}"
             )
 
             img = images_cache.get(img_name)

@@ -568,23 +568,25 @@ docling     → 15 regiones ✅
 ```python
 EXPERIMENT_GRID = {
     # ✅ Actualizado tras FASE 2.2: yolo11, paddleocr y docling son viables
+    # ✅ opencv incluido como método base de referencia (sin modelo DL)
     # ❌ layoutparser descartado (bug Windows ?dl=1 insalvable)
     # ❌ surya descartado (1 bbox genérico en imágenes escaneadas)
-    'methods': ['doclayout', 'yolo11', 'paddleocr', 'docling'],
-    'conf_thresholds': [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4],
+    'methods': ['doclayout', 'yolo11', 'paddleocr', 'docling', 'opencv'],
+    'conf_thresholds': [0.1, 0.2, 0.3, 0.4],
     'nms_iou': [0.3, 0.4, 0.5, 0.6],
     'merge_distance': [5, 10, 15, 20],
 }
 ```
 
-**Total configuraciones** (estimado actualizado):
+**Total configuraciones** (valores reales del código):
 
-- DocLayout: 7 conf × 4 nms × 4 merge = 112 configs
-- YOLO11: 7 conf × 4 nms × 4 merge = 112 configs
+- DocLayout: 4 conf × 4 nms × 4 merge = 64 configs
+- YOLO11: 4 conf × 4 nms × 4 merge = 64 configs
 - PaddleOCR: 4 nms × 4 merge = 16 configs (sin conf_threshold)
 - Docling: 4 nms × 4 merge = 16 configs (sin conf_threshold)
+- OpenCV: 4 merge = 4 configs (sin conf_threshold ni nms_iou)
 - ~~Surya: DESCARTADO~~ · ~~LayoutParser: DESCARTADO (Windows bug)~~
-- **Total**: ~256 configuraciones × 18 imágenes = **~4,608 experimentos**
+- **Total**: 164 configuraciones × 18 imágenes = **2.952 experimentos**
 
 **Código**:
 
@@ -799,6 +801,7 @@ Según ranking de `analyze_experiments.py`, seleccionar las 3 mejores configurac
 2. `docling` — 15 regiones en popurri01.jpg
 3. `doclayout` con `conf=0.2, nms_iou=0.4, merge_distance=15`
 4. `yolo11` con `--all-classes --yolo11-conf 0.1`
+5. `opencv` — método base de referencia (proyección de histograma de columnas, sin modelo DL)
 
 ### 4.2 Ejecutar OCR completo
 
@@ -904,6 +907,7 @@ Seleccionar 3-5 imágenes representativas y revisar manualmente:
 | Docling       | ?/40        | ?/25    | ?/20     | ?/10  | ?/5      | ?/100     |
 | DocLayout+PP  | ?/40        | ?/25    | ?/20     | ?/10  | ?/5      | ?/100     |
 | YOLO11        | ?/40        | ?/25    | ?/20     | ?/10  | ?/5      | ?/100     |
+| OpenCV        | ?/40        | ?/25    | ?/20     | ?/10  | ?/5      | ?/100     |
 
 ### 5.2 Decisión
 
@@ -951,14 +955,15 @@ Optimizar detección de columnas para minimizar duplicaciones y pérdida de text
 3. YOLO11 fine-tuned (DocLayNet, Armaggheddon) ✅
 4. PaddleOCR LayoutDetection (PP-DocLayout_plus-L) ✅
 5. Docling (RT-DETR, IBM/Linux Foundation AI) ✅
-6. ~~LayoutParser EfficientDet~~ (DESCARTADO: bug `?dl=1` insalvable en Windows)
+6. OpenCV (proyección de histograma de columnas, método base de referencia) ✅
+7. ~~LayoutParser EfficientDet~~ (DESCARTADO: bug `?dl=1` insalvable en Windows)
 
 ## Resultados
 
 ### Grid Search
 
-- Total experimentos: 2,268
-- Configuraciones probadas: 126
+- Total experimentos: 2.952 (164 configs × 18 imágenes)
+- Configuraciones probadas: 164
 - Duración: X horas
 
 ### Top 3 Configuraciones
@@ -987,13 +992,190 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
 - [ ] Medir métricas de negocio (si aplica)
 - [ ] Considerar fine-tuning si score < 80
 
+````
+
+---
+
+## FASE 6: Benchmark de Motores OCR (4-6 horas)
+
+> Esta fase se ejecuta una vez decidido y fijado el modelo de detección de layout ganador (FASE 5).
+> El objetivo es averiguar qué motor OCR extrae texto con mayor precisión sobre las regiones detectadas.
+
+### 6.1 Prerrequisitos
+
+- Modelo de layout ganador seleccionado (FASE 5)
+- Regiones detectadas con la configuración óptima en las 18 imágenes (`validation_results/<ganador>/`)
+- Instalar dependencias de los motores OCR:
+
+```bash
+# EasyOCR (probablemente ya instalado)
+pip install easyocr
+
+# Tesseract (binario externo + wrapper Python)
+# Binario: https://github.com/UB-Mannheim/tesseract/wiki
+pip install pytesseract
+
+# PaddleOCR (probablemente ya instalado, reutilizar desde FASE 2)
+# paddlepaddle==3.2.2 + paddleocr[doc-parser] ya instalados
+
+# DeepSeek-OCR-2 (modelo local — REQUIERE GPU + CUDA 11.8, NO ejecutable en CPU-only Windows)
+# git clone https://github.com/deepseek-ai/DeepSeek-OCR-2.git
+# pip install torch==2.6.0 torchvision --index-url https://download.pytorch.org/whl/cu118
+# pip install -r requirements.txt
+# pip install flash-attn==2.7.3 --no-build-isolation
+# Modelo HuggingFace: deepseek-ai/DeepSeek-OCR-2 (AutoModel + .eval().cuda().to(torch.bfloat16))
+# ALTERNATIVA sin GPU: omitir DeepSeek-OCR-2 del benchmark o usar API remota si disponible
+````
+
+### 6.2 Motores OCR a comparar
+
+| Motor              | Tipo                         | Implementación                                                                                  | GPU necesaria                                      |
+| ------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **EasyOCR**        | Deep Learning (CRAFT + CRNN) | `easyocr.Reader(['es','en'])`                                                                   | No (CPU ok)                                        |
+| **Tesseract**      | HMM / LSTM                   | `pytesseract.image_to_string()`                                                                 | No                                                 |
+| **PaddleOCR**      | Deep Learning (PP-OCRv4)     | `PaddleOCR(use_textline_orientation=False)`                                                     | No (`enable_mkldnn=False`)                         |
+| **DeepSeek-OCR-2** | Vision-Language Model (VLM)  | `AutoModel.from_pretrained('deepseek-ai/DeepSeek-OCR-2', trust_remote_code=True).eval().cuda()` | **Sí — CUDA 11.8 + torch 2.6 + flash_attention_2** |
+
+> **Nota sobre DeepSeek-OCR-2:** Modelo real disponible en HuggingFace (`deepseek-ai/DeepSeek-OCR-2`). Requiere CUDA 11.8, torch 2.6.0 y `flash_attention_2`. Inferencia local via `transformers.AutoModel`; para producción, se recomienda vLLM (Linux). Prompt recomendado: `"<image>\nFree OCR."` Para extracción estructurada: `"<image>\n<|grounding|>Convert the document to markdown."`. **En el equipo actual (CPU-only, Windows):** omitir del benchmark o ejecutar en servidor remoto con GPU.
+
+### 6.3 Script `benchmark_ocr_engines.py`
+
+**Archivo**: `benchmark_ocr_engines.py`
+
+**Flujo**:
+
 ```
+Para cada imagen (18 imgs):
+  1. Cargar regiones del modelo ganador (validate_ocr.py ya las guarda en per_region)
+     O re-ejecutar detect_columns con la config ganadora para obtener las cajas
+  2. Para cada motor OCR [easyocr, tesseract, paddleocr, deepseek]:
+     a. Pasar cada region (crop de imagen) al motor
+     b. Acumular texto extraido
+  3. Calcular métricas por motor y por imagen
+4. Generar informe comparativo
+```
+
+**Estructura del script**:
+
+```python
+def run_easyocr(regions: list[np.ndarray], langs=["es","en"]) -> list[str]:
+    """EasyOCR: inicializar Reader una vez y reutilizar"""
+
+def run_tesseract(regions: list[np.ndarray], lang="spa+eng") -> list[str]:
+    """Tesseract: pytesseract.image_to_string con PSM 6 (bloque uniforme)"""
+
+def run_paddleocr(regions: list[np.ndarray]) -> list[str]:
+    """PaddleOCR PP-OCRv4: reutilizar instancia con enable_mkldnn=False"""
+
+def run_deepseek(regions: list[np.ndarray], model, tokenizer) -> list[str]:
+    """DeepSeek-OCR-2: inferencia local via transformers (REQUIERE GPU/CUDA).
+    Modelo: deepseek-ai/DeepSeek-OCR-2
+    Prompt: '<image>\\nFree OCR.'  (alternativa: '<image>\\n<|grounding|>Convert the document to markdown.')
+    Carga: AutoModel.from_pretrained(..., _attn_implementation='flash_attention_2',
+                                     trust_remote_code=True).eval().cuda().to(torch.bfloat16)
+    NOTA: En CPU-only Windows devuelve lista vacía con aviso; no lanza excepción.
+    """
+
+def score_ocr_output(text: str, reference_vocab: set = None) -> dict:
+    """
+    Calcula metricas de calidad del texto extraido:
+      - total_chars: caracteres sin espacios
+      - total_words: palabras (>=2 letras)
+      - vocab_ratio: fraccion de palabras en diccionario ES/EN
+      - no_garbage_ratio: fraccion de regiones con texto coherente (>5 palabras reales)
+      - avg_word_len: longitud media de palabra (basura suele tener <2)
+      - wer: Word Error Rate si se dispone de ground truth
+      - cer: Character Error Rate si se dispone de ground truth
+    """
+
+def compare_engines(
+    image_paths: list[Path],
+    winner_config: dict,
+    engines: list[str] = ["easyocr", "tesseract", "paddleocr", "deepseek"],
+    output_dir: Path = Path("ocr_benchmark"),
+    skip_deepseek_if_no_gpu: bool = True,  # omite DeepSeek automáticamente en CPU-only
+) -> None:
+    """Punto de entrada principal. Genera:
+      - ocr_benchmark_report.json
+      - ocr_benchmark_report.csv
+      - ocr_benchmark_report.txt (tabla comparativa)
+    DeepSeek-OCR-2 se omite si no hay CUDA disponible y skip_deepseek_if_no_gpu=True.
+    """
+```
+
+### 6.4 Métricas de evaluación
+
+**Sin ground truth** (modo automático, usando heurísticas):
+
+| Métrica             | Descripción                                      | Rango ideal   |
+| ------------------- | ------------------------------------------------ | ------------- |
+| `total_chars`       | Total caracteres extraídos (sin espacios)        | Mayor = mejor |
+| `total_words`       | Palabras con ≥2 letras                           | Mayor = mejor |
+| `vocab_ratio`       | Fracción de palabras en diccionario ES+EN        | > 0.80        |
+| `no_garbage_ratio`  | Regiones con ≥5 palabras reales / total regiones | > 0.85        |
+| `avg_word_len`      | Longitud media de palabra (basura ≈ 1–2 chars)   | 4–6           |
+| `time_per_image_ms` | Tiempo medio por imagen                          | Menor = mejor |
+
+**Con ground truth** (si se genera manualmente para 3–5 imágenes):
+
+| Métrica | Descripción          | Rango ideal |
+| ------- | -------------------- | ----------- |
+| `WER`   | Word Error Rate      | < 15%       |
+| `CER`   | Character Error Rate | < 8%        |
+
+**Fórmula de scoring OCR benchmark**:
+
+```
+score = vocab_ratio * 40  +  no_garbage_ratio * 30  +  (total_words / max_words_entre_engines) * 20  -  (time_per_image_ms / 1000) * 10
+```
+
+### 6.5 Informe comparativo
+
+**Salidas del script**:
+
+- `ocr_benchmark_report.txt` — tabla comparativa legible por columna
+- `ocr_benchmark_report.csv` — datos tabulados para análisis
+- `ocr_benchmark_report.json` — datos detallados por motor, imagen y región
+- `ocr_benchmark/<motor>/<imagen>/` — texto extraido por región y total
+
+**Ejemplo de tabla esperada**:
+
+```
+============================================================================================
+BENCHMARK OCR — Comparativa de motores sobre layout [ganador]
+============================================================================================
+  Motor        Words    Chars   VocabR%  NoGarb%  AvgWLen  Time/img(ms)   SCORE
+  ----------   ------   ------  -------  -------  -------  ------------   -----
+  easyocr       XXXX    XXXXX    XX.X      XX.X     X.X         XXXX       XX.X
+  tesseract     XXXX    XXXXX    XX.X      XX.X     X.X         XXXX       XX.X
+  paddleocr     XXXX    XXXXX    XX.X      XX.X     X.X         XXXX       XX.X
+  deepseek      XXXX    XXXXX    XX.X      XX.X     X.X         XXXX       XX.X  <-- GPU (omitido en CPU-only)
+============================================================================================
+Ganador: [motor] con score XX.X
+```
+
+### 6.6 Selección final del stack completo
+
+Al concluir esta fase se dispone del **pipeline óptimo completo**:
+
+```
+Imagen de documento
+    ↓
+[Modelo de layout ganador, FASE 5]
+    ↓  regiones detectadas
+[Motor OCR ganador, FASE 6]
+    ↓
+Texto estructurado por columnas
+```
+
+Este pipeline se documenta en `README.md` y queda disponible como configuración por defecto del proyecto.
 
 ---
 
 ## TIMELINE ESTIMADO
 
 ### Día 1 (8 horas) - ✅ FASE 1 COMPLETADA
+
 - [x] **Mañana (4h)**: FASE 1 - Post-procesamiento completo
   - [x] Crear `post_processing.py`
   - [x] Integrar en `detect_columns.py`
@@ -1003,6 +1185,7 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
   - ❌ Surya: Devuelve bbox genérico — no funciona con imágenes escaneadas
 
 ### Día 2 (9 horas) — ✅ FASE 2.2 COMPLETADA
+
 - [x] **Mañana (2h)**: FASE 2.2.1 — YOLO11 fine-tuned ✅
   - [x] Instalar `ultralytics 8.2.103` + `huggingface_hub 0.36.2`
   - [x] Implementar `detect_columns_yolo11()`
@@ -1017,11 +1200,13 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
   - [x] Probar en imgs/popurri01.jpg → **15 regiones** ✅
 
 ### Día 3 (4 horas) — ✅ FASE 2.2 (cont.) completada
+
 - [x] **Mañana (3h)**: FASE 2.2.4 — LayoutParser ❌ (evaluado y descartado — bug `?dl=1` insalvable en Windows)
 - [x] **Tarde (1h)**: Actualizar `EXPERIMENT_GRID` con métodos viables ✅
   - [x] Añadidos: `yolo11`, `paddleocr`, `docling` · Descartados: `surya`, `layoutparser`
 
 ### Día 5 (4 horas)
+
 - [x] **Tarde (4h)**: FASE 3.1 - Crear `experiment_models.py` ✅
   - Script de grid search con todos los métodos viables de FASE 2.2
   - API correcta: `detect_columns(img: np.ndarray, ...)`, desempaquetado `_size, boxes = ...`
@@ -1033,6 +1218,7 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
   - Fórmula: `score = mean_boxes*2.0 - total_duplicates*10.0`
 
 ### Día 6 (8 horas)
+
 - [ ] **Mañana (4h)**: FASE 3.2 - Ejecutar grid search
   - Correr `py -3.11 experiment_models.py` (≈4608 experimentos, ~2-3h)
   - Monitorear progreso con checkpoints por método
@@ -1041,6 +1227,7 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
   - Seleccionar top 3 configuraciones por método
 
 ### Día 7 (8 horas)
+
 - [ ] **Mañana (4h)**: FASE 4 - Validación OCR
   - Ejecutar OCR con top 3 configs
   - Comparación automática
@@ -1049,32 +1236,50 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
   - Scoring final
 
 ### Día 8 (4 horas)
-- [ ] **Mañana (3h)**: FASE 5 - Decisión y deployment
-  - Actualizar defaults
-  - Documentación
-- [ ] **Tarde (1h)**: Limpieza y entrega
-  - Commit cambios
-  - README actualizado
 
-**Total estimado**: ~57 horas (~7 días laborables)
+- [ ] **Mañana (3h)**: FASE 5 — Decisión y deployment
+  - Actualizar defaults en `detect_columns.py`
+  - Generar `LAYOUT_DETECTION_EXPERIMENTS.md`
+- [ ] **Tarde (1h)**: Preparar regiones para FASE 6
+  - Ejecutar modelo ganador sobre las 18 imágenes
+  - Verificar que `validation_results/<ganador>/` está completo
+
+### Día 9 (6 horas)
+
+- [ ] **Mañana (4h)**: FASE 6 — Benchmark de motores OCR
+  - Crear `benchmark_ocr_engines.py`
+  - Ejecutar EasyOCR + Tesseract + PaddleOCR sobre las 18 imágenes
+  - Ejecutar DeepSeek OCR (API) si se dispone de clave
+- [ ] **Tarde (2h)**: FASE 6 — Análisis e informe final
+  - Calcular métricas automáticas (`vocab_ratio`, `no_garbage_ratio`, `time_per_image`)
+  - Revisar manualmente 3–5 imágenes representativas
+  - Generar `ocr_benchmark_report.txt` + `README.md` actualizado
+
+**Total estimado**: ~65 horas (~9 días laborables)
+
 - Día 1 (8h): FASE 1 ✅
-- Día 2 (9h): FASE 2.2 — YOLO11 + PaddleOCR + Docling
-- Día 3 (4h): FASE 2.2 — LayoutParser evaluado (descartado) + consolidación
-- Día 4 (4h): Inicio FASE 3
-- Días 5–8: FASE 3, 4, 5
+- Días 2–3 (13h): FASE 2.2 ✅
+- Días 4–5 (8h): FASE 3.1 + scripts ✅
+- Día 6 (8h): FASE 3.2–3.3 (grid search + análisis)
+- Día 7 (8h): FASE 4 (validación OCR layout)
+- Día 8 (4h): FASE 5 (decisión + deployment)
+- Día 9 (6h): FASE 6 (benchmark motores OCR)
 
 ---
 
 ## ARCHIVOS A CREAR/MODIFICAR
 
 ### Nuevos archivos
+
 - [x] `post_processing.py` - Módulo de post-procesamiento ✅ COMPLETADO
 - [x] `experiment_models.py` - Grid search automático ✅ COMPLETADO
 - [x] `analyze_experiments.py` - Análisis de resultados ✅ COMPLETADO
-- [ ] `compare_ocr_quality.py` - Comparación de outputs OCR
+- [x] `validate_ocr.py` - Validación OCR top-N configuraciones (FASE 4) ✅ COMPLETADO
+- [ ] `benchmark_ocr_engines.py` - Benchmark EasyOCR vs Tesseract vs PaddleOCR vs DeepSeek (FASE 6)
 - [ ] `LAYOUT_DETECTION_EXPERIMENTS.md` - Documentación de experimentos
 
 ### Archivos a modificar
+
 - [x] `detect_columns.py` - Post-processing integrado ✅ COMPLETADO
   - [x] Añadir `detect_columns_yolo11()` (FASE 2.2.1) ✅
   - [x] Añadir `detect_columns_paddleocr()` (FASE 2.2.2) ✅
@@ -1087,31 +1292,44 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
 
 ## MÉTRICAS DE ÉXITO
 
-### Objetivos cuantitativos
+### Objetivos cuantitativos — Layout Detection (FASES 1–5)
+
 - [ ] Reducir duplicaciones en >80% vs baseline DocLayout 0.25
 - [ ] Mantener cobertura >95% (no perder texto vs ground truth)
 - [ ] Tiempo de procesamiento <2x vs método más rápido
 
+### Objetivos cuantitativos — OCR Benchmark (FASE 6)
+
+- [ ] Motor ganador con `vocab_ratio` > 0.85 sobre el dataset completo
+- [ ] `no_garbage_ratio` > 0.90 (< 10% de regiones con texto basura)
+- [ ] Si se crea ground truth: WER < 15%, CER < 8%
+- [ ] Diferencia clara (> 5 puntos de score) entre el ganador y el segundo
+
 ### Objetivos cualitativos
+
 - [ ] Texto extraído coherente (orden correcto)
 - [ ] Mínimas intervenciones manuales necesarias
 - [ ] Configuración reproducible y documentada
+- [ ] Pipeline completo documentado: modelo layout + motor OCR óptimos
 
 ---
 
 ## CONTINGENCIAS
 
 ### Si grid search toma demasiado tiempo
+
 - Reducir espacio de búsqueda: 3 valores por parámetro en vez de 4-7
 - Usar subset de imágenes (6 en vez de 18) para búsqueda inicial
 - Paralelizar con multiprocessing
 
 ### Si ningún modelo alcanza score >75
+
 - Considerar enfoque híbrido: reglas para seleccionar modelo según características de imagen
 - Evaluar fine-tuning de DocLayout-YOLO en dataset específico
 - Implementar sistema de voting (combinar detecciones de múltiples modelos)
 
 ### Si hay limitaciones de GPU/RAM
+
 - Procesar en batches más pequeños
 - Usar versiones "light" de modelos (ejemplo: DocLayout-Base en vez de Large)
 - Ejecutar en Google Colab con GPU T4 gratuita
@@ -1121,16 +1339,22 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
 ## NOTAS ADICIONALES
 
 ### Consideraciones técnicas
+
 - Todos los experimentos deben usar misma versión de dependencias
 - Guardar configuración exacta (versions, random seeds si aplica)
 - Usar imágenes originales sin pre-procesamiento para comparación justa
 
 ### Validación estadística
+
 - Si diferencias entre top configs son <5%, considerar empate técnico
 - En caso de empate, preferir modelo más simple/rápido
 
 ### Aprendizajes esperados
+
 - Identificar qué parámetros tienen mayor impacto
 - Entender trade-offs entre modelos
 - Crear framework reutilizable para futuros experimentos
+
+```
+
 ```

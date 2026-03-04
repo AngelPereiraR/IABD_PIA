@@ -67,7 +67,7 @@ def load_results(json_path: Path) -> pd.DataFrame:
                 "method": r["method"],
                 # conf es None para paddleocr/docling (no tienen umbral configurable)
                 "conf": cfg.get("conf"),          # float o None
-                "nms_iou": cfg["nms_iou"],
+                "nms_iou": cfg.get("nms_iou"),   # None para opencv (sin nms_iou configurable)
                 "merge_distance": cfg["merge_distance"],
                 "success": mts.get("success", False),
                 "num_boxes": mts.get("num_boxes", 0),
@@ -81,10 +81,10 @@ def load_results(json_path: Path) -> pd.DataFrame:
     df = pd.DataFrame(rows)
 
     # Conversión de tipos
-    df["conf"] = pd.to_numeric(df["conf"], errors="coerce")   # NaN para paddleocr/docling
+    df["conf"]    = pd.to_numeric(df["conf"],    errors="coerce")  # NaN para paddleocr/docling
+    df["nms_iou"] = pd.to_numeric(df["nms_iou"], errors="coerce")  # NaN para opencv
     df["num_boxes"] = df["num_boxes"].astype(int)
     df["duplicates"] = df["duplicates"].astype(int)
-    df["nms_iou"] = df["nms_iou"].astype(float)
     df["merge_distance"] = df["merge_distance"].astype(int)
 
     return df
@@ -170,8 +170,9 @@ def format_top_report(top: Dict[str, pd.DataFrame]) -> str:
         lines.append("-" * 56)
         for pos, row in df.iterrows():
             conf_str = f"{row['conf']:.2f}" if pd.notna(row["conf"]) else "N/A  "
+            nms_str  = f"{row['nms_iou']:.2f}" if pd.notna(row["nms_iou"]) else "N/A "
             lines.append(
-                f"{pos:>4}  {conf_str:>6}  {row['nms_iou']:>5.2f}  "
+                f"{pos:>4}  {conf_str:>6}  {nms_str:>5}  "
                 f"{int(row['merge_distance']):>5d}  "
                 f"{row['mean_boxes']:>6.1f}  "
                 f"{int(row['total_duplicates']):>5d}  "

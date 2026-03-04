@@ -1,0 +1,731 @@
+"""validate_ocr.py
+
+FASE 4 — Validacion OCR completo con las mejores configuraciones del grid search.
+
+Para cada configuracion seleccionada:
+  1. Ejecuta deteccion de regions (detect_columns.detect_columns)
+  2. Ejecuta EasyOCR sobre cada region detectada
+  3. Recopila metricas: caracteres, palabras, columnas, duplicados, tiempo
+  4. Genera informe comparativo
+
+Modos de uso:
+  # Automatico: lee experiment_ranking.csv (tras ejecutar analyze_experiments.py)
+  py -3.11 validate_ocr.py
+
+  # Top-N configuraciones globales:
+  py -3.11 validate_ocr.py --top 5
+
+  # Configuraciones manuales (sin necesitar Phase 3):
+  py -3.11 validate_ocr.py --configs '[
+      {"method":"paddleocr","nms_iou":0.5,"merge_distance":10},
+      {"method":"docling","nms_iou":0.5,"merge_distance":10},
+      {"method":"doclayout","conf":0.2,"nms_iou":0.4,"merge_distance":15},
+      {"method":"yolo11","conf":0.1,"nms_iou":0.5,"merge_distance":10},
+      {"method":"opencv","merge_distance":10}
+  ]'
+
+  # Solo un metodo concreto:
+  py -3.11 validate_ocr.py --method paddleocr
+
+  # Reanudar ejecucion interrumpida:
+  py -3.11 validate_ocr.py --resume
+
+  # Ver solo resultados sin reejecutar:
+  py -3.11 validate_ocr.py --report-only
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import cv2
+import numpy as np
+
+# ---------------------------------------------------------------------------
+# Dependencias opcionales con feedback claro
+# ---------------------------------------------------------------------------
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+    print("[WARN] pandas no instalado; el modo automatico no estara disponible.")
+
+try:
+    import easyocr
+    HAS_EASYOCR = True
+except ImportError:
+    HAS_EASYOCR = False
+    print("[WARN] easyocr no instalado: pip install easyocr")
+
+# Añadir directorio actual al path para importar detect_columns como modulo
+_HERE = Path(__file__).parent
+sys.path.insert(0, str(_HERE))
+
+try:
+    import detect_columns as dc
+    HAS_DC = True
+except ImportError as _e:
+    HAS_DC = False
+    print(f"[ERROR] No se pudo importar detect_columns: {_e}")
+    sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
+# Rutas y constantes
+# ---------------------------------------------------------------------------
+IMGS_DIR = _HERE / "imgs"
+RANKING_CSV = _HERE / "experiment_ranking.csv"
+RESULTS_DIR = _HERE / "validation_results"
+REPORT_JSON = _HERE / "ocr_validation_report.json"
+REPORT_TXT = _HERE / "ocr_validation_report.txt"
+REPORT_CSV = _HERE / "ocr_validation_report.csv"
+
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp"}
+
+# Pesos de la formula de scoring OCR (ajustables)
+CHARS_WEIGHT = 1.0       # por caracter extraido
+WORDS_WEIGHT = 5.0       # bonus por palabra detectada
+DUP_PENALTY = 50.0       # penalizacion por duplicado en deteccion
+MISSED_PENALTY = 20.0    # penalizacion por imagen sin regiones detectadas
+
+
+# ---------------------------------------------------------------------------
+# Utilidades de texto
+# ---------------------------------------------------------------------------
+
+def count_words(text: str) -> int:
+    """Numero de palabras con al menos 2 caracteres alfabeticos."""
+    return sum(1 for w in text.split() if sum(c.isalpha() for c in w) >= 2)
+
+
+def clean_ocr_text(text: str) -> str:
+    """Elimina lineas vacias y espacios extra."""
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# OCR sobre regiones
+# ---------------------------------------------------------------------------
+
+def run_easyocr_on_regions(
+    img_bgr: np.ndarray,
+    boxes: List,          # List[ColumnBox] de detect_columns
+    reader: "easyocr.Reader",
+) -> Dict[str, Any]:
+    """Extrae texto de cada region detectada con EasyOCR.
+
+    Returns dict con:
+        total_chars, total_words, per_region (list de dicts con texto/chars/words)
+    """
+    per_region = []
+    total_chars = 0
+    total_words = 0
+
+    for i, box in enumerate(boxes, start=1):
+        x1, y1, x2, y2 = box.x1, box.y1, box.x2, box.y2
+        # Clip a los limites de la imagen
+        h, w = img_bgr.shape[:2]
+        x1, y1 = max(0, x1), max(0, y1)
+        x2, y2 = min(w, x2), min(h, y2)
+
+        if x2 <= x1 or y2 <= y1:
+            per_region.append({"region": i, "text": "", "chars": 0, "words": 0})
+            continue
+
+        region = img_bgr[y1:y2, x1:x2]
+
+        try:
+            results = reader.readtext(region, detail=0, paragraph=True)
+            text = clean_ocr_text(" ".join(results))
+        except Exception as exc:
+            text = ""
+            print(f"    [WARN] EasyOCR fallo en region {i}: {exc}")
+
+        chars = len(text.replace(" ", "").replace("\n", ""))
+        words = count_words(text)
+        total_chars += chars
+        total_words += words
+        per_region.append({"region": i, "text": text, "chars": chars, "words": words})
+
+    return {
+        "total_chars": total_chars,
+        "total_words": total_words,
+        "per_region": per_region,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Deteccion de regiones (wrapper sobre detect_columns)
+# ---------------------------------------------------------------------------
+
+def run_detection(
+    img_bgr: np.ndarray,
+    image_path: str,
+    cfg: Dict[str, Any],
+) -> Tuple[List, int, float]:
+    """Ejecuta deteccion de regiones para una configuracion.
+
+    Returns:
+        boxes        — lista de ColumnBox
+        duplicates   — numero de duplicados detectados por NMS
+        elapsed_ms   — tiempo transcurrido en milisegundos
+    """
+    method = cfg["method"]
+    conf = cfg.get("conf", 0.25)
+    nms_iou = cfg.get("nms_iou", 0.5)
+    merge_distance = cfg.get("merge_distance", 10)
+    min_area = cfg.get("min_area", 100)
+    yolo11_conf = cfg.get("yolo11_conf", conf)  # mismo conf para yolo11
+    yolo11_size = cfg.get("yolo11_size", "nano")
+
+    t0 = time.perf_counter()
+    try:
+        _, boxes = dc.detect_columns(
+            img_bgr,
+            method=method,
+            debug=False,
+            doclayout_conf=conf,
+            doclayout_all_classes=False,
+            nms_iou=nms_iou,
+            merge_distance=merge_distance,
+            min_area=min_area,
+            enable_nms=True,
+            enable_merge=True,
+            enable_filter=True,
+            model_path=None,
+            image_path=image_path,
+            yolo11_conf=yolo11_conf,
+            yolo11_size=yolo11_size,
+        )
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+
+        # Estimar duplicados: cuantas cajas eliminaria un NMS mas estricto
+        duplicates = _estimate_duplicates(boxes)
+        return boxes, duplicates, elapsed_ms
+
+    except Exception as exc:
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        print(f"    [ERROR] Deteccion fallo: {exc}")
+        return [], 0, elapsed_ms
+
+
+def _estimate_duplicates(boxes: List) -> int:
+    """Cuenta pares de cajas con IoU > 0.3 (posibles duplicados residuales)."""
+    from post_processing import calculate_iou  # disponible en el proyecto
+    count = 0
+    n = len(boxes)
+    for i in range(n):
+        for j in range(i + 1, n):
+            b1 = (boxes[i].x1, boxes[i].y1, boxes[i].x2, boxes[i].y2)
+            b2 = (boxes[j].x1, boxes[j].y1, boxes[j].x2, boxes[j].y2)
+            if calculate_iou(b1, b2) > 0.3:
+                count += 1
+    return count
+
+
+# ---------------------------------------------------------------------------
+# Carga de configuraciones
+# ---------------------------------------------------------------------------
+
+def load_top_configs_from_ranking(
+    csv_path: Path,
+    top_n: int = 3,
+    method_filter: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """Lee experiment_ranking.csv y devuelve las top_n configuraciones.
+
+    Si method_filter se especifica, devuelve las top_n de ese metodo.
+    Si no, devuelve las top_n globales (una por metodo diferente si es posible).
+    """
+    if not HAS_PANDAS:
+        sys.exit("[ERROR] pandas requerido para leer el ranking. Instala con: pip install pandas")
+    if not csv_path.exists():
+        sys.exit(
+            f"[ERROR] No se encontro {csv_path}\n"
+            "        Ejecuta primero: py -3.11 analyze_experiments.py"
+        )
+
+    df = pd.read_csv(csv_path)
+
+    if method_filter:
+        df = df[df["method"] == method_filter]
+        if df.empty:
+            sys.exit(f"[ERROR] No hay resultados para el metodo '{method_filter}' en el ranking.")
+
+    # Ordenar por score descendente
+    df = df.sort_values("score", ascending=False).head(top_n)
+
+    configs = []
+    for _, row in df.iterrows():
+        cfg: Dict[str, Any] = {
+            "method": row["method"],
+            "merge_distance": int(row["merge_distance"]),
+        }
+        # nms_iou es NaN para opencv (sin nms configurable)
+        nms_val = row.get("nms_iou")
+        if pd.notna(nms_val):
+            cfg["nms_iou"] = float(nms_val)
+        conf_val = row.get("conf")
+        if pd.notna(conf_val):
+            cfg["conf"] = float(conf_val)
+        configs.append(cfg)
+
+    return configs
+
+
+def build_config_label(cfg: Dict[str, Any]) -> str:
+    """Genera un identificador legible para una configuracion."""
+    parts = [cfg["method"]]
+    if "conf" in cfg:
+        parts.append(f"conf{cfg['conf']:.2f}")
+    if "nms_iou" in cfg:          # opencv no tiene nms_iou
+        parts.append(f"nms{cfg['nms_iou']:.2f}")
+    parts.append(f"mg{cfg['merge_distance']}")
+    return "_".join(parts)
+
+
+# ---------------------------------------------------------------------------
+# Ejecucion de una configuracion sobre todas las imagenes
+# ---------------------------------------------------------------------------
+
+def run_config(
+    cfg: Dict[str, Any],
+    image_paths: List[Path],
+    reader: Optional["easyocr.Reader"],
+    output_dir: Path,
+    resume: bool = False,
+) -> Dict[str, Any]:
+    """Ejecuta deteccion + OCR para una configuracion sobre todas las imagenes.
+
+    Guarda resultados incrementalmente en output_dir/results.json.
+    Returns el dict de resultados agregados.
+    """
+    label = build_config_label(cfg)
+    config_dir = output_dir / label
+    config_dir.mkdir(parents=True, exist_ok=True)
+    results_file = config_dir / "results.json"
+
+    # Cargar resultados previos si se resume
+    existing: Dict[str, Any] = {}
+    if resume and results_file.exists():
+        with open(results_file, encoding="utf-8") as f:
+            existing = json.load(f)
+        already_done = set(existing.get("per_image", {}).keys())
+        print(f"    [resume] {len(already_done)} imagenes ya procesadas, saltando.")
+    else:
+        already_done = set()
+
+    per_image: Dict[str, Any] = existing.get("per_image", {})
+
+    for img_path in image_paths:
+        img_name = img_path.name
+        if img_name in already_done:
+            continue
+
+        print(f"    {img_name} ...", end="", flush=True)
+        img_bgr = dc.load_image(str(img_path))
+
+        # --- Deteccion ---
+        boxes, duplicates, det_ms = run_detection(img_bgr, str(img_path), cfg)
+        num_boxes = len(boxes)
+
+        # --- OCR ---
+        if reader is not None and num_boxes > 0:
+            ocr_start = time.perf_counter()
+            ocr_data = run_easyocr_on_regions(img_bgr, boxes, reader)
+            ocr_ms = (time.perf_counter() - ocr_start) * 1000
+        else:
+            ocr_data = {"total_chars": 0, "total_words": 0, "per_region": []}
+            ocr_ms = 0.0
+
+        per_image[img_name] = {
+            "num_boxes": num_boxes,
+            "duplicates": duplicates,
+            "det_ms": round(det_ms, 1),
+            "ocr_ms": round(ocr_ms, 1),
+            "total_chars": ocr_data["total_chars"],
+            "total_words": ocr_data["total_words"],
+            "per_region": ocr_data["per_region"],
+        }
+
+        total_ms = det_ms + ocr_ms
+        print(
+            f" boxes={num_boxes}, dups={duplicates}, "
+            f"chars={ocr_data['total_chars']}, words={ocr_data['total_words']}, "
+            f"time={total_ms:.0f}ms"
+        )
+
+        # Guardar incrementalmente
+        _save_config_results(results_file, cfg, label, per_image)
+
+    # --- Calcular agregados finales ---
+    n_imgs = len(per_image)
+    total_chars = sum(v["total_chars"] for v in per_image.values())
+    total_words = sum(v["total_words"] for v in per_image.values())
+    total_dups = sum(v["duplicates"] for v in per_image.values())
+    mean_boxes = sum(v["num_boxes"] for v in per_image.values()) / max(n_imgs, 1)
+    mean_det_ms = sum(v["det_ms"] for v in per_image.values()) / max(n_imgs, 1)
+    mean_ocr_ms = sum(v["ocr_ms"] for v in per_image.values()) / max(n_imgs, 1)
+    imgs_no_boxes = sum(1 for v in per_image.values() if v["num_boxes"] == 0)
+
+    # Formula de scoring OCR
+    ocr_score = (
+        total_chars * CHARS_WEIGHT
+        + total_words * WORDS_WEIGHT
+        - total_dups * DUP_PENALTY
+        - imgs_no_boxes * MISSED_PENALTY
+    )
+
+    summary = {
+        "config": cfg,
+        "label": label,
+        "n_images": n_imgs,
+        "total_chars": total_chars,
+        "total_words": total_words,
+        "total_duplicates": total_dups,
+        "mean_boxes": round(mean_boxes, 2),
+        "imgs_no_boxes": imgs_no_boxes,
+        "mean_det_ms": round(mean_det_ms, 1),
+        "mean_ocr_ms": round(mean_ocr_ms, 1),
+        "ocr_score": round(ocr_score, 2),
+        "per_image": per_image,
+    }
+
+    _save_config_results(results_file, cfg, label, per_image, summary)
+    return summary
+
+
+def _save_config_results(
+    path: Path,
+    cfg: Dict,
+    label: str,
+    per_image: Dict,
+    summary: Optional[Dict] = None,
+) -> None:
+    """Guardado incremental a disco."""
+    data = {"config": cfg, "label": label, "per_image": per_image}
+    if summary:
+        data.update({k: v for k, v in summary.items() if k != "per_image"})
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+# ---------------------------------------------------------------------------
+# Generacion de informes
+# ---------------------------------------------------------------------------
+
+def generate_reports(summaries: List[Dict[str, Any]]) -> None:
+    """Genera ocr_validation_report.json / .txt / .csv"""
+
+    # --- JSON completo ---
+    with open(REPORT_JSON, "w", encoding="utf-8") as f:
+        # No incluir per_image en el JSON de alto nivel para que sea legible
+        compact = [{k: v for k, v in s.items() if k != "per_image"} for s in summaries]
+        json.dump(compact, f, ensure_ascii=False, indent=2)
+    print(f"\n[OK] Informe JSON: {REPORT_JSON}")
+
+    # --- CSV ---
+    rows = []
+    for s in summaries:
+        cfg = s["config"]
+        rows.append({
+            "label": s["label"],
+            "method": cfg["method"],
+            "conf": cfg.get("conf", ""),
+            "nms_iou": cfg["nms_iou"],
+            "merge_distance": cfg["merge_distance"],
+            "total_chars": s["total_chars"],
+            "total_words": s["total_words"],
+            "total_duplicates": s["total_duplicates"],
+            "mean_boxes": s["mean_boxes"],
+            "imgs_no_boxes": s["imgs_no_boxes"],
+            "mean_det_ms": s["mean_det_ms"],
+            "mean_ocr_ms": s["mean_ocr_ms"],
+            "ocr_score": s["ocr_score"],
+        })
+
+    if HAS_PANDAS:
+        df = pd.DataFrame(rows).sort_values("ocr_score", ascending=False)
+        df.to_csv(REPORT_CSV, index=False, encoding="utf-8")
+        print(f"[OK] Informe CSV: {REPORT_CSV}")
+    else:
+        # Escribir CSV manual
+        import csv
+        with open(REPORT_CSV, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+            writer.writeheader()
+            writer.writerows(rows)
+        print(f"[OK] Informe CSV: {REPORT_CSV}")
+
+    # --- TXT legible ---
+    _write_txt_report(summaries)
+    print(f"[OK] Informe TXT: {REPORT_TXT}")
+
+
+def _write_txt_report(summaries: List[Dict[str, Any]]) -> None:
+    """Escribe un informe TXT tabulado con la comparacion."""
+    # Ordenar por ocr_score descendente
+    ranked = sorted(summaries, key=lambda s: s["ocr_score"], reverse=True)
+
+    lines = []
+    lines.append("=" * 100)
+    lines.append("FASE 4 — VALIDACION OCR COMPLETO: COMPARACION DE CONFIGURACIONES")
+    lines.append("=" * 100)
+    lines.append("")
+
+    # Tabla resumen
+    col_w = [35, 8, 8, 8, 8, 8, 8, 10, 10]
+    headers = [
+        "Configuracion", "Chars", "Palabras", "Dups", "Bxs/img",
+        "NoBx", "Det(ms)", "OCR(ms)", "SCORE"
+    ]
+    sep = "  ".join("-" * w for w in col_w)
+    header_row = "  ".join(h.ljust(col_w[i]) for i, h in enumerate(headers))
+
+    lines.append(header_row)
+    lines.append(sep)
+
+    for rank, s in enumerate(ranked, start=1):
+        row = [
+            f"#{rank} {s['label']}"[:col_w[0]].ljust(col_w[0]),
+            str(s["total_chars"]).rjust(col_w[1]),
+            str(s["total_words"]).rjust(col_w[2]),
+            str(s["total_duplicates"]).rjust(col_w[3]),
+            f"{s['mean_boxes']:.1f}".rjust(col_w[4]),
+            str(s["imgs_no_boxes"]).rjust(col_w[5]),
+            f"{s['mean_det_ms']:.0f}".rjust(col_w[6]),
+            f"{s['mean_ocr_ms']:.0f}".rjust(col_w[7]),
+            f"{s['ocr_score']:.1f}".rjust(col_w[8]),
+        ]
+        lines.append("  ".join(row))
+
+    lines.append(sep)
+    lines.append("")
+
+    # Detalle por configuracion ganadora
+    winner = ranked[0]
+    lines.append("=" * 60)
+    lines.append(f"GANADOR: {winner['label']}")
+    lines.append("=" * 60)
+    lines.append(f"  Metodo          : {winner['config']['method']}")
+    if "conf" in winner["config"]:
+        lines.append(f"  Confianza       : {winner['config']['conf']}")
+    lines.append(f"  NMS IoU         : {winner['config']['nms_iou']}")
+    lines.append(f"  Merge distance  : {winner['config']['merge_distance']} px")
+    lines.append(f"  Total caracteres: {winner['total_chars']}")
+    lines.append(f"  Total palabras  : {winner['total_words']}")
+    lines.append(f"  Duplicados tot. : {winner['total_duplicates']}")
+    lines.append(f"  Imgs sin detec. : {winner['imgs_no_boxes']}")
+    lines.append(f"  Tiempo det. med.: {winner['mean_det_ms']:.0f} ms/imagen")
+    lines.append(f"  Tiempo OCR med. : {winner['mean_ocr_ms']:.0f} ms/imagen")
+    lines.append(f"  Score OCR       : {winner['ocr_score']:.1f}")
+    lines.append("")
+
+    # Detalle por imagen del ganador
+    lines.append("Detalle por imagen (ganador):")
+    lines.append("-" * 60)
+    per_img_hdr = f"  {'Imagen':<20} {'Boxes':>5} {'Dups':>4} {'Chars':>7} {'Words':>6}"
+    lines.append(per_img_hdr)
+    for img_name, img_data in sorted(winner["per_image"].items()):
+        lines.append(
+            f"  {img_name:<20} {img_data['num_boxes']:>5} {img_data['duplicates']:>4} "
+            f"{img_data['total_chars']:>7} {img_data['total_words']:>6}"
+        )
+    lines.append("")
+
+    # Formula de scoring
+    lines.append("Formula de scoring OCR:")
+    lines.append(
+        f"  score = chars*{CHARS_WEIGHT} + words*{WORDS_WEIGHT} "
+        f"- duplicados*{DUP_PENALTY} - imgs_sin_deteccion*{MISSED_PENALTY}"
+    )
+    lines.append("")
+
+    with open(REPORT_TXT, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="FASE 4 — Validacion OCR con las mejores configuraciones.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    parser.add_argument(
+        "--top", type=int, default=3, metavar="N",
+        help="Numero de configuraciones a validar desde el ranking (default: 3)"
+    )
+    parser.add_argument(
+        "--method", type=str, default=None,
+        choices=["doclayout", "yolo11", "paddleocr", "docling"],
+        help="Filtrar por metodo al leer el ranking"
+    )
+    parser.add_argument(
+        "--configs", type=str, default=None, metavar="JSON",
+        help="Lista de configuraciones en JSON (modo manual, no necesita Phase 3)"
+    )
+    parser.add_argument(
+        "--images-dir", type=Path, default=IMGS_DIR,
+        help=f"Directorio de imagenes (default: {IMGS_DIR})"
+    )
+    parser.add_argument(
+        "--ranking-csv", type=Path, default=RANKING_CSV,
+        help=f"CSV de ranking generado por analyze_experiments.py (default: {RANKING_CSV})"
+    )
+    parser.add_argument(
+        "--output-dir", type=Path, default=RESULTS_DIR,
+        help=f"Directorio de salida (default: {RESULTS_DIR})"
+    )
+    parser.add_argument(
+        "--no-ocr", action="store_true",
+        help="Solo ejecutar deteccion, sin OCR (mas rapido para debug)"
+    )
+    parser.add_argument(
+        "--resume", action="store_true",
+        help="Reanudar ejecucion anterior (salta imagenes ya procesadas)"
+    )
+    parser.add_argument(
+        "--report-only", action="store_true",
+        help="Generar informe leyendo resultados existentes sin reejecutar"
+    )
+    parser.add_argument(
+        "--langs", type=str, default="es,en",
+        help="Idiomas para EasyOCR separados por coma (default: es,en)"
+    )
+    return parser.parse_args()
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main() -> None:
+    args = parse_args()
+
+    # --- Modo report-only ---
+    if args.report_only:
+        summaries = _load_existing_summaries(args.output_dir)
+        if not summaries:
+            sys.exit(
+                "[ERROR] No se encontraron resultados en validation_results/\n"
+                "        Ejecuta primero sin --report-only"
+            )
+        generate_reports(summaries)
+        _print_ranking_table(summaries)
+        return
+
+    # --- Buscar imagenes ---
+    images_dir = args.images_dir
+    if not images_dir.exists():
+        sys.exit(f"[ERROR] Directorio de imagenes no encontrado: {images_dir}")
+
+    image_paths = sorted(
+        p for p in images_dir.iterdir()
+        if p.suffix.lower() in IMAGE_EXTENSIONS
+    )
+    if not image_paths:
+        sys.exit(f"[ERROR] No se encontraron imagenes en: {images_dir}")
+
+    print(f"[i] Imagenes encontradas: {len(image_paths)} en {images_dir}")
+
+    # --- Cargar configuraciones ---
+    if args.configs:
+        try:
+            configs = json.loads(args.configs)
+        except json.JSONDecodeError as e:
+            sys.exit(f"[ERROR] --configs no es JSON valido: {e}")
+        print(f"[i] Modo manual: {len(configs)} configuraciones especificadas")
+    else:
+        configs = load_top_configs_from_ranking(
+            args.ranking_csv, top_n=args.top, method_filter=args.method
+        )
+        print(f"[i] Top-{args.top} configuraciones del ranking:")
+
+    for cfg in configs:
+        print(f"    {build_config_label(cfg)}")
+    print()
+
+    # --- Inicializar EasyOCR ---
+    reader = None
+    if not args.no_ocr:
+        if not HAS_EASYOCR:
+            print("[WARN] EasyOCR no disponible; se ejecutara solo deteccion.")
+        else:
+            langs = [lang.strip() for lang in args.langs.split(",")]
+            print(f"[i] Inicializando EasyOCR (idiomas: {langs})...")
+            t0 = time.perf_counter()
+            reader = easyocr.Reader(langs, gpu=False, verbose=False)
+            print(f"[OK] EasyOCR listo en {(time.perf_counter()-t0)*1000:.0f}ms\n")
+
+    # --- Ejecutar cada configuracion ---
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    summaries = []
+
+    for i, cfg in enumerate(configs, start=1):
+        label = build_config_label(cfg)
+        print(f"[{i}/{len(configs)}] {label}")
+        summary = run_config(
+            cfg, image_paths, reader, args.output_dir, resume=args.resume
+        )
+        summaries.append(summary)
+        print(
+            f"    -> chars={summary['total_chars']}, words={summary['total_words']}, "
+            f"dups={summary['total_duplicates']}, score={summary['ocr_score']:.1f}\n"
+        )
+
+    # --- Informes ---
+    generate_reports(summaries)
+    _print_ranking_table(summaries)
+
+
+def _load_existing_summaries(output_dir: Path) -> List[Dict[str, Any]]:
+    """Carga los resultados existentes de cada subdirectorio de validation_results."""
+    summaries = []
+    if not output_dir.exists():
+        return summaries
+    for config_dir in sorted(output_dir.iterdir()):
+        results_file = config_dir / "results.json"
+        if results_file.exists():
+            with open(results_file, encoding="utf-8") as f:
+                data = json.load(f)
+            if "per_image" in data and "ocr_score" in data:
+                summaries.append(data)
+    return summaries
+
+
+def _print_ranking_table(summaries: List[Dict[str, Any]]) -> None:
+    """Imprime tabla resumen en consola."""
+    ranked = sorted(summaries, key=lambda s: s["ocr_score"], reverse=True)
+
+    print()
+    print("=" * 90)
+    print("RANKING FINAL — VALIDACION OCR")
+    print("=" * 90)
+    print(f"  {'#':<3} {'Configuracion':<36} {'Chars':>7} {'Words':>6} {'Dups':>5} {'Score':>9}")
+    print(f"  {'-'*3} {'-'*36} {'-'*7} {'-'*6} {'-'*5} {'-'*9}")
+    for rank, s in enumerate(ranked, start=1):
+        marker = " <-- GANADOR" if rank == 1 else ""
+        print(
+            f"  {rank:<3} {s['label']:<36} {s['total_chars']:>7} "
+            f"{s['total_words']:>6} {s['total_duplicates']:>5} {s['ocr_score']:>9.1f}{marker}"
+        )
+    print("=" * 90)
+    print()
+    print(f"Informes guardados en:")
+    print(f"  {REPORT_TXT}")
+    print(f"  {REPORT_CSV}")
+    print(f"  {REPORT_JSON}")
+
+
+if __name__ == "__main__":
+    main()
