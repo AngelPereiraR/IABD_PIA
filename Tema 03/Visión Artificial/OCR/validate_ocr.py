@@ -566,32 +566,49 @@ def build_config_label(cfg: Dict[str, Any]) -> str:
 def run_config(
     cfg: Dict[str, Any],
     image_paths: List[Path],
-    ocr_engine: str,
+    ocr_engines: List[str],
     engine_ctx: Dict[str, Any],
     output_dir: Path,
     resume: bool = False,
-) -> Dict[str, Any]:
-    """Ejecuta deteccion + OCR para una configuracion y un motor OCR."""
+) -> List[Dict[str, Any]]:
+    """Ejecuta deteccion una vez por imagen y OCR para uno o varios motores.
+
+    Optimizacion clave:
+      - La deteccion de layout se calcula solo una vez por imagen/config.
+      - El resultado (boxes, dups, det_ms) se reutiliza para todos los OCR pendientes.
+    """
     label = build_config_label(cfg)
     config_dir = output_dir / label
     config_dir.mkdir(parents=True, exist_ok=True)
-    results_file = config_dir / f"results_{ocr_engine}.json"
 
-    # Cargar resultados previos si se resume
-    existing: Dict[str, Any] = {}
-    if resume and results_file.exists():
-        with open(results_file, encoding="utf-8") as f:
-            existing = json.load(f)
-        already_done = set(existing.get("per_image", {}).keys())
-        print(f"    [resume] {ocr_engine}: {len(already_done)} imagenes ya procesadas, saltando.")
-    else:
-        already_done = set()
+    # Estado por motor OCR (fichero + resultados parciales para resume)
+    per_engine: Dict[str, Dict[str, Any]] = {}
+    for ocr_engine in ocr_engines:
+        results_file = config_dir / f"results_{ocr_engine}.json"
+        existing: Dict[str, Any] = {}
+        if resume and results_file.exists():
+            with open(results_file, encoding="utf-8") as f:
+                existing = json.load(f)
+            already_done = set(existing.get("per_image", {}).keys())
+            print(f"    [resume] {ocr_engine}: {len(already_done)} imagenes ya procesadas, saltando.")
+        else:
+            already_done = set()
 
-    per_image: Dict[str, Any] = existing.get("per_image", {})
+        per_engine[ocr_engine] = {
+            "results_file": results_file,
+            "per_image": existing.get("per_image", {}),
+            "already_done": already_done,
+        }
 
     for img_path in image_paths:
         img_name = img_path.name
-        if img_name in already_done:
+
+        # Procesar solo motores que aun no tengan esta imagen (modo resume parcial)
+        pending_engines = [
+            eng for eng in ocr_engines
+            if img_name not in per_engine[eng]["already_done"]
+        ]
+        if not pending_engines:
             continue
 
         print(f"    {img_name} ...", end="", flush=True)
@@ -601,86 +618,106 @@ def run_config(
         boxes, duplicates, det_ms = run_detection(img_bgr, str(img_path), cfg)
         num_boxes = len(boxes)
 
-        # --- OCR ---
-        if num_boxes > 0 and ocr_engine in engine_ctx:
-            ocr_start = time.perf_counter()
-            if ocr_engine == "easyocr":
-                ocr_data = run_easyocr_on_regions(img_bgr, boxes, engine_ctx["easyocr"])
-            elif ocr_engine == "tesseract":
-                ocr_data = run_tesseract_on_regions(img_bgr, boxes)
-            elif ocr_engine == "paddle":
-                ocr_data = run_paddle_on_regions(img_bgr, boxes, engine_ctx["paddle"])
-            elif ocr_engine == "deepseek":
-                ocr_data = run_deepseek_on_regions(
-                    img_bgr,
-                    boxes,
-                    engine_ctx["deepseek_model"],
-                    engine_ctx["deepseek_tokenizer"],
-                    engine_ctx.get("deepseek_prompt", "<image>\nFree OCR."),
-                )
+        print(f" boxes={num_boxes}, dups={duplicates}, det={det_ms:.0f}ms")
+
+        for ocr_engine in pending_engines:
+            # --- OCR ---
+            if num_boxes > 0 and ocr_engine in engine_ctx:
+                ocr_start = time.perf_counter()
+                if ocr_engine == "easyocr":
+                    ocr_data = run_easyocr_on_regions(img_bgr, boxes, engine_ctx["easyocr"])
+                elif ocr_engine == "tesseract":
+                    ocr_data = run_tesseract_on_regions(img_bgr, boxes)
+                elif ocr_engine == "paddle":
+                    ocr_data = run_paddle_on_regions(img_bgr, boxes, engine_ctx["paddle"])
+                elif ocr_engine == "deepseek":
+                    ocr_data = run_deepseek_on_regions(
+                        img_bgr,
+                        boxes,
+                        engine_ctx["deepseek_model"],
+                        engine_ctx["deepseek_tokenizer"],
+                        engine_ctx.get("deepseek_prompt", "<image>\nFree OCR."),
+                    )
+                else:
+                    ocr_data = {"total_chars": 0, "total_words": 0, "per_region": []}
+                ocr_ms = (time.perf_counter() - ocr_start) * 1000
             else:
                 ocr_data = {"total_chars": 0, "total_words": 0, "per_region": []}
-            ocr_ms = (time.perf_counter() - ocr_start) * 1000
-        else:
-            ocr_data = {"total_chars": 0, "total_words": 0, "per_region": []}
-            ocr_ms = 0.0
+                ocr_ms = 0.0
 
-        per_image[img_name] = {
-            "num_boxes": num_boxes,
-            "duplicates": duplicates,
-            "det_ms": round(det_ms, 1),
-            "ocr_ms": round(ocr_ms, 1),
-            "total_chars": ocr_data["total_chars"],
-            "total_words": ocr_data["total_words"],
-            "per_region": ocr_data["per_region"],
-        }
+            per_image = per_engine[ocr_engine]["per_image"]
+            per_image[img_name] = {
+                "num_boxes": num_boxes,
+                "duplicates": duplicates,
+                "det_ms": round(det_ms, 1),
+                "ocr_ms": round(ocr_ms, 1),
+                "total_chars": ocr_data["total_chars"],
+                "total_words": ocr_data["total_words"],
+                "per_region": ocr_data["per_region"],
+            }
 
-        total_ms = det_ms + ocr_ms
-        print(
-            f" boxes={num_boxes}, dups={duplicates}, "
-            f"chars={ocr_data['total_chars']}, words={ocr_data['total_words']}, "
-            f"time={total_ms:.0f}ms"
+            total_ms = det_ms + ocr_ms
+            print(
+                f"      [{ocr_engine}] chars={ocr_data['total_chars']}, "
+                f"words={ocr_data['total_words']}, time={total_ms:.0f}ms"
+            )
+
+            # Guardado incremental por motor
+            _save_config_results(
+                per_engine[ocr_engine]["results_file"],
+                cfg,
+                label,
+                per_image,
+            )
+
+    # --- Calcular agregados finales por motor ---
+    summaries: List[Dict[str, Any]] = []
+    for ocr_engine in ocr_engines:
+        per_image = per_engine[ocr_engine]["per_image"]
+
+        n_imgs = len(per_image)
+        total_chars = sum(v["total_chars"] for v in per_image.values())
+        total_words = sum(v["total_words"] for v in per_image.values())
+        total_dups = sum(v["duplicates"] for v in per_image.values())
+        mean_boxes = sum(v["num_boxes"] for v in per_image.values()) / max(n_imgs, 1)
+        mean_det_ms = sum(v["det_ms"] for v in per_image.values()) / max(n_imgs, 1)
+        mean_ocr_ms = sum(v["ocr_ms"] for v in per_image.values()) / max(n_imgs, 1)
+        imgs_no_boxes = sum(1 for v in per_image.values() if v["num_boxes"] == 0)
+
+        # Formula de scoring OCR
+        ocr_score = (
+            total_chars * CHARS_WEIGHT
+            + total_words * WORDS_WEIGHT
+            - total_dups * DUP_PENALTY
+            - imgs_no_boxes * MISSED_PENALTY
         )
 
-        # Guardar incrementalmente
-        _save_config_results(results_file, cfg, label, per_image)
+        summary = {
+            "config": cfg,
+            "label": label,
+            "ocr_engine": ocr_engine,
+            "n_images": n_imgs,
+            "total_chars": total_chars,
+            "total_words": total_words,
+            "total_duplicates": total_dups,
+            "mean_boxes": round(mean_boxes, 2),
+            "imgs_no_boxes": imgs_no_boxes,
+            "mean_det_ms": round(mean_det_ms, 1),
+            "mean_ocr_ms": round(mean_ocr_ms, 1),
+            "ocr_score": round(ocr_score, 2),
+            "per_image": per_image,
+        }
 
-    # --- Calcular agregados finales ---
-    n_imgs = len(per_image)
-    total_chars = sum(v["total_chars"] for v in per_image.values())
-    total_words = sum(v["total_words"] for v in per_image.values())
-    total_dups = sum(v["duplicates"] for v in per_image.values())
-    mean_boxes = sum(v["num_boxes"] for v in per_image.values()) / max(n_imgs, 1)
-    mean_det_ms = sum(v["det_ms"] for v in per_image.values()) / max(n_imgs, 1)
-    mean_ocr_ms = sum(v["ocr_ms"] for v in per_image.values()) / max(n_imgs, 1)
-    imgs_no_boxes = sum(1 for v in per_image.values() if v["num_boxes"] == 0)
+        _save_config_results(
+            per_engine[ocr_engine]["results_file"],
+            cfg,
+            label,
+            per_image,
+            summary,
+        )
+        summaries.append(summary)
 
-    # Formula de scoring OCR
-    ocr_score = (
-        total_chars * CHARS_WEIGHT
-        + total_words * WORDS_WEIGHT
-        - total_dups * DUP_PENALTY
-        - imgs_no_boxes * MISSED_PENALTY
-    )
-
-    summary = {
-        "config": cfg,
-        "label": label,
-        "ocr_engine": ocr_engine,
-        "n_images": n_imgs,
-        "total_chars": total_chars,
-        "total_words": total_words,
-        "total_duplicates": total_dups,
-        "mean_boxes": round(mean_boxes, 2),
-        "imgs_no_boxes": imgs_no_boxes,
-        "mean_det_ms": round(mean_det_ms, 1),
-        "mean_ocr_ms": round(mean_ocr_ms, 1),
-        "ocr_score": round(ocr_score, 2),
-        "per_image": per_image,
-    }
-
-    _save_config_results(results_file, cfg, label, per_image, summary)
-    return summary
+    return summaries
 
 
 def _save_config_results(
@@ -1061,29 +1098,32 @@ def main() -> None:
         print(f"[{i}/{len(configs)}] {label}")
 
         engines_to_run = active_engines if not args.no_ocr else ["none"]
-        for ocr_engine in engines_to_run:
-            print(f"    [OCR: {ocr_engine}]")
-            if ocr_engine == "none":
-                summary = run_config(
-                    cfg,
-                    image_paths,
-                    "none",
-                    {},
-                    args.output_dir,
-                    resume=args.resume,
-                )
-            else:
-                summary = run_config(
-                    cfg,
-                    image_paths,
-                    ocr_engine,
-                    engine_ctx,
-                    args.output_dir,
-                    resume=args.resume,
-                )
+        print(f"    [OCR: {', '.join(engines_to_run)}]")
+
+        if engines_to_run == ["none"]:
+            cfg_summaries = run_config(
+                cfg,
+                image_paths,
+                ["none"],
+                {},
+                args.output_dir,
+                resume=args.resume,
+            )
+        else:
+            cfg_summaries = run_config(
+                cfg,
+                image_paths,
+                engines_to_run,
+                engine_ctx,
+                args.output_dir,
+                resume=args.resume,
+            )
+
+        for summary in cfg_summaries:
             summaries.append(summary)
             print(
-                f"      -> chars={summary['total_chars']}, words={summary['total_words']}, "
+                f"      -> [{summary.get('ocr_engine', 'none')}] "
+                f"chars={summary['total_chars']}, words={summary['total_words']}, "
                 f"dups={summary['total_duplicates']}, score={summary['ocr_score']:.1f}"
             )
         print()

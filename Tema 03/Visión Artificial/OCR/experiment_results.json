@@ -44854,5 +44854,4613 @@
       "duplicates": 0,
       "time_ms": 23.5
     }
+  },
+  {
+    "experiment_id": 2665,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 0,
+      "avg_area": 0.0,
+      "duplicates": 0,
+      "time_ms": 4814.4
+    }
+  },
+  {
+    "experiment_id": 2666,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 57145.0,
+      "duplicates": 0,
+      "time_ms": 10177.0
+    }
+  },
+  {
+    "experiment_id": 2667,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 46372.6,
+      "duplicates": 0,
+      "time_ms": 6832.8
+    }
+  },
+  {
+    "experiment_id": 2668,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 17,
+      "avg_area": 58130.8,
+      "duplicates": 0,
+      "time_ms": 5843.6
+    }
+  },
+  {
+    "experiment_id": 2669,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 21,
+      "avg_area": 37235.5,
+      "duplicates": 0,
+      "time_ms": 4260.1
+    }
+  },
+  {
+    "experiment_id": 2670,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 94836.9,
+      "duplicates": 0,
+      "time_ms": 4547.5
+    }
+  },
+  {
+    "experiment_id": 2671,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 18,
+      "avg_area": 51127.2,
+      "duplicates": 0,
+      "time_ms": 5837.3
+    }
+  },
+  {
+    "experiment_id": 2672,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 61300.8,
+      "duplicates": 0,
+      "time_ms": 3177.6
+    }
+  },
+  {
+    "experiment_id": 2673,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2691.8
+    }
+  },
+  {
+    "experiment_id": 2674,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 39460.1,
+      "duplicates": 0,
+      "time_ms": 2360.2
+    }
+  },
+  {
+    "experiment_id": 2675,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 16,
+      "avg_area": 31688.4,
+      "duplicates": 0,
+      "time_ms": 3940.9
+    }
+  },
+  {
+    "experiment_id": 2676,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 54915.5,
+      "duplicates": 0,
+      "time_ms": 3839.6
+    }
+  },
+  {
+    "experiment_id": 2677,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 24,
+      "avg_area": 36207.2,
+      "duplicates": 0,
+      "time_ms": 3988.6
+    }
+  },
+  {
+    "experiment_id": 2678,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 16,
+      "avg_area": 89426.2,
+      "duplicates": 0,
+      "time_ms": 6560.7
+    }
+  },
+  {
+    "experiment_id": 2679,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 13,
+      "avg_area": 130830.1,
+      "duplicates": 0,
+      "time_ms": 5231.0
+    }
+  },
+  {
+    "experiment_id": 2680,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 14,
+      "avg_area": 62378.3,
+      "duplicates": 0,
+      "time_ms": 4929.8
+    }
+  },
+  {
+    "experiment_id": 2681,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2593.7
+    }
+  },
+  {
+    "experiment_id": 2682,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 13,
+      "avg_area": 70101.2,
+      "duplicates": 0,
+      "time_ms": 4275.6
+    }
+  },
+  {
+    "experiment_id": 2683,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5278.4
+    }
+  },
+  {
+    "experiment_id": 2684,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 133426.3,
+      "duplicates": 0,
+      "time_ms": 2952.3
+    }
+  },
+  {
+    "experiment_id": 2685,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82914.7,
+      "duplicates": 0,
+      "time_ms": 4119.7
+    }
+  },
+  {
+    "experiment_id": 2686,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 114960.4,
+      "duplicates": 0,
+      "time_ms": 5716.8
+    }
+  },
+  {
+    "experiment_id": 2687,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 14,
+      "avg_area": 56159.6,
+      "duplicates": 0,
+      "time_ms": 3967.2
+    }
+  },
+  {
+    "experiment_id": 2688,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 94836.9,
+      "duplicates": 0,
+      "time_ms": 4098.2
+    }
+  },
+  {
+    "experiment_id": 2689,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 100114.7,
+      "duplicates": 0,
+      "time_ms": 5657.1
+    }
+  },
+  {
+    "experiment_id": 2690,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3044.3
+    }
+  },
+  {
+    "experiment_id": 2691,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2667.3
+    }
+  },
+  {
+    "experiment_id": 2692,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2355.6
+    }
+  },
+  {
+    "experiment_id": 2693,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 81354.9,
+      "duplicates": 0,
+      "time_ms": 3923.0
+    }
+  },
+  {
+    "experiment_id": 2694,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 54915.5,
+      "duplicates": 0,
+      "time_ms": 3835.6
+    }
+  },
+  {
+    "experiment_id": 2695,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 17,
+      "avg_area": 50183.4,
+      "duplicates": 0,
+      "time_ms": 3895.8
+    }
+  },
+  {
+    "experiment_id": 2696,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 183604.3,
+      "duplicates": 0,
+      "time_ms": 6546.0
+    }
+  },
+  {
+    "experiment_id": 2697,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 357584.0,
+      "duplicates": 0,
+      "time_ms": 5215.2
+    }
+  },
+  {
+    "experiment_id": 2698,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 158170.5,
+      "duplicates": 0,
+      "time_ms": 4885.1
+    }
+  },
+  {
+    "experiment_id": 2699,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2554.7
+    }
+  },
+  {
+    "experiment_id": 2700,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 97153.3,
+      "duplicates": 0,
+      "time_ms": 4305.2
+    }
+  },
+  {
+    "experiment_id": 2701,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5278.6
+    }
+  },
+  {
+    "experiment_id": 2702,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 2,
+      "avg_area": 209708.0,
+      "duplicates": 0,
+      "time_ms": 2715.7
+    }
+  },
+  {
+    "experiment_id": 2703,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 120375.6,
+      "duplicates": 0,
+      "time_ms": 4019.2
+    }
+  },
+  {
+    "experiment_id": 2704,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 221791.5,
+      "duplicates": 0,
+      "time_ms": 5629.9
+    }
+  },
+  {
+    "experiment_id": 2705,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 65419.8,
+      "duplicates": 0,
+      "time_ms": 3976.7
+    }
+  },
+  {
+    "experiment_id": 2706,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 112486.9,
+      "duplicates": 0,
+      "time_ms": 4125.0
+    }
+  },
+  {
+    "experiment_id": 2707,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 112568.7,
+      "duplicates": 0,
+      "time_ms": 5605.8
+    }
+  },
+  {
+    "experiment_id": 2708,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3021.1
+    }
+  },
+  {
+    "experiment_id": 2709,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2705.1
+    }
+  },
+  {
+    "experiment_id": 2710,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2370.4
+    }
+  },
+  {
+    "experiment_id": 2711,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 4,
+      "avg_area": 148284.5,
+      "duplicates": 0,
+      "time_ms": 3937.9
+    }
+  },
+  {
+    "experiment_id": 2712,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 11,
+      "avg_area": 61216.5,
+      "duplicates": 0,
+      "time_ms": 3888.7
+    }
+  },
+  {
+    "experiment_id": 2713,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 71920.8,
+      "duplicates": 0,
+      "time_ms": 4405.2
+    }
+  },
+  {
+    "experiment_id": 2714,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 204900.7,
+      "duplicates": 0,
+      "time_ms": 6872.0
+    }
+  },
+  {
+    "experiment_id": 2715,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 331069.0,
+      "duplicates": 0,
+      "time_ms": 5385.0
+    }
+  },
+  {
+    "experiment_id": 2716,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 336218.7,
+      "duplicates": 0,
+      "time_ms": 4970.5
+    }
+  },
+  {
+    "experiment_id": 2717,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2535.3
+    }
+  },
+  {
+    "experiment_id": 2718,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 188197.9,
+      "duplicates": 0,
+      "time_ms": 4323.2
+    }
+  },
+  {
+    "experiment_id": 2719,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5295.3
+    }
+  },
+  {
+    "experiment_id": 2720,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 2,
+      "avg_area": 209708.0,
+      "duplicates": 0,
+      "time_ms": 2735.3
+    }
+  },
+  {
+    "experiment_id": 2721,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 120375.6,
+      "duplicates": 0,
+      "time_ms": 4034.1
+    }
+  },
+  {
+    "experiment_id": 2722,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 534935.0,
+      "duplicates": 0,
+      "time_ms": 5626.0
+    }
+  },
+  {
+    "experiment_id": 2723,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 116380.8,
+      "duplicates": 0,
+      "time_ms": 4026.8
+    }
+  },
+  {
+    "experiment_id": 2724,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 177643.4,
+      "duplicates": 0,
+      "time_ms": 4070.0
+    }
+  },
+  {
+    "experiment_id": 2725,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 129729.1,
+      "duplicates": 0,
+      "time_ms": 5578.4
+    }
+  },
+  {
+    "experiment_id": 2726,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3046.7
+    }
+  },
+  {
+    "experiment_id": 2727,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2672.8
+    }
+  },
+  {
+    "experiment_id": 2728,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2386.9
+    }
+  },
+  {
+    "experiment_id": 2729,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 4,
+      "avg_area": 148284.5,
+      "duplicates": 0,
+      "time_ms": 3966.6
+    }
+  },
+  {
+    "experiment_id": 2730,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 80980.4,
+      "duplicates": 0,
+      "time_ms": 3829.5
+    }
+  },
+  {
+    "experiment_id": 2731,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 117403.9,
+      "duplicates": 0,
+      "time_ms": 3942.1
+    }
+  },
+  {
+    "experiment_id": 2732,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 268425.1,
+      "duplicates": 0,
+      "time_ms": 6606.6
+    }
+  },
+  {
+    "experiment_id": 2733,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 331069.0,
+      "duplicates": 0,
+      "time_ms": 5215.6
+    }
+  },
+  {
+    "experiment_id": 2734,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 336218.7,
+      "duplicates": 0,
+      "time_ms": 4836.1
+    }
+  },
+  {
+    "experiment_id": 2735,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2574.8
+    }
+  },
+  {
+    "experiment_id": 2736,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.3,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 188197.9,
+      "duplicates": 0,
+      "time_ms": 4283.3
+    }
+  },
+  {
+    "experiment_id": 2737,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5298.4
+    }
+  },
+  {
+    "experiment_id": 2738,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 57145.0,
+      "duplicates": 0,
+      "time_ms": 2748.2
+    }
+  },
+  {
+    "experiment_id": 2739,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 46372.6,
+      "duplicates": 0,
+      "time_ms": 3989.3
+    }
+  },
+  {
+    "experiment_id": 2740,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 17,
+      "avg_area": 58130.8,
+      "duplicates": 0,
+      "time_ms": 5590.0
+    }
+  },
+  {
+    "experiment_id": 2741,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 21,
+      "avg_area": 37235.5,
+      "duplicates": 0,
+      "time_ms": 3966.2
+    }
+  },
+  {
+    "experiment_id": 2742,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 94836.9,
+      "duplicates": 0,
+      "time_ms": 4176.9
+    }
+  },
+  {
+    "experiment_id": 2743,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 18,
+      "avg_area": 51127.2,
+      "duplicates": 0,
+      "time_ms": 5629.8
+    }
+  },
+  {
+    "experiment_id": 2744,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 61300.8,
+      "duplicates": 0,
+      "time_ms": 3046.3
+    }
+  },
+  {
+    "experiment_id": 2745,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2659.2
+    }
+  },
+  {
+    "experiment_id": 2746,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 39460.1,
+      "duplicates": 0,
+      "time_ms": 2366.7
+    }
+  },
+  {
+    "experiment_id": 2747,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 16,
+      "avg_area": 31688.4,
+      "duplicates": 0,
+      "time_ms": 3924.2
+    }
+  },
+  {
+    "experiment_id": 2748,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 54915.5,
+      "duplicates": 0,
+      "time_ms": 3853.9
+    }
+  },
+  {
+    "experiment_id": 2749,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 24,
+      "avg_area": 36207.2,
+      "duplicates": 0,
+      "time_ms": 3992.8
+    }
+  },
+  {
+    "experiment_id": 2750,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 16,
+      "avg_area": 89426.2,
+      "duplicates": 0,
+      "time_ms": 6584.7
+    }
+  },
+  {
+    "experiment_id": 2751,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 13,
+      "avg_area": 130830.1,
+      "duplicates": 0,
+      "time_ms": 5521.4
+    }
+  },
+  {
+    "experiment_id": 2752,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 14,
+      "avg_area": 62378.3,
+      "duplicates": 0,
+      "time_ms": 4937.0
+    }
+  },
+  {
+    "experiment_id": 2753,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2553.8
+    }
+  },
+  {
+    "experiment_id": 2754,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 13,
+      "avg_area": 70101.2,
+      "duplicates": 0,
+      "time_ms": 4301.6
+    }
+  },
+  {
+    "experiment_id": 2755,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5324.2
+    }
+  },
+  {
+    "experiment_id": 2756,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 133426.3,
+      "duplicates": 0,
+      "time_ms": 2381.5
+    }
+  },
+  {
+    "experiment_id": 2757,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82914.7,
+      "duplicates": 0,
+      "time_ms": 3551.4
+    }
+  },
+  {
+    "experiment_id": 2758,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 114960.4,
+      "duplicates": 0,
+      "time_ms": 5045.8
+    }
+  },
+  {
+    "experiment_id": 2759,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 14,
+      "avg_area": 56159.6,
+      "duplicates": 0,
+      "time_ms": 3472.0
+    }
+  },
+  {
+    "experiment_id": 2760,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 94836.9,
+      "duplicates": 0,
+      "time_ms": 4115.0
+    }
+  },
+  {
+    "experiment_id": 2761,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 100114.7,
+      "duplicates": 0,
+      "time_ms": 5607.8
+    }
+  },
+  {
+    "experiment_id": 2762,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3040.8
+    }
+  },
+  {
+    "experiment_id": 2763,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2668.2
+    }
+  },
+  {
+    "experiment_id": 2764,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2360.5
+    }
+  },
+  {
+    "experiment_id": 2765,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 81354.9,
+      "duplicates": 0,
+      "time_ms": 3951.6
+    }
+  },
+  {
+    "experiment_id": 2766,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 54915.5,
+      "duplicates": 0,
+      "time_ms": 3859.0
+    }
+  },
+  {
+    "experiment_id": 2767,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 17,
+      "avg_area": 50183.4,
+      "duplicates": 0,
+      "time_ms": 3947.9
+    }
+  },
+  {
+    "experiment_id": 2768,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 183604.3,
+      "duplicates": 0,
+      "time_ms": 6490.1
+    }
+  },
+  {
+    "experiment_id": 2769,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 357584.0,
+      "duplicates": 0,
+      "time_ms": 5247.6
+    }
+  },
+  {
+    "experiment_id": 2770,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 158170.5,
+      "duplicates": 0,
+      "time_ms": 4803.8
+    }
+  },
+  {
+    "experiment_id": 2771,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2562.3
+    }
+  },
+  {
+    "experiment_id": 2772,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 97153.3,
+      "duplicates": 0,
+      "time_ms": 4204.7
+    }
+  },
+  {
+    "experiment_id": 2773,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5287.9
+    }
+  },
+  {
+    "experiment_id": 2774,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 2,
+      "avg_area": 209708.0,
+      "duplicates": 0,
+      "time_ms": 2741.0
+    }
+  },
+  {
+    "experiment_id": 2775,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 120375.6,
+      "duplicates": 0,
+      "time_ms": 4000.9
+    }
+  },
+  {
+    "experiment_id": 2776,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 221791.5,
+      "duplicates": 0,
+      "time_ms": 5546.0
+    }
+  },
+  {
+    "experiment_id": 2777,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 65419.8,
+      "duplicates": 0,
+      "time_ms": 3945.6
+    }
+  },
+  {
+    "experiment_id": 2778,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 112486.9,
+      "duplicates": 0,
+      "time_ms": 4127.4
+    }
+  },
+  {
+    "experiment_id": 2779,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 112568.7,
+      "duplicates": 0,
+      "time_ms": 5588.8
+    }
+  },
+  {
+    "experiment_id": 2780,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3023.3
+    }
+  },
+  {
+    "experiment_id": 2781,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2680.2
+    }
+  },
+  {
+    "experiment_id": 2782,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2352.4
+    }
+  },
+  {
+    "experiment_id": 2783,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 4,
+      "avg_area": 148284.5,
+      "duplicates": 0,
+      "time_ms": 4090.0
+    }
+  },
+  {
+    "experiment_id": 2784,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 11,
+      "avg_area": 61216.5,
+      "duplicates": 0,
+      "time_ms": 3787.4
+    }
+  },
+  {
+    "experiment_id": 2785,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 71920.8,
+      "duplicates": 0,
+      "time_ms": 3894.2
+    }
+  },
+  {
+    "experiment_id": 2786,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 204900.7,
+      "duplicates": 0,
+      "time_ms": 6520.1
+    }
+  },
+  {
+    "experiment_id": 2787,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 331069.0,
+      "duplicates": 0,
+      "time_ms": 5249.5
+    }
+  },
+  {
+    "experiment_id": 2788,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 336218.7,
+      "duplicates": 0,
+      "time_ms": 4836.4
+    }
+  },
+  {
+    "experiment_id": 2789,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2570.7
+    }
+  },
+  {
+    "experiment_id": 2790,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 188197.9,
+      "duplicates": 0,
+      "time_ms": 4300.9
+    }
+  },
+  {
+    "experiment_id": 2791,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5263.8
+    }
+  },
+  {
+    "experiment_id": 2792,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 2,
+      "avg_area": 209708.0,
+      "duplicates": 0,
+      "time_ms": 2776.2
+    }
+  },
+  {
+    "experiment_id": 2793,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 120375.6,
+      "duplicates": 0,
+      "time_ms": 4001.5
+    }
+  },
+  {
+    "experiment_id": 2794,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 534935.0,
+      "duplicates": 0,
+      "time_ms": 5642.8
+    }
+  },
+  {
+    "experiment_id": 2795,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 116380.8,
+      "duplicates": 0,
+      "time_ms": 4092.2
+    }
+  },
+  {
+    "experiment_id": 2796,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 177643.4,
+      "duplicates": 0,
+      "time_ms": 4167.6
+    }
+  },
+  {
+    "experiment_id": 2797,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 129729.1,
+      "duplicates": 0,
+      "time_ms": 5638.3
+    }
+  },
+  {
+    "experiment_id": 2798,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3042.9
+    }
+  },
+  {
+    "experiment_id": 2799,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2679.7
+    }
+  },
+  {
+    "experiment_id": 2800,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2355.5
+    }
+  },
+  {
+    "experiment_id": 2801,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 4,
+      "avg_area": 148284.5,
+      "duplicates": 0,
+      "time_ms": 3940.2
+    }
+  },
+  {
+    "experiment_id": 2802,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 80980.4,
+      "duplicates": 0,
+      "time_ms": 3850.8
+    }
+  },
+  {
+    "experiment_id": 2803,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 117403.9,
+      "duplicates": 0,
+      "time_ms": 3951.6
+    }
+  },
+  {
+    "experiment_id": 2804,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 268425.1,
+      "duplicates": 0,
+      "time_ms": 6621.0
+    }
+  },
+  {
+    "experiment_id": 2805,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 331069.0,
+      "duplicates": 0,
+      "time_ms": 5269.1
+    }
+  },
+  {
+    "experiment_id": 2806,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 336218.7,
+      "duplicates": 0,
+      "time_ms": 4837.0
+    }
+  },
+  {
+    "experiment_id": 2807,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2579.2
+    }
+  },
+  {
+    "experiment_id": 2808,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.4,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 188197.9,
+      "duplicates": 0,
+      "time_ms": 4350.3
+    }
+  },
+  {
+    "experiment_id": 2809,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5249.3
+    }
+  },
+  {
+    "experiment_id": 2810,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 57145.0,
+      "duplicates": 0,
+      "time_ms": 2769.3
+    }
+  },
+  {
+    "experiment_id": 2811,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 46372.6,
+      "duplicates": 0,
+      "time_ms": 4005.3
+    }
+  },
+  {
+    "experiment_id": 2812,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 17,
+      "avg_area": 58130.8,
+      "duplicates": 0,
+      "time_ms": 5611.7
+    }
+  },
+  {
+    "experiment_id": 2813,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 21,
+      "avg_area": 37235.5,
+      "duplicates": 0,
+      "time_ms": 4044.0
+    }
+  },
+  {
+    "experiment_id": 2814,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 94836.9,
+      "duplicates": 0,
+      "time_ms": 4098.7
+    }
+  },
+  {
+    "experiment_id": 2815,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 18,
+      "avg_area": 51127.2,
+      "duplicates": 0,
+      "time_ms": 5629.2
+    }
+  },
+  {
+    "experiment_id": 2816,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 61300.8,
+      "duplicates": 0,
+      "time_ms": 3067.2
+    }
+  },
+  {
+    "experiment_id": 2817,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2666.2
+    }
+  },
+  {
+    "experiment_id": 2818,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 39460.1,
+      "duplicates": 0,
+      "time_ms": 2350.1
+    }
+  },
+  {
+    "experiment_id": 2819,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 16,
+      "avg_area": 31688.4,
+      "duplicates": 0,
+      "time_ms": 3946.6
+    }
+  },
+  {
+    "experiment_id": 2820,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 54915.5,
+      "duplicates": 0,
+      "time_ms": 4094.6
+    }
+  },
+  {
+    "experiment_id": 2821,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 24,
+      "avg_area": 36207.2,
+      "duplicates": 0,
+      "time_ms": 3861.7
+    }
+  },
+  {
+    "experiment_id": 2822,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 16,
+      "avg_area": 89426.2,
+      "duplicates": 0,
+      "time_ms": 6035.0
+    }
+  },
+  {
+    "experiment_id": 2823,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 13,
+      "avg_area": 130830.1,
+      "duplicates": 0,
+      "time_ms": 4719.2
+    }
+  },
+  {
+    "experiment_id": 2824,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 14,
+      "avg_area": 62378.3,
+      "duplicates": 0,
+      "time_ms": 4904.2
+    }
+  },
+  {
+    "experiment_id": 2825,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2565.9
+    }
+  },
+  {
+    "experiment_id": 2826,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 13,
+      "avg_area": 70101.2,
+      "duplicates": 0,
+      "time_ms": 4371.9
+    }
+  },
+  {
+    "experiment_id": 2827,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5275.3
+    }
+  },
+  {
+    "experiment_id": 2828,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 133426.3,
+      "duplicates": 0,
+      "time_ms": 2770.4
+    }
+  },
+  {
+    "experiment_id": 2829,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82914.7,
+      "duplicates": 0,
+      "time_ms": 3998.9
+    }
+  },
+  {
+    "experiment_id": 2830,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 114960.4,
+      "duplicates": 0,
+      "time_ms": 5599.3
+    }
+  },
+  {
+    "experiment_id": 2831,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 14,
+      "avg_area": 56159.6,
+      "duplicates": 0,
+      "time_ms": 3975.0
+    }
+  },
+  {
+    "experiment_id": 2832,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 94836.9,
+      "duplicates": 0,
+      "time_ms": 4141.7
+    }
+  },
+  {
+    "experiment_id": 2833,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 100114.7,
+      "duplicates": 0,
+      "time_ms": 5593.5
+    }
+  },
+  {
+    "experiment_id": 2834,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3047.0
+    }
+  },
+  {
+    "experiment_id": 2835,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2722.9
+    }
+  },
+  {
+    "experiment_id": 2836,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2347.6
+    }
+  },
+  {
+    "experiment_id": 2837,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 81354.9,
+      "duplicates": 0,
+      "time_ms": 3945.1
+    }
+  },
+  {
+    "experiment_id": 2838,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 54915.5,
+      "duplicates": 0,
+      "time_ms": 3826.9
+    }
+  },
+  {
+    "experiment_id": 2839,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 17,
+      "avg_area": 50183.4,
+      "duplicates": 0,
+      "time_ms": 3976.0
+    }
+  },
+  {
+    "experiment_id": 2840,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 183604.3,
+      "duplicates": 0,
+      "time_ms": 6492.4
+    }
+  },
+  {
+    "experiment_id": 2841,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 357584.0,
+      "duplicates": 0,
+      "time_ms": 5196.2
+    }
+  },
+  {
+    "experiment_id": 2842,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 158170.5,
+      "duplicates": 0,
+      "time_ms": 4883.9
+    }
+  },
+  {
+    "experiment_id": 2843,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2612.2
+    }
+  },
+  {
+    "experiment_id": 2844,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 97153.3,
+      "duplicates": 0,
+      "time_ms": 4311.8
+    }
+  },
+  {
+    "experiment_id": 2845,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5284.1
+    }
+  },
+  {
+    "experiment_id": 2846,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 2,
+      "avg_area": 209708.0,
+      "duplicates": 0,
+      "time_ms": 2745.0
+    }
+  },
+  {
+    "experiment_id": 2847,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 120375.6,
+      "duplicates": 0,
+      "time_ms": 3993.9
+    }
+  },
+  {
+    "experiment_id": 2848,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 221791.5,
+      "duplicates": 0,
+      "time_ms": 5602.9
+    }
+  },
+  {
+    "experiment_id": 2849,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 65419.8,
+      "duplicates": 0,
+      "time_ms": 4004.3
+    }
+  },
+  {
+    "experiment_id": 2850,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 112486.9,
+      "duplicates": 0,
+      "time_ms": 4149.3
+    }
+  },
+  {
+    "experiment_id": 2851,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 112568.7,
+      "duplicates": 0,
+      "time_ms": 5623.8
+    }
+  },
+  {
+    "experiment_id": 2852,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3047.6
+    }
+  },
+  {
+    "experiment_id": 2853,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2670.8
+    }
+  },
+  {
+    "experiment_id": 2854,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2333.2
+    }
+  },
+  {
+    "experiment_id": 2855,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 4,
+      "avg_area": 148284.5,
+      "duplicates": 0,
+      "time_ms": 3994.0
+    }
+  },
+  {
+    "experiment_id": 2856,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 11,
+      "avg_area": 61216.5,
+      "duplicates": 0,
+      "time_ms": 3845.0
+    }
+  },
+  {
+    "experiment_id": 2857,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 71920.8,
+      "duplicates": 0,
+      "time_ms": 3953.2
+    }
+  },
+  {
+    "experiment_id": 2858,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 204900.7,
+      "duplicates": 0,
+      "time_ms": 6674.0
+    }
+  },
+  {
+    "experiment_id": 2859,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 331069.0,
+      "duplicates": 0,
+      "time_ms": 5251.5
+    }
+  },
+  {
+    "experiment_id": 2860,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 336218.7,
+      "duplicates": 0,
+      "time_ms": 4865.1
+    }
+  },
+  {
+    "experiment_id": 2861,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2587.2
+    }
+  },
+  {
+    "experiment_id": 2862,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 188197.9,
+      "duplicates": 0,
+      "time_ms": 4271.1
+    }
+  },
+  {
+    "experiment_id": 2863,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5328.4
+    }
+  },
+  {
+    "experiment_id": 2864,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 2,
+      "avg_area": 209708.0,
+      "duplicates": 0,
+      "time_ms": 2742.0
+    }
+  },
+  {
+    "experiment_id": 2865,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 120375.6,
+      "duplicates": 0,
+      "time_ms": 4002.8
+    }
+  },
+  {
+    "experiment_id": 2866,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 534935.0,
+      "duplicates": 0,
+      "time_ms": 5634.3
+    }
+  },
+  {
+    "experiment_id": 2867,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 116380.8,
+      "duplicates": 0,
+      "time_ms": 3989.8
+    }
+  },
+  {
+    "experiment_id": 2868,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 177643.4,
+      "duplicates": 0,
+      "time_ms": 4188.6
+    }
+  },
+  {
+    "experiment_id": 2869,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 129729.1,
+      "duplicates": 0,
+      "time_ms": 5623.0
+    }
+  },
+  {
+    "experiment_id": 2870,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3033.1
+    }
+  },
+  {
+    "experiment_id": 2871,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2681.8
+    }
+  },
+  {
+    "experiment_id": 2872,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2358.7
+    }
+  },
+  {
+    "experiment_id": 2873,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 4,
+      "avg_area": 148284.5,
+      "duplicates": 0,
+      "time_ms": 3920.9
+    }
+  },
+  {
+    "experiment_id": 2874,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 80980.4,
+      "duplicates": 0,
+      "time_ms": 3814.9
+    }
+  },
+  {
+    "experiment_id": 2875,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 117403.9,
+      "duplicates": 0,
+      "time_ms": 3926.7
+    }
+  },
+  {
+    "experiment_id": 2876,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 268425.1,
+      "duplicates": 0,
+      "time_ms": 6522.2
+    }
+  },
+  {
+    "experiment_id": 2877,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 331069.0,
+      "duplicates": 0,
+      "time_ms": 5271.1
+    }
+  },
+  {
+    "experiment_id": 2878,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 336218.7,
+      "duplicates": 0,
+      "time_ms": 4823.5
+    }
+  },
+  {
+    "experiment_id": 2879,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2557.0
+    }
+  },
+  {
+    "experiment_id": 2880,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.5,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 188197.9,
+      "duplicates": 0,
+      "time_ms": 4229.9
+    }
+  },
+  {
+    "experiment_id": 2881,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5290.2
+    }
+  },
+  {
+    "experiment_id": 2882,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 57145.0,
+      "duplicates": 0,
+      "time_ms": 2763.1
+    }
+  },
+  {
+    "experiment_id": 2883,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 46372.6,
+      "duplicates": 0,
+      "time_ms": 4039.6
+    }
+  },
+  {
+    "experiment_id": 2884,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 17,
+      "avg_area": 58130.8,
+      "duplicates": 0,
+      "time_ms": 5584.1
+    }
+  },
+  {
+    "experiment_id": 2885,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 21,
+      "avg_area": 37235.5,
+      "duplicates": 0,
+      "time_ms": 3992.5
+    }
+  },
+  {
+    "experiment_id": 2886,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 94836.9,
+      "duplicates": 0,
+      "time_ms": 4075.7
+    }
+  },
+  {
+    "experiment_id": 2887,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 18,
+      "avg_area": 51127.2,
+      "duplicates": 0,
+      "time_ms": 5618.7
+    }
+  },
+  {
+    "experiment_id": 2888,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 61300.8,
+      "duplicates": 0,
+      "time_ms": 3057.7
+    }
+  },
+  {
+    "experiment_id": 2889,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2681.2
+    }
+  },
+  {
+    "experiment_id": 2890,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 39460.1,
+      "duplicates": 0,
+      "time_ms": 2361.1
+    }
+  },
+  {
+    "experiment_id": 2891,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 16,
+      "avg_area": 31688.4,
+      "duplicates": 0,
+      "time_ms": 3979.1
+    }
+  },
+  {
+    "experiment_id": 2892,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 54915.5,
+      "duplicates": 0,
+      "time_ms": 3798.4
+    }
+  },
+  {
+    "experiment_id": 2893,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 24,
+      "avg_area": 36207.2,
+      "duplicates": 0,
+      "time_ms": 3936.2
+    }
+  },
+  {
+    "experiment_id": 2894,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 16,
+      "avg_area": 89426.2,
+      "duplicates": 0,
+      "time_ms": 6607.0
+    }
+  },
+  {
+    "experiment_id": 2895,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 14,
+      "avg_area": 128292.0,
+      "duplicates": 0,
+      "time_ms": 5203.9
+    }
+  },
+  {
+    "experiment_id": 2896,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 14,
+      "avg_area": 62378.3,
+      "duplicates": 0,
+      "time_ms": 4882.9
+    }
+  },
+  {
+    "experiment_id": 2897,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2577.4
+    }
+  },
+  {
+    "experiment_id": 2898,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 5
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 13,
+      "avg_area": 70101.2,
+      "duplicates": 0,
+      "time_ms": 4274.1
+    }
+  },
+  {
+    "experiment_id": 2899,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5268.1
+    }
+  },
+  {
+    "experiment_id": 2900,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 133426.3,
+      "duplicates": 0,
+      "time_ms": 2780.5
+    }
+  },
+  {
+    "experiment_id": 2901,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82914.7,
+      "duplicates": 0,
+      "time_ms": 4013.5
+    }
+  },
+  {
+    "experiment_id": 2902,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 114960.4,
+      "duplicates": 0,
+      "time_ms": 5611.3
+    }
+  },
+  {
+    "experiment_id": 2903,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 14,
+      "avg_area": 56159.6,
+      "duplicates": 0,
+      "time_ms": 3975.2
+    }
+  },
+  {
+    "experiment_id": 2904,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 94836.9,
+      "duplicates": 0,
+      "time_ms": 4136.8
+    }
+  },
+  {
+    "experiment_id": 2905,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 100114.7,
+      "duplicates": 0,
+      "time_ms": 5606.2
+    }
+  },
+  {
+    "experiment_id": 2906,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3084.5
+    }
+  },
+  {
+    "experiment_id": 2907,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2678.3
+    }
+  },
+  {
+    "experiment_id": 2908,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2352.5
+    }
+  },
+  {
+    "experiment_id": 2909,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 81354.9,
+      "duplicates": 0,
+      "time_ms": 3990.5
+    }
+  },
+  {
+    "experiment_id": 2910,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 54915.5,
+      "duplicates": 0,
+      "time_ms": 3874.2
+    }
+  },
+  {
+    "experiment_id": 2911,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 17,
+      "avg_area": 50183.4,
+      "duplicates": 0,
+      "time_ms": 3912.6
+    }
+  },
+  {
+    "experiment_id": 2912,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 183604.3,
+      "duplicates": 0,
+      "time_ms": 6500.6
+    }
+  },
+  {
+    "experiment_id": 2913,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 313869.5,
+      "duplicates": 0,
+      "time_ms": 5284.3
+    }
+  },
+  {
+    "experiment_id": 2914,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 158170.5,
+      "duplicates": 0,
+      "time_ms": 4894.1
+    }
+  },
+  {
+    "experiment_id": 2915,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2540.2
+    }
+  },
+  {
+    "experiment_id": 2916,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 10
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 97153.3,
+      "duplicates": 0,
+      "time_ms": 4339.8
+    }
+  },
+  {
+    "experiment_id": 2917,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5278.6
+    }
+  },
+  {
+    "experiment_id": 2918,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 2,
+      "avg_area": 209708.0,
+      "duplicates": 0,
+      "time_ms": 2741.3
+    }
+  },
+  {
+    "experiment_id": 2919,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 120375.6,
+      "duplicates": 0,
+      "time_ms": 4006.8
+    }
+  },
+  {
+    "experiment_id": 2920,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 221791.5,
+      "duplicates": 0,
+      "time_ms": 5603.7
+    }
+  },
+  {
+    "experiment_id": 2921,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 65419.8,
+      "duplicates": 0,
+      "time_ms": 3963.5
+    }
+  },
+  {
+    "experiment_id": 2922,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 112486.9,
+      "duplicates": 0,
+      "time_ms": 4137.3
+    }
+  },
+  {
+    "experiment_id": 2923,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 112568.7,
+      "duplicates": 0,
+      "time_ms": 5635.3
+    }
+  },
+  {
+    "experiment_id": 2924,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3061.0
+    }
+  },
+  {
+    "experiment_id": 2925,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2681.7
+    }
+  },
+  {
+    "experiment_id": 2926,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2349.7
+    }
+  },
+  {
+    "experiment_id": 2927,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 4,
+      "avg_area": 148284.5,
+      "duplicates": 0,
+      "time_ms": 3912.7
+    }
+  },
+  {
+    "experiment_id": 2928,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 11,
+      "avg_area": 61216.5,
+      "duplicates": 0,
+      "time_ms": 3844.1
+    }
+  },
+  {
+    "experiment_id": 2929,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 12,
+      "avg_area": 71920.8,
+      "duplicates": 0,
+      "time_ms": 3966.0
+    }
+  },
+  {
+    "experiment_id": 2930,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 204900.7,
+      "duplicates": 0,
+      "time_ms": 6641.2
+    }
+  },
+  {
+    "experiment_id": 2931,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 314382.7,
+      "duplicates": 0,
+      "time_ms": 5281.9
+    }
+  },
+  {
+    "experiment_id": 2932,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 336218.7,
+      "duplicates": 0,
+      "time_ms": 4901.7
+    }
+  },
+  {
+    "experiment_id": 2933,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2543.6
+    }
+  },
+  {
+    "experiment_id": 2934,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 15
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 188197.9,
+      "duplicates": 0,
+      "time_ms": 4252.7
+    }
+  },
+  {
+    "experiment_id": 2935,
+    "image": "popurri01.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 15,
+      "avg_area": 57715.3,
+      "duplicates": 0,
+      "time_ms": 5270.6
+    }
+  },
+  {
+    "experiment_id": 2936,
+    "image": "popurri02.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 2,
+      "avg_area": 209708.0,
+      "duplicates": 0,
+      "time_ms": 2725.9
+    }
+  },
+  {
+    "experiment_id": 2937,
+    "image": "popurri03.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 120375.6,
+      "duplicates": 0,
+      "time_ms": 3977.7
+    }
+  },
+  {
+    "experiment_id": 2938,
+    "image": "popurri04.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 534935.0,
+      "duplicates": 0,
+      "time_ms": 5599.1
+    }
+  },
+  {
+    "experiment_id": 2939,
+    "image": "popurri05.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 116380.8,
+      "duplicates": 0,
+      "time_ms": 4013.5
+    }
+  },
+  {
+    "experiment_id": 2940,
+    "image": "popurri06.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 5,
+      "avg_area": 177643.4,
+      "duplicates": 0,
+      "time_ms": 4185.2
+    }
+  },
+  {
+    "experiment_id": 2941,
+    "image": "popurri07.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 8,
+      "avg_area": 129729.1,
+      "duplicates": 0,
+      "time_ms": 5620.2
+    }
+  },
+  {
+    "experiment_id": 2942,
+    "image": "popurri08.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 82473.3,
+      "duplicates": 0,
+      "time_ms": 3030.1
+    }
+  },
+  {
+    "experiment_id": 2943,
+    "image": "popurri09.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 54748.1,
+      "duplicates": 0,
+      "time_ms": 2721.8
+    }
+  },
+  {
+    "experiment_id": 2944,
+    "image": "popurri10.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 6,
+      "avg_area": 62437.8,
+      "duplicates": 0,
+      "time_ms": 2331.4
+    }
+  },
+  {
+    "experiment_id": 2945,
+    "image": "popurri11.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 4,
+      "avg_area": 148284.5,
+      "duplicates": 0,
+      "time_ms": 3933.3
+    }
+  },
+  {
+    "experiment_id": 2946,
+    "image": "popurri12.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 9,
+      "avg_area": 80980.4,
+      "duplicates": 0,
+      "time_ms": 3872.3
+    }
+  },
+  {
+    "experiment_id": 2947,
+    "image": "popurri13.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 10,
+      "avg_area": 117403.9,
+      "duplicates": 0,
+      "time_ms": 3957.9
+    }
+  },
+  {
+    "experiment_id": 2948,
+    "image": "popurri14.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 268425.1,
+      "duplicates": 0,
+      "time_ms": 6454.0
+    }
+  },
+  {
+    "experiment_id": 2949,
+    "image": "popurri15.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 314382.7,
+      "duplicates": 0,
+      "time_ms": 5195.5
+    }
+  },
+  {
+    "experiment_id": 2950,
+    "image": "popurri16.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 3,
+      "avg_area": 336218.7,
+      "duplicates": 0,
+      "time_ms": 4816.9
+    }
+  },
+  {
+    "experiment_id": 2951,
+    "image": "popurri17.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 1,
+      "avg_area": 15167.0,
+      "duplicates": 0,
+      "time_ms": 2606.3
+    }
+  },
+  {
+    "experiment_id": 2952,
+    "image": "popurri18.jpg",
+    "method": "docling",
+    "config": {
+      "nms_iou": 0.6,
+      "merge_distance": 20
+    },
+    "metrics": {
+      "success": true,
+      "num_boxes": 7,
+      "avg_area": 188197.9,
+      "duplicates": 0,
+      "time_ms": 4245.0
+    }
   }
 ]
