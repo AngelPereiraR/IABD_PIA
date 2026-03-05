@@ -36,6 +36,7 @@ Modos de uso:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import json
 import sys
@@ -142,6 +143,58 @@ def _is_transformers_compatible_for_deepseek() -> bool:
         return False
     current = _version_tuple(hf_transformers.__version__)
     return _version_tuple("4.51.1") <= current < _version_tuple("4.56.0")
+
+
+def _ensure_llama_flashattention2_symbol() -> None:
+    """Crea alias de compatibilidad si la clase ya no existe en transformers nuevos.
+
+    Algunos repos con trust_remote_code importan `LlamaFlashAttention2` directamente.
+    En versiones recientes de transformers esa clase puede no existir, por lo que
+    se añade un alias a `LlamaAttention` para permitir fallback en modo eager.
+    """
+    if not HAS_DEEPSEEK_DEPS:
+        return
+    try:
+        from transformers.models.llama import modeling_llama as llama_mod
+        if not hasattr(llama_mod, "LlamaFlashAttention2") and hasattr(llama_mod, "LlamaAttention"):
+            llama_mod.LlamaFlashAttention2 = llama_mod.LlamaAttention
+    except Exception:
+        # Si falla este parche, se gestionará en el bloque de carga del modelo.
+        pass
+
+
+def _load_deepseek_model_with_fallback(model_dir: Path) -> Tuple[Any, Any, str]:
+    """Carga DeepSeek intentando flash-attn y, si falla, vuelve a eager.
+
+    Returns:
+        tokenizer, model, attn_impl_utilizada
+    """
+    _ensure_llama_flashattention2_symbol()
+
+    tokenizer = AutoTokenizer.from_pretrained(str(model_dir), trust_remote_code=True)
+
+    has_flash_attn = importlib.util.find_spec("flash_attn") is not None
+    preferred_impl = "flash_attention_2" if has_flash_attn else "eager"
+
+    try:
+        model = AutoModel.from_pretrained(
+            str(model_dir),
+            trust_remote_code=True,
+            use_safetensors=True,
+            _attn_implementation=preferred_impl,
+        )
+        model = model.eval().cuda().to(torch.bfloat16)
+        return tokenizer, model, preferred_impl
+    except Exception:
+        # Segundo intento forzando eager para no depender de flash-attn.
+        model = AutoModel.from_pretrained(
+            str(model_dir),
+            trust_remote_code=True,
+            use_safetensors=True,
+            _attn_implementation="eager",
+        )
+        model = model.eval().cuda().to(torch.bfloat16)
+        return tokenizer, model, "eager"
 
 
 # ---------------------------------------------------------------------------
@@ -959,12 +1012,6 @@ def main() -> None:
             if HAS_DEEPSEEK_DEPS:
                 if not torch.cuda.is_available():
                     print("[WARN] deepseek solicitado pero CUDA no disponible; se omite.")
-                elif not _is_transformers_compatible_for_deepseek():
-                    print(
-                        "[WARN] deepseek omitido: transformers incompatible "
-                        f"({hf_transformers.__version__}). "
-                        "Instala: pip install \"transformers>=4.51.1,<4.56.0\""
-                    )
                 elif not deepseek_model_path.exists():
                     print(
                         "[WARN] Modelo DeepSeek no encontrado en "
@@ -974,27 +1021,21 @@ def main() -> None:
                     print("[i] Inicializando DeepSeek OCR local...")
                     t0 = time.perf_counter()
                     try:
-                        tokenizer = AutoTokenizer.from_pretrained(
-                            str(deepseek_model_path),
-                            trust_remote_code=True,
-                        )
-                        model = AutoModel.from_pretrained(
-                            str(deepseek_model_path),
-                            trust_remote_code=True,
-                            use_safetensors=True,
-                        )
-                        model = model.eval().cuda().to(torch.bfloat16)
+                        tokenizer, model, attn_impl = _load_deepseek_model_with_fallback(deepseek_model_path)
                         engine_ctx["deepseek_model"] = model
                         engine_ctx["deepseek_tokenizer"] = tokenizer
                         engine_ctx["deepseek_prompt"] = args.deepseek_prompt
-                        print(f"[OK] DeepSeek listo en {(time.perf_counter()-t0)*1000:.0f}ms")
+                        print(
+                            f"[OK] DeepSeek listo en {(time.perf_counter()-t0)*1000:.0f}ms "
+                            f"(attn={attn_impl})"
+                        )
                         deepseek_ready = True
                     except Exception as exc:
                         msg = str(exc)
                         if "LlamaFlashAttention2" in msg:
                             msg += (
-                                " | Sugerencia: instalar transformers compatible: "
-                                "pip install \"transformers>=4.51.1,<4.56.0\""
+                                " | Sugerencia: instala transformers compatible y/o usa fallback eager. "
+                                "Ejemplo: pip install \"transformers>=4.51.1,<4.56.0\""
                             )
                         print(
                             "[WARN] No se pudo inicializar DeepSeek; se omite este motor. "
