@@ -76,7 +76,11 @@ if errorlevel 1 (
 ) else (
     set GPU_AVAILABLE=1
     echo [OK] GPU NVIDIA detectada
-    nvidia-smi --query-gpu=name,driver_version,cuda_version --format=csv,noheader
+    nvidia-smi --query-gpu=name,driver_version --format=csv,noheader
+    for /f "tokens=2 delims=:" %%A in ('nvidia-smi ^| findstr /C:"CUDA Version"') do set CUDA_VERSION=%%A
+    if defined CUDA_VERSION (
+        echo CUDA Version: !CUDA_VERSION!
+    )
 )
 echo.
 
@@ -93,12 +97,12 @@ if !GPU_AVAILABLE!==1 (
     echo Instalacion con GPU NVIDIA ^(CUDA 11.8^)
     echo --------------------------------------------------------------------------------
     echo.
-    echo [1/5] Comprobando PyTorch con CUDA 11.8...
-    py -3.11 -c "import torch; v=torch.__version__; exit^(0 if v=='2.0.1+cu118' else 1^)" >nul 2>&1
+    echo [1/5] Comprobando PyTorch 2.2.2+cu118...
+    py -3.11 -c "import torch; v=torch.__version__; exit^(0 if v=='2.2.2+cu118' else 1^)" >nul 2>&1
     if not errorlevel 1 (
-        echo [OK] PyTorch 2.0.1+cu118 ya instalado - saltando
+        echo [OK] PyTorch 2.2.2+cu118 ya instalado - saltando
     ) else (
-        py -3.11 -m pip install --no-warn-script-location torch==2.0.1+cu118 torchvision==0.15.2+cu118 --index-url https://download.pytorch.org/whl/cu118
+        py -3.11 -m pip install --no-warn-script-location torch==2.2.2+cu118 torchvision==0.17.2+cu118 --index-url https://download.pytorch.org/whl/cu118
         if errorlevel 1 (
             echo [X] Error instalando PyTorch con CUDA
             pause
@@ -137,6 +141,20 @@ if !GPU_AVAILABLE!==1 (
             exit /b 1
         )
     )
+
+    echo.
+
+    echo [4/5] Instalando resto de paquetes ^(pip omite los ya satisfechos^)...
+    REM Filtrar requirements.txt para excluir lineas con +cu118 ^(si existen^)
+    findstr /V /C:"+cu118" requirements.txt > requirements_temp.txt
+    py -3.11 -m pip install --no-warn-script-location -r requirements_temp.txt
+    if errorlevel 1 (
+        echo [X] Error instalando paquetes
+        del requirements_temp.txt
+        pause
+        exit /b 1
+    )
+    del requirements_temp.txt
 ) else (
     echo Instalacion CPU ^(sin GPU^)
     echo --------------------------------------------------------------------------------
