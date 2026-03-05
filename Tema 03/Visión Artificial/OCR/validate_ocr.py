@@ -661,7 +661,18 @@ def run_config(
 
         for ocr_engine in pending_engines:
             # --- OCR ---
-            if num_boxes > 0 and ocr_engine in engine_ctx:
+            can_run_engine = (
+                (ocr_engine == "easyocr" and "easyocr" in engine_ctx)
+                or (ocr_engine == "tesseract")
+                or (ocr_engine == "paddle" and "paddle" in engine_ctx)
+                or (
+                    ocr_engine == "deepseek"
+                    and "deepseek_model" in engine_ctx
+                    and "deepseek_tokenizer" in engine_ctx
+                )
+            )
+
+            if num_boxes > 0 and can_run_engine:
                 ocr_start = time.perf_counter()
                 if ocr_engine == "easyocr":
                     ocr_data = run_easyocr_on_regions(img_bgr, boxes, engine_ctx["easyocr"])
