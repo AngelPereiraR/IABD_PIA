@@ -222,8 +222,6 @@ def _ensure_dynamic_cache_seen_tokens() -> None:
             # Compatibilidad con variantes internas de transformers
             if hasattr(self, "_seen_tokens"):
                 return int(getattr(self, "_seen_tokens") or 0)
-            if hasattr(self, "seen_tokens"):
-                return int(getattr(self, "seen_tokens") or 0)
             if hasattr(self, "get_seq_length"):
                 try:
                     return int(self.get_seq_length())
