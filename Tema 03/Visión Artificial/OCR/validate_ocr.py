@@ -202,6 +202,107 @@ def _ensure_llama_flashattention2_symbol() -> None:
         pass
 
 
+def _ensure_dynamic_cache_seen_tokens() -> None:
+    """Parche de compatibilidad para modelos que esperan DynamicCache.seen_tokens.
+
+    Algunas combinaciones de trust_remote_code + transformers recientes usan
+    internamente `DynamicCache` sin exponer `seen_tokens`, lo que provoca:
+      'DynamicCache' object has no attribute 'seen_tokens'
+    Este parche añade una propiedad compatible en caliente.
+    """
+    if not HAS_DEEPSEEK_DEPS:
+        return
+    try:
+        from transformers.cache_utils import DynamicCache  # type: ignore
+
+        if hasattr(DynamicCache, "seen_tokens"):
+            return
+
+        def _get_seen_tokens(self: Any) -> int:
+            # Compatibilidad con variantes internas de transformers
+            if hasattr(self, "_seen_tokens"):
+                return int(getattr(self, "_seen_tokens") or 0)
+            if hasattr(self, "seen_tokens"):
+                return int(getattr(self, "seen_tokens") or 0)
+            if hasattr(self, "get_seq_length"):
+                try:
+                    return int(self.get_seq_length())
+                except Exception:
+                    return 0
+            return 0
+
+        def _set_seen_tokens(self: Any, value: Any) -> None:
+            setattr(self, "_seen_tokens", int(value) if value is not None else 0)
+
+        DynamicCache.seen_tokens = property(_get_seen_tokens, _set_seen_tokens)  # type: ignore[attr-defined]
+    except Exception:
+        # Si no se puede parchear, se continuará y se reportará al inicializar/inferir.
+        pass
+
+
+def _patch_generation_warnings(model: Any, tokenizer: Any) -> None:
+    """Reduce warnings comunes de generate() en modelos trust_remote_code.
+
+    - Asegura pad_token_id/eos_token_id en config y kwargs.
+    - Inyecta attention_mask cuando falta y hay input_ids.
+    - Elimina temperature si do_sample=False para evitar warning de flags.
+    """
+    if not HAS_DEEPSEEK_DEPS:
+        return
+
+    # Configurar tokens por defecto para generación
+    try:
+        if getattr(tokenizer, "pad_token_id", None) is None and getattr(tokenizer, "eos_token_id", None) is not None:
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+    except Exception:
+        pass
+
+    pad_id = getattr(tokenizer, "pad_token_id", None)
+    eos_id = getattr(tokenizer, "eos_token_id", None)
+
+    try:
+        if hasattr(model, "generation_config") and model.generation_config is not None:
+            if getattr(model.generation_config, "pad_token_id", None) is None and pad_id is not None:
+                model.generation_config.pad_token_id = pad_id
+            if getattr(model.generation_config, "eos_token_id", None) is None and eos_id is not None:
+                model.generation_config.eos_token_id = eos_id
+    except Exception:
+        pass
+
+    # Envolver generate para normalizar kwargs y evitar warnings repetitivos.
+    try:
+        original_generate = model.generate
+        if getattr(original_generate, "_ocr_warning_patched", False):
+            return
+
+        def patched_generate(*args: Any, **kwargs: Any) -> Any:
+            do_sample = bool(kwargs.get("do_sample", False))
+            if ("temperature" in kwargs) and (not do_sample):
+                kwargs.pop("temperature", None)
+
+            if kwargs.get("pad_token_id", None) is None:
+                if pad_id is not None:
+                    kwargs["pad_token_id"] = pad_id
+                elif eos_id is not None:
+                    kwargs["pad_token_id"] = eos_id
+
+            if kwargs.get("attention_mask", None) is None:
+                input_ids = kwargs.get("input_ids", None)
+                if input_ids is None and args:
+                    first = args[0]
+                    if isinstance(first, torch.Tensor):
+                        input_ids = first
+                if isinstance(input_ids, torch.Tensor):
+                    kwargs["attention_mask"] = torch.ones_like(input_ids)
+
+            return original_generate(*args, **kwargs)
+
+        patched_generate._ocr_warning_patched = True  # type: ignore[attr-defined]
+        model.generate = patched_generate
+    except Exception:
+        pass
+
+
 def _load_deepseek_model_with_fallback(model_dir: Path) -> Tuple[Any, Any, str]:
     """Carga DeepSeek intentando flash-attn y, si falla, vuelve a eager.
 
@@ -209,6 +310,7 @@ def _load_deepseek_model_with_fallback(model_dir: Path) -> Tuple[Any, Any, str]:
         tokenizer, model, attn_impl_utilizada
     """
     _ensure_llama_flashattention2_symbol()
+    _ensure_dynamic_cache_seen_tokens()
 
     tokenizer = AutoTokenizer.from_pretrained(str(model_dir), trust_remote_code=True)
 
@@ -223,6 +325,7 @@ def _load_deepseek_model_with_fallback(model_dir: Path) -> Tuple[Any, Any, str]:
             _attn_implementation=preferred_impl,
         )
         model = model.eval().cuda().to(torch.bfloat16)
+        _patch_generation_warnings(model, tokenizer)
         return tokenizer, model, preferred_impl
     except Exception:
         # Segundo intento forzando eager para no depender de flash-attn.
@@ -233,6 +336,7 @@ def _load_deepseek_model_with_fallback(model_dir: Path) -> Tuple[Any, Any, str]:
             _attn_implementation="eager",
         )
         model = model.eval().cuda().to(torch.bfloat16)
+        _patch_generation_warnings(model, tokenizer)
         return tokenizer, model, "eager"
 
 
