@@ -83,6 +83,7 @@ except ImportError:
 
 try:
     import torch
+    import transformers as hf_transformers
     from transformers import AutoModel, AutoTokenizer
     HAS_DEEPSEEK_DEPS = True
 except ImportError:
@@ -122,6 +123,25 @@ DUP_PENALTY = 50.0       # penalizacion por duplicado en deteccion
 MISSED_PENALTY = 20.0    # penalizacion por imagen sin regiones detectadas
 
 SUPPORTED_ENGINES = ["easyocr", "tesseract", "paddle", "deepseek"]
+
+
+def _version_tuple(v: str) -> Tuple[int, int, int]:
+    """Convierte 'x.y.z' a tupla comparable tolerando sufijos."""
+    parts = []
+    for p in v.split(".")[:3]:
+        num = "".join(ch for ch in p if ch.isdigit())
+        parts.append(int(num) if num else 0)
+    while len(parts) < 3:
+        parts.append(0)
+    return tuple(parts)  # type: ignore[return-value]
+
+
+def _is_transformers_compatible_for_deepseek() -> bool:
+    """DeepSeek-OCR-2 falla con transformers demasiado nuevos (ej. 4.57.x)."""
+    if not HAS_DEEPSEEK_DEPS:
+        return False
+    current = _version_tuple(hf_transformers.__version__)
+    return _version_tuple("4.51.1") <= current < _version_tuple("4.56.0")
 
 
 # ---------------------------------------------------------------------------
@@ -939,6 +959,12 @@ def main() -> None:
             if HAS_DEEPSEEK_DEPS:
                 if not torch.cuda.is_available():
                     print("[WARN] deepseek solicitado pero CUDA no disponible; se omite.")
+                elif not _is_transformers_compatible_for_deepseek():
+                    print(
+                        "[WARN] deepseek omitido: transformers incompatible "
+                        f"({hf_transformers.__version__}). "
+                        "Instala: pip install \"transformers>=4.51.1,<4.56.0\""
+                    )
                 elif not deepseek_model_path.exists():
                     print(
                         "[WARN] Modelo DeepSeek no encontrado en "
@@ -964,9 +990,15 @@ def main() -> None:
                         print(f"[OK] DeepSeek listo en {(time.perf_counter()-t0)*1000:.0f}ms")
                         deepseek_ready = True
                     except Exception as exc:
+                        msg = str(exc)
+                        if "LlamaFlashAttention2" in msg:
+                            msg += (
+                                " | Sugerencia: instalar transformers compatible: "
+                                "pip install \"transformers>=4.51.1,<4.56.0\""
+                            )
                         print(
                             "[WARN] No se pudo inicializar DeepSeek; se omite este motor. "
-                            f"Detalle: {exc}"
+                            f"Detalle: {msg}"
                         )
             else:
                 print("[WARN] deepseek solicitado pero faltan dependencias (torch/transformers); se omite.")

@@ -163,6 +163,9 @@ if !GPU_AVAILABLE!==1 (
     )
     del requirements_temp.txt
 
+    REM DeepSeek-OCR-2: fijar versión de transformers compatible
+    py -3.11 -m pip install --no-warn-script-location --upgrade "transformers>=4.51.1,<4.56.0"
+
     echo.
     echo [i] Dependencia opcional DeepSeek: flash-attn ^(recomendado en GPU^)
     py -3.11 -m pip show flash-attn >nul 2>&1
@@ -173,7 +176,8 @@ if !GPU_AVAILABLE!==1 (
         py -3.11 -m pip install --no-warn-script-location --upgrade wheel setuptools >nul 2>&1
         py -3.11 -m pip install --no-warn-script-location flash-attn==2.7.3 --no-build-isolation
         if errorlevel 1 (
-            echo [W] No se pudo instalar flash-attn. DeepSeek puede funcionar con atencion eager ^(mas lento^).
+            echo [W] No se pudo instalar flash-attn ^(normal en algunos entornos Windows/CUDA^).
+            echo [W] DeepSeek puede funcionar con atencion eager ^(mas lento^).
         ) else (
             echo [OK] flash-attn instalado correctamente
         )
