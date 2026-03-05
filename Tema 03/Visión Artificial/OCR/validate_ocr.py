@@ -11,24 +11,19 @@ Para cada configuracion seleccionada y cada motor OCR:
 Modos de uso:
     # Automatico (default usa 4 OCR: easyocr,tesseract,paddle,deepseek)
     # Requiere pasar ruta de Tesseract y modelo DeepSeek:
-    py -3.11 validate_ocr.py \
-            --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" \
-            --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
+    py -3.11 validate_ocr.py --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
 
     # Automatico solo con OCR que no requieren argumentos extra (sin tesseract/deepseek)
     py -3.11 validate_ocr.py --ocr-engines easyocr,paddle
 
     # Automatico usando Tesseract + DeepSeek (requiere rutas explicitas en Windows)
-    py -3.11 validate_ocr.py --ocr-engines tesseract,deepseek \
-            --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" \
-            --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
+    py -3.11 validate_ocr.py --ocr-engines tesseract,deepseek --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
 
   # Top-N configuraciones globales:
   py -3.11 validate_ocr.py --top 5
 
     # Top-N con DeepSeek:
-    py -3.11 validate_ocr.py --top 5 --ocr-engines deepseek \
-            --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
+    py -3.11 validate_ocr.py --top 5 --ocr-engines deepseek --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
 
   # Configuraciones manuales (sin necesitar Phase 3):
   py -3.11 validate_ocr.py --configs '[
@@ -39,35 +34,26 @@ Modos de uso:
       {"method":"opencv","merge_distance":10}
   ]'
 
-  # Configuraciones manuales con Tesseract:
-  py -3.11 validate_ocr.py --configs '[{"method":"docling","nms_iou":0.5,"merge_distance":10}]' \
-      --ocr-engines tesseract \
-      --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+    # Configuraciones manuales con Tesseract:
+    py -3.11 validate_ocr.py --configs '[{"method":"docling","nms_iou":0.5,"merge_distance":10}]' --ocr-engines tesseract --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
   # Solo un metodo concreto:
   py -3.11 validate_ocr.py --method paddleocr
 
-  # Solo un metodo concreto con DeepSeek:
-  py -3.11 validate_ocr.py --method docling --ocr-engines deepseek \
-      --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
+    # Solo un metodo concreto con DeepSeek:
+    py -3.11 validate_ocr.py --method docling --ocr-engines deepseek --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
 
   # Reanudar ejecucion interrumpida:
   py -3.11 validate_ocr.py --resume
 
-  # Reanudar con Tesseract + DeepSeek:
-  py -3.11 validate_ocr.py --resume --ocr-engines tesseract,deepseek \
-      --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" \
-      --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
+    # Reanudar con Tesseract + DeepSeek:
+    py -3.11 validate_ocr.py --resume --ocr-engines tesseract,deepseek --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
 
-  # DeepSeek (prompt agresivo para texto borroso / baja calidad)
-  py -3.11 validate_ocr.py --ocr-engines deepseek \
-      --deepseek-model-path ".\\models\\DeepSeek-OCR-2" \
-      --deepseek-prompt "<image>\nPerform robust OCR on this noisy or blurred document region. Recover as much readable text as possible while preserving reading order and line breaks. Output plain text only."
+    # DeepSeek (prompt agresivo para texto borroso / baja calidad)
+    py -3.11 validate_ocr.py --ocr-engines deepseek --deepseek-model-path ".\\models\\DeepSeek-OCR-2" --deepseek-prompt "<image>\nPerform robust OCR on this noisy or blurred document region. Recover as much readable text as possible while preserving reading order and line breaks. Output plain text only."
 
-  # DeepSeek (prompt conservador anti-alucinacion)
-  py -3.11 validate_ocr.py --ocr-engines deepseek \
-      --deepseek-model-path ".\\models\\DeepSeek-OCR-2" \
-      --deepseek-prompt "<image>\nExtract only clearly readable text from this document region. Do not guess, infer, or complete missing words. If text is unreadable, omit it. Preserve reading order and line breaks. Output plain text only."
+    # DeepSeek (prompt conservador anti-alucinacion)
+    py -3.11 validate_ocr.py --ocr-engines deepseek --deepseek-model-path ".\\models\\DeepSeek-OCR-2" --deepseek-prompt "<image>\nExtract only clearly readable text from this document region. Do not guess, infer, or complete missing words. If text is unreadable, omit it. Preserve reading order and line breaks. Output plain text only."
 
   # Ver solo resultados sin reejecutar:
   py -3.11 validate_ocr.py --report-only
@@ -215,24 +201,44 @@ def _ensure_dynamic_cache_seen_tokens() -> None:
     try:
         from transformers.cache_utils import DynamicCache  # type: ignore
 
-        if hasattr(DynamicCache, "seen_tokens"):
-            return
+        # seen_tokens (compat con código que usa contadores de decodificación)
+        if not hasattr(DynamicCache, "seen_tokens"):
+            def _get_seen_tokens(self: Any) -> int:
+                # Compatibilidad con variantes internas de transformers
+                if hasattr(self, "_seen_tokens"):
+                    return int(getattr(self, "_seen_tokens") or 0)
+                if hasattr(self, "get_seq_length"):
+                    try:
+                        return int(self.get_seq_length())
+                    except Exception:
+                        return 0
+                return 0
 
-        def _get_seen_tokens(self: Any) -> int:
-            # Compatibilidad con variantes internas de transformers
-            if hasattr(self, "_seen_tokens"):
-                return int(getattr(self, "_seen_tokens") or 0)
-            if hasattr(self, "get_seq_length"):
+            def _set_seen_tokens(self: Any, value: Any) -> None:
+                setattr(self, "_seen_tokens", int(value) if value is not None else 0)
+
+            DynamicCache.seen_tokens = property(_get_seen_tokens, _set_seen_tokens)  # type: ignore[attr-defined]
+
+        # get_max_length (compat con código legacy de cache API)
+        if not hasattr(DynamicCache, "get_max_length"):
+            def _get_max_length(self: Any) -> Optional[int]:
+                for attr in ("max_cache_len", "max_length", "_max_length"):
+                    val = getattr(self, attr, None)
+                    if isinstance(val, int):
+                        return val
+                return None
+
+            DynamicCache.get_max_length = _get_max_length  # type: ignore[attr-defined]
+
+        # get_usable_length (algunos modelos llaman esta API legacy)
+        if not hasattr(DynamicCache, "get_usable_length"):
+            def _get_usable_length(self: Any, *args: Any, **kwargs: Any) -> int:
                 try:
-                    return int(self.get_seq_length())
+                    return int(self.get_seq_length())  # type: ignore[misc]
                 except Exception:
                     return 0
-            return 0
 
-        def _set_seen_tokens(self: Any, value: Any) -> None:
-            setattr(self, "_seen_tokens", int(value) if value is not None else 0)
-
-        DynamicCache.seen_tokens = property(_get_seen_tokens, _set_seen_tokens)  # type: ignore[attr-defined]
+            DynamicCache.get_usable_length = _get_usable_length  # type: ignore[attr-defined]
     except Exception:
         # Si no se puede parchear, se continuará y se reportará al inicializar/inferir.
         pass
@@ -313,18 +319,27 @@ def _load_deepseek_model_with_fallback(model_dir: Path) -> Tuple[Any, Any, str]:
     tokenizer = AutoTokenizer.from_pretrained(str(model_dir), trust_remote_code=True)
 
     has_flash_attn = importlib.util.find_spec("flash_attn") is not None
-    preferred_impl = "flash_attention_2" if has_flash_attn else "eager"
 
     try:
-        model = AutoModel.from_pretrained(
-            str(model_dir),
-            trust_remote_code=True,
-            use_safetensors=True,
-            _attn_implementation=preferred_impl,
-        )
+        if has_flash_attn:
+            model = AutoModel.from_pretrained(
+                str(model_dir),
+                trust_remote_code=True,
+                use_safetensors=True,
+                _attn_implementation="flash_attention_2",
+            )
+            attn_impl = "flash_attention_2"
+        else:
+            # Igual que pruebas-deepseek.py: fallback por defecto sin forzar eager
+            model = AutoModel.from_pretrained(
+                str(model_dir),
+                trust_remote_code=True,
+                use_safetensors=True,
+            )
+            attn_impl = "default"
         model = model.eval().cuda().to(torch.bfloat16)
         _patch_generation_warnings(model, tokenizer)
-        return tokenizer, model, preferred_impl
+        return tokenizer, model, attn_impl
     except Exception:
         # Segundo intento forzando eager para no depender de flash-attn.
         model = AutoModel.from_pretrained(

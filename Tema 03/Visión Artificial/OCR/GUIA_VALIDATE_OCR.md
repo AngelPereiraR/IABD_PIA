@@ -81,6 +81,12 @@ Instalacion base:
 py -3.11 -m pip install torch transformers
 ```
 
+Version recomendada de `transformers` en este proyecto (compatibilidad DeepSeek):
+
+```powershell
+py -3.11 -m pip install --upgrade "transformers>=4.51.1,<4.56.0"
+```
+
 Ejemplo de uso en este proyecto: ver `pruebas-deepseek.py`.
 
 ## 3. Opciones CLI de `validate_ocr.py`
@@ -98,7 +104,7 @@ Ejemplo de uso en este proyecto: ver `pruebas-deepseek.py`.
 --langs es,en
 --ocr-engines easyocr,tesseract,paddle,deepseek
 --deepseek-model-path PATH
---deepseek-prompt "<image>\nFree OCR."
+--deepseek-prompt "<image>\nExtract all readable text from this document region. Keep original reading order and line breaks. Output plain text only, without markdown, explanations, or extra symbols. Languages may include Spanish and English."
 --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe"
 ```
 
@@ -150,13 +156,13 @@ Ejemplos:
 ### 6.1 Top-3 del ranking con los 4 motores
 
 ```powershell
-py -3.11 validate_ocr.py --top 3 --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path "E:\Modelos\DeepSeek-OCR" --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe"
+py -3.11 validate_ocr.py --top 3 --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR-2" --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe"
 ```
 
 ### 6.2 Solo metodo `opencv` con los 4 motores
 
 ```powershell
-py -3.11 validate_ocr.py --method opencv --top 4 --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path "E:\Modelos\DeepSeek-OCR"
+py -3.11 validate_ocr.py --method opencv --top 4 --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR-2"
 ```
 
 ### 6.3 Configs manuales para todos los metodos de layout
@@ -168,7 +174,7 @@ py -3.11 validate_ocr.py --configs '[
   {"method":"paddleocr","nms_iou":0.4,"merge_distance":10},
   {"method":"docling","nms_iou":0.4,"merge_distance":10},
   {"method":"opencv","merge_distance":10}
-]' --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path "E:\Modelos\DeepSeek-OCR"
+]' --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR-2"
 ```
 
 ### 6.4 Solo deteccion (sin OCR)
@@ -180,7 +186,7 @@ py -3.11 validate_ocr.py --top 5 --no-ocr
 ### 6.5 Reanudar ejecucion
 
 ```powershell
-py -3.11 validate_ocr.py --top 5 --resume --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path "E:\Modelos\DeepSeek-OCR"
+py -3.11 validate_ocr.py --top 5 --resume --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR-2"
 ```
 
 ### 6.6 Solo regenerar informes

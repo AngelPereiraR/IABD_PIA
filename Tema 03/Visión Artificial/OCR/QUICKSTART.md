@@ -1,4 +1,4 @@
-# 🚀 Inicio Rápido: DocLayout-YOLO
+# 🚀 Inicio Rapido: OCR Layout + Multi-OCR
 
 ## 📋 PASO 0: Prerequisitos del Sistema
 
@@ -224,6 +224,14 @@ python -c "from doclayout_yolo import YOLOv10; print('DocLayout-YOLO: OK')"
 
 ## 🎮 Uso básico
 
+### Métodos de layout disponibles
+
+- `opencv`
+- `doclayout`
+- `yolo11`
+- `paddleocr`
+- `docling`
+
 ### Detectar columnas en una imagen
 
 ```powershell
@@ -248,6 +256,16 @@ python paddle-pruebas.py imgs/ --method doclayout
 
 ```powershell
 python validate_18_popurris.py --method doclayout
+```
+
+### Validación OCR multi-motor (FASE 4)
+
+```powershell
+# Default (4 OCR): easyocr,tesseract,paddle,deepseek
+python validate_ocr.py --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe" --deepseek-model-path ".\models\DeepSeek-OCR-2"
+
+# Solo OCR sin args extra
+python validate_ocr.py --ocr-engines easyocr,paddle
 ```
 
 ### Comparar OpenCV vs DocLayout-YOLO
@@ -284,7 +302,7 @@ python benchmark_methods.py --num-images 5
 
 ```
 --image PATH          Ruta a la imagen
---method {opencv,doclayout,yolo}  Método de detección (default: opencv)
+--method {opencv,doclayout,yolo11,paddleocr,docling}  Metodo de deteccion (default: opencv)
 --debug               Guardar imagen de depuración
 --doclayout-conf 0.25 Umbral de confianza para YOLO (0-1)
 --all-classes         Detectar todas las 9 clases (no solo texto)
@@ -294,7 +312,7 @@ python benchmark_methods.py --num-images 5
 
 ```
 IMAGE_PATH            Ruta a imagen o carpeta
---method {opencv,doclayout,yolo}  Método de detección (default: opencv)
+--method {opencv,doclayout,yolo11,paddleocr,docling}  Metodo de deteccion (default: opencv)
 --debug               Generar imágenes de depuración
 --doclayout-conf 0.25 Umbral de confianza para YOLO
 --outdir resultados   Carpeta de salida
@@ -349,92 +367,73 @@ python detect_columns.py --image imgs/popurri01.jpg --method doclayout --doclayo
 python detect_columns.py --image imgs/popurri01.jpg --method opencv --debug
 ```
 
-## 📖 Documentación completa
+## 📖 Documentacion completa
 
-Para más detalles, consulta: [README_DOCLAYOUT.md](README_DOCLAYOUT.md)
-
-## 🎓 Ejemplo completo paso a paso
-
-````powershell
-# 1. Activar entorno (si no está activo)
+- `README.md`
+- `GUIA_VALIDATE_OCR.md`
 
 ## ⚡ Rendimiento: CPU vs GPU
 
-| Aspecto                  | CPU (sin NVIDIA)        | GPU (CUDA 11.8)         |
-| ------------------------ | ----------------------- | ----------------------- |
-| **Instalación**          | Más simple              | Requiere CUDA + cuDNN   |
-| **Velocidad (OpenCV)**   | ~0.12s por imagen       | ~0.12s por imagen       |
-| **Velocidad (YOLO)**     | ~2-5s por imagen        | ~0.24s por imagen       |
-| **Memoria RAM**          | 4-8GB suficiente        | 2-4GB RAM + 4GB VRAM    |
-| **Uso recomendado**      | Pruebas, pocas imágenes | Batch processing        |
+| Aspecto                 | CPU (sin NVIDIA)         | GPU (CUDA 11.8)       |
+| ----------------------- | ------------------------ | --------------------- |
+| Instalacion             | Mas simple               | Requiere CUDA + cuDNN |
+| Velocidad (OpenCV)      | ~0.12s por imagen        | ~0.12s por imagen     |
+| Velocidad (YOLO/layout) | ~2-5s por imagen         | ~0.24s por imagen     |
+| Memoria                 | 4-8GB RAM                | 2-4GB RAM + 4GB VRAM  |
+| Uso recomendado         | Pruebas y pocas imagenes | Batch processing      |
 
-💡 **Recomendación CPU**: Usa `--method opencv` para obtener velocidad similar a GPU en detección de columnas.
+Recomendacion CPU: usar `--method opencv` cuando priorices velocidad.
 
-## 🔧 Configuración adicional para Windows
+## Configuracion adicional en Windows
 
-### Tesseract no encontrado
+Si Tesseract no se detecta:
 
-Si al ejecutar scripts te sale error de Tesseract no encontrado:
+1. Verifica instalacion:
 
-1. **Verifica la instalación**:
-   ```powershell
-   tesseract --version
-````
+```powershell
+tesseract --version
+```
 
-2. **Si falla**, añade Tesseract al PATH:
-   - Buscar "Variables de entorno" en Windows
-   - Editar variable `Path` del usuario
-   - Añadir: `C:\Program Files\Tesseract-OCR`
-   - Reiniciar terminal
+2. Si falla, anade `C:\Program Files\Tesseract-OCR` al `PATH` de usuario y reinicia la terminal.
+3. Alternativa por script:
 
-3. **Alternativa**: Configura la ruta en cada script:
-   ```python
-   import pytesseract
-   pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-   ```
+```python
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+```
 
-## 📦 Resumen de archivos de instalación
+## Resumen de archivos de instalacion
 
-| Archivo                       | Propósito                          | Cuándo usar                  |
-| ----------------------------- | ---------------------------------- | ---------------------------- |
-| `install.bat`                 | Instalador automático (Windows)    | **Opción recomendada**       |
-| `check_prerequisites.py`      | Verifica prerequisitos del sistema | **Ejecutar PRIMERO**         |
-| `requirements.txt`            | Todas las dependencias (GPU/CPU)   | Instalación manual           |
-| `download_doclayout_model.py` | Descarga modelo YOLO (~40MB)       | Después de instalar paquetes |
+| Archivo                       | Proposito                          | Uso                    |
+| ----------------------------- | ---------------------------------- | ---------------------- |
+| `install.bat`                 | Instalador automatico en Windows   | Recomendado            |
+| `check_prerequisites.py`      | Verifica prerequisitos del sistema | Ejecutar primero       |
+| `requirements.txt`            | Dependencias Python                | Instalacion manual     |
+| `download_doclayout_model.py` | Descarga modelo DocLayout-YOLO     | Tras instalar paquetes |
 
-# 1. Probar detección en una imagen
+## Ejemplo completo (paso a paso)
 
+```powershell
+# 1. Deteccion de columnas
 python detect_columns.py --image imgs/popurri01.jpg --method doclayout --debug
 
-# 3. Ver las columnas detectadas
-
-# Se generan: column_1.png, column_2.png, column_3.png, debug_columns_doclayout.png
-
-# 4. Ejecutar OCR completo
-
+# 2. OCR completo de una imagen
 python paddle-pruebas.py imgs/popurri01.jpg --method doclayout --debug
 
-# 5. Ver resultados en: resultados/popurri01_YYYYMMDD_HHMMSS/
-
-# 6. Comparar métodos (opcional)
-
+# 3. Comparativa rapida de metodos
 python benchmark_methods.py --num-images 3
-
 ```
 
-## 💡 Consejos
+## Consejos
 
-- **Primera vez**: Usa `--debug` para visualizar las columnas detectadas
-- **Documentos antiguos con decoraciones**: Usa `--method doclayout`
-- **Documentos limpios**: Usa `--method opencv` (más rápido)
-- **Si detecta pocas columnas**: Reduce `--doclayout-conf` a 0.15 o 0.20
-- **Si detecta demasiadas regiones**: Aumenta `--doclayout-conf` a 0.35 o 0.40
-- **Batch processing**: Pasa una carpeta en lugar de un archivo
+- Primera ejecucion: usar `--debug` para validar cajas detectadas.
+- Documento antiguo con decoraciones: `--method doclayout`.
+- Documento limpio: `--method opencv`.
+- Si detecta pocas regiones: baja `--doclayout-conf` (0.15-0.20).
+- Si detecta demasiadas regiones: sube `--doclayout-conf` (0.35-0.40).
 
-## 📝 Notas
+## Notas
 
-- Los errores de importación en el editor son normales antes de instalar los paquetes
-- El primer uso de DocLayout-YOLO puede tardar más mientras carga el modelo
-- Las imágenes debug tienen colores según el tipo de elemento (ver README_DOCLAYOUT.md)
-- El modelo DocLayout-YOLO ocupa ~40MB y se descarga una sola vez
-```
+- Algunos errores de import en el editor son normales antes de instalar paquetes.
+- El primer uso de modelos DL puede tardar por descarga/carga de pesos.
+- El modelo de DocLayout-YOLO se descarga una sola vez.

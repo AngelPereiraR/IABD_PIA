@@ -1,5 +1,16 @@
 # Plan Detallado: Optimización de Detección de Layout con YOLO y Modelos Alternativos
 
+## Estado actual (actualizado a marzo 2026)
+
+- ✅ `validate_ocr.py` implementado y operativo en modo multi-motor (`easyocr,tesseract,paddle,deepseek`).
+- ✅ Optimización aplicada: detección de layout reutilizada por imagen/config para todos los OCR (sin repetir detección por motor).
+- ✅ Integración de argumentos requeridos en ejemplos de uso (`--tesseract-cmd`, `--deepseek-model-path`).
+- ✅ Prompt por defecto de DeepSeek actualizado para OCR documental real.
+- ✅ Tesseract validado en ejecución real (`chars` y `words` > 0).
+- ⚠️ DeepSeek en fase de estabilización de compatibilidad `transformers`/cache (`DynamicCache`) según entorno.
+- ✅ FASE 4 (validación OCR multi-motor) puede considerarse implementada a nivel de pipeline.
+- ⏳ Pendiente principal: FASE 5/6 con ground truth (`ocr_ground_truth.json` + script de comparación CER/WER).
+
 ## Contexto del Problema
 
 ### Situación Actual
@@ -22,7 +33,7 @@ Experimentar y comparar múltiples enfoques (mejorar DocLayout-YOLO + probar mod
 
 ---
 
-## FASE 1: Implementación de Post-Procesamiento (4-6 horas)
+## FASE 1: Implementación de Post-Procesamiento
 
 ### 1.1 Crear módulo `post_processing.py`
 
@@ -222,7 +233,7 @@ py -3.11 detect_columns.py --image imgs/popurri01.jpg --method doclayout --docla
 
 ---
 
-## FASE 2: Integración de Modelos Alternativos (4-6 horas)
+## FASE 2: Integración de Modelos Alternativos
 
 ### ⚠️ 2.1 Método 1: PaddleOCR Layout Detection - **PENDIENTE/DESCARTAR**
 
@@ -334,7 +345,7 @@ YOLO11_TEXT_LABELS = {"Text", "Title", "Section-header", "Caption", "List-item",
 
 **Función:** `detect_columns_yolo11()` · **CLI:** `--method yolo11 --yolo11-size nano|small|medium`
 
-**Estimación:** ~2–3 horas
+**Estado:** completado
 
 **Resultados obtenidos:**
 
@@ -557,7 +568,7 @@ docling     → 15 regiones ✅
 
 ---
 
-## FASE 3: Experimentación Sistemática con Grid Search (8-12 horas)
+## FASE 3: Experimentación Sistemática con Grid Search
 
 ### 3.1 Crear script `experiment_models.py`
 
@@ -694,7 +705,7 @@ def run_grid_search(images_dir='imgs', output_file='experiment_results.json'):
                                 'metrics': result
                             })
             else:
-                # Para métodos adicionales (actualmente ninguno - Surya y PaddleOCR descartados)
+                # Para métodos sin conf_threshold configurable
                 config = {'conf': conf}
 
                 for img_path in images:
@@ -780,7 +791,7 @@ if __name__ == '__main__':
 ### 3.3 Ejecución
 
 ```bash
-# Ejecutar grid search (puede tomar 2-4 horas)
+# Ejecutar grid search
 py -3.11 experiment_models.py
 
 # Analizar resultados
@@ -789,11 +800,11 @@ py -3.11 analyze_experiments.py
 
 ---
 
-## FASE 4: Validación con OCR Completo (4-6 horas)
+## FASE 4: Validación con OCR Completo
 
-### 4.1 Seleccionar top 3 configuraciones
+### 4.1 Seleccionar top 10 configuraciones
 
-Según ranking de `analyze_experiments.py`, seleccionar las 3 mejores configuraciones.
+Según ranking de `analyze_experiments.py`, seleccionar las 10 mejores configuraciones.
 
 **Candidatos esperados** (según resultados de FASE 2.2):
 
@@ -870,7 +881,7 @@ def compare_ocr_outputs(dirs):
 
 if __name__ == '__main__':
     dirs = [
-        'validation_results/surya_025',
+        'validation_results/docling',
         'validation_results/doclayout_improved'
     ]
     compare_ocr_outputs(dirs)
@@ -887,7 +898,7 @@ Seleccionar 3-5 imágenes representativas y revisar manualmente:
 
 ---
 
-## FASE 5: Definición de Ground Truth y Criterio de Decisión Final (3-4 horas)
+## FASE 5: Definición de Ground Truth y Criterio de Decisión Final
 
 > **Cambio de estrategia**: FASE 5 y FASE 6 quedan centradas en comparar los resultados reales de `validate_ocr.py` (todos los motores OCR ejecutados) contra un archivo de texto real por imagen (ground truth), que actualmente no existe y debe crearse primero.
 
@@ -979,9 +990,8 @@ Optimizar detección de columnas para minimizar duplicaciones y pérdida de text
 
 - Total experimentos: 2.952 (164 configs × 18 imágenes)
 - Configuraciones probadas: 164
-- Duración: X horas
 
-### Top 3 Configuraciones
+### Top 10 Configuraciones
 
 1. [Modelo] con [parámetros]: Score X/100
 2. [Modelo] con [parámetros]: Score X/100
@@ -1001,17 +1011,9 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
 ```
 ````
 
-## Próximos Pasos
-
-- [ ] Evaluar en dataset de producción
-- [ ] Medir métricas de negocio (si aplica)
-- [ ] Considerar fine-tuning si score < 80
-
-````
-
 ---
 
-## FASE 6: Comparación de Resultados de Validación contra Ground Truth (5-7 horas)
+## FASE 6: Comparación de Resultados de Validación contra Ground Truth
 
 > Esta fase reemplaza el benchmark heurístico: en vez de comparar por métricas indirectas, se comparan **todos los resultados de validación OCR ya generados** contra un archivo de texto real por imagen.
 
@@ -1019,12 +1021,12 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
 
 1. Haber ejecutado `validate_ocr.py` con los motores OCR deseados.
 2. Disponer de resultados en:
-     - `validation_results/<layout_config>/results_easyocr.json`
-     - `validation_results/<layout_config>/results_tesseract.json`
-     - `validation_results/<layout_config>/results_paddle.json`
-     - `validation_results/<layout_config>/results_deepseek.json` (si aplica)
+   - `validation_results/<layout_config>/results_easyocr.json`
+   - `validation_results/<layout_config>/results_tesseract.json`
+   - `validation_results/<layout_config>/results_paddle.json`
+   - `validation_results/<layout_config>/results_deepseek.json` (si aplica)
 3. Crear el archivo de ground truth:
-     - `ground_truth/ocr_ground_truth.json`
+   - `ground_truth/ocr_ground_truth.json`
 
 ### 6.2 Script de comparación (nuevo flujo)
 
@@ -1108,98 +1110,96 @@ Texto final validado contra ground truth
 
 ---
 
-## TIMELINE ESTIMADO
+## TIMELINE
 
-### Día 1 (8 horas) - ✅ FASE 1 COMPLETADA
+### Día 1 - ✅ FASE 1 COMPLETADA
 
-- [x] **Mañana (4h)**: FASE 1 - Post-procesamiento completo
+- [x] FASE 1 - Post-procesamiento completo
   - [x] Crear `post_processing.py`
   - [x] Integrar en `detect_columns.py`
   - [x] Pruebas iniciales pendientes
-- [x] **Tarde (4h)**: FASE 2.1 — PaddleOCR y Surya ❌ Descartados (primera ronda)
+- [x] FASE 2.1 — PaddleOCR y Surya ❌ Descartados (primera ronda)
   - ❌ PaddleOCR v1: Bug oneDNN en Windows (causa raíz identificada, fix conocido)
   - ❌ Surya: Devuelve bbox genérico — no funciona con imágenes escaneadas
 
-### Día 2 (9 horas) — ✅ FASE 2.2 COMPLETADA
+### Día 2 — ✅ FASE 2.2 COMPLETADA
 
-- [x] **Mañana (2h)**: FASE 2.2.1 — YOLO11 fine-tuned ✅
+- [x] FASE 2.2.1 — YOLO11 fine-tuned ✅
   - [x] Instalar `ultralytics 8.2.103` + `huggingface_hub 0.36.2`
   - [x] Implementar `detect_columns_yolo11()`
   - [x] Probar en imgs/popurri01.jpg → 1–19+ regiones ✅
-- [x] **Media mañana (3h)**: FASE 2.2.2 — PaddleOCR retry ✅
+- [x] FASE 2.2.2 — PaddleOCR retry ✅
   - [x] Instalar `paddlepaddle 3.2.2` + `paddleocr[doc-parser]`
   - [x] Implementar `detect_columns_paddleocr()` con `LayoutDetection(enable_mkldnn=False)`
   - [x] Probar en imgs/popurri01.jpg → **16 regiones** ✅
-- [x] **Tarde (4h)**: FASE 2.2.3 — Docling ✅
+- [x] FASE 2.2.3 — Docling ✅
   - [x] Instalar `docling` (modelos RT-DETR descargados automáticamente)
   - [x] Implementar `detect_columns_docling()` con corrección BOTTOMLEFT→TOPLEFT
   - [x] Probar en imgs/popurri01.jpg → **15 regiones** ✅
 
-### Día 3 (4 horas) — ✅ FASE 2.2 (cont.) completada
+### Día 3 — ✅ FASE 2.2 (cont.) completada
 
-- [x] **Mañana (3h)**: FASE 2.2.4 — LayoutParser ❌ (evaluado y descartado — bug `?dl=1` insalvable en Windows)
-- [x] **Tarde (1h)**: Actualizar `EXPERIMENT_GRID` con métodos viables ✅
+- [x] FASE 2.2.4 — LayoutParser ❌ (evaluado y descartado — bug `?dl=1` insalvable en Windows)
+- [x] Actualizar `EXPERIMENT_GRID` con métodos viables ✅
   - [x] Añadidos: `yolo11`, `paddleocr`, `docling` · Descartados: `surya`, `layoutparser`
 
-### Día 5 (4 horas)
+### Día 5
 
-- [x] **Tarde (4h)**: FASE 3.1 - Crear `experiment_models.py` ✅
+- [x] FASE 3.1 - Crear `experiment_models.py` ✅
   - Script de grid search con todos los métodos viables de FASE 2.2
   - API correcta: `detect_columns(img: np.ndarray, ...)`, desempaquetado `_size, boxes = ...`
-  - Grid: doclayout/yolo11 (conf×nms×merge=112), paddleocr/docling (nms×merge=16) = 256 configs
+    - Grid: doclayout/yolo11 (128), paddleocr/docling (32), opencv (4) = 164 configs
   - Checkpoint por método + `--resume` para reanudar
-- [x] **Tarde (1h)**: FASE 3.3 - Crear `analyze_experiments.py` ✅
+- [x] FASE 3.3 - Crear `analyze_experiments.py` ✅
   - Aplanado manual de JSON, groupby con `dropna=False` para paddleocr/docling (conf=NaN)
   - Genera `experiment_ranking.csv` + `experiment_top.txt`
   - Fórmula: `score = mean_boxes*2.0 - total_duplicates*10.0`
 
-### Día 6 (8 horas)
+### Día 6 — ✅ COMPLETADO
 
-- [ ] **Mañana (4h)**: FASE 3.2 - Ejecutar grid search
-  - Correr `py -3.11 experiment_models.py` (≈4608 experimentos, ~2-3h)
-  - Monitorear progreso con checkpoints por método
-- [ ] **Tarde (2h)**: FASE 3.3 - Análisis
-  - Correr `py -3.11 analyze_experiments.py`
-  - Seleccionar top 3 configuraciones por método
+- [x] FASE 3.2 - Ejecutar grid search
+    - Correr `py -3.11 experiment_models.py` (≈2952 experimentos)
+    - Monitorear progreso con checkpoints por método
+- [x] FASE 3.3 - Análisis
+    - Correr `py -3.11 analyze_experiments.py`
+    - Seleccionar top 3 configuraciones por método
 
-### Día 7 (8 horas)
+### Día 7
 
-- [ ] **Mañana (4h)**: FASE 4 - Validación OCR
-  - Ejecutar OCR con top 3 configs
+- [ ] FASE 4 - Validación OCR
+    - Ejecutar OCR con top 10 configs
   - Comparación automática
-- [ ] **Tarde (4h)**: FASE 4 - Revisión manual
+- [ ] FASE 4 - Revisión manual
   - Inspección de resultados
   - Scoring final
 
-### Día 8 (4 horas)
+### Día 8
 
-- [ ] **Mañana (2h)**: FASE 5 — Crear ground truth
-    - Crear `ground_truth/ocr_ground_truth.json` con texto real por imagen
-    - Validar cobertura mínima (ideal 18/18 imágenes; mínimo 5 representativas)
-- [ ] **Tarde (2h)**: FASE 5 — Criterio de decisión final
-    - Definir score final basado en CER/WER
-    - Preparar plantilla de informe final
+- [ ] FASE 5 — Crear ground truth
+  - Crear `ground_truth/ocr_ground_truth.json` con texto real por imagen
+  - Validar cobertura mínima (ideal 18/18 imágenes; mínimo 5 representativas)
+- [ ] FASE 5 — Criterio de decisión final
+  - Definir score final basado en CER/WER
+  - Preparar plantilla de informe final
 
-### Día 9 (6 horas)
+### Día 9
 
-- [ ] **Mañana (4h)**: FASE 6 — Comparación vs ground truth
-    - Crear `compare_validation_vs_ground_truth.py`
-    - Procesar todos los `results_*.json` de `validation_results/`
-    - Calcular CER/WER por imagen y por combinación (layout + OCR)
-- [ ] **Tarde (2h)**: FASE 6 — Informe final y selección
-    - Generar `ocr_gt_comparison_report.txt/csv/json`
-    - Seleccionar stack final (layout + OCR)
-    - Actualizar `README.md` con configuración ganadora
+- [ ] FASE 6 — Comparación vs ground truth
+  - Crear `compare_validation_vs_ground_truth.py`
+  - Procesar todos los `results_*.json` de `validation_results/`
+  - Calcular CER/WER por imagen y por combinación (layout + OCR)
+- [ ] FASE 6 — Informe final y selección
+  - Generar `ocr_gt_comparison_report.txt/csv/json`
+  - Seleccionar stack final (layout + OCR)
+  - Actualizar `README.md` con configuración ganadora
 
-**Total estimado**: ~65 horas (~9 días laborables)
-
-- Día 1 (8h): FASE 1 ✅
-- Días 2–3 (13h): FASE 2.2 ✅
-- Días 4–5 (8h): FASE 3.1 + scripts ✅
-- Día 6 (8h): FASE 3.2–3.3 (grid search + análisis)
-- Día 7 (8h): FASE 4 (validación OCR layout)
-- Día 8 (4h): FASE 5 (ground truth + criterio final)
-- Día 9 (6h): FASE 6 (comparación vs ground truth)
+- Día 1: FASE 1 ✅
+- Días 2–3: FASE 2.2 ✅
+- Días 4–5: FASE 3.1 + scripts ✅
+- Día 6: FASE 3.2–3.3 ✅ (grid search + análisis)
+- Día 7: FASE 4 (validación OCR layout, top 10)
+- Día 8: FASE 5 (ground truth + criterio final)
+- Día 9: FASE 6 (comparación vs ground truth)
 
 ---
 
@@ -1211,8 +1211,8 @@ Texto final validado contra ground truth
 - [x] `experiment_models.py` - Grid search automático ✅ COMPLETADO
 - [x] `analyze_experiments.py` - Análisis de resultados ✅ COMPLETADO
 - [x] `validate_ocr.py` - Validación OCR top-N configuraciones (FASE 4) ✅ COMPLETADO
-- [ ] `ground_truth/ocr_ground_truth.json` - Texto real por imagen (FASE 5)
-- [ ] `compare_validation_vs_ground_truth.py` - Comparación de resultados OCR vs ground truth (FASE 6)
+- [x] `ground_truth/ocr_ground_truth.json` - Esqueleto inicial creado (FASE 5)
+- [x] `compare_validation_vs_ground_truth.py` - Esqueleto inicial creado (FASE 6)
 - [ ] `LAYOUT_DETECTION_EXPERIMENTS.md` - Documentación de experimentos
 
 ### Archivos a modificar
@@ -1295,4 +1295,3 @@ Texto final validado contra ground truth
 ```
 
 ```
-````
