@@ -108,6 +108,7 @@ RESULTS_DIR = _HERE / "validation_results"
 REPORT_JSON = _HERE / "ocr_validation_report.json"
 REPORT_TXT = _HERE / "ocr_validation_report.txt"
 REPORT_CSV = _HERE / "ocr_validation_report.csv"
+DEEPSEEK_DEFAULT_MODEL_DIR = _HERE / "models" / "DeepSeek-OCR-2"
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp"}
 
@@ -815,8 +816,11 @@ def parse_args() -> argparse.Namespace:
         help="Motores OCR a usar separados por coma (easyocr,tesseract,paddle,deepseek)"
     )
     parser.add_argument(
-        "--deepseek-model-path", type=str, default=None,
-        help="Ruta local del modelo DeepSeek-OCR (si se incluye deepseek en --ocr-engines)"
+        "--deepseek-model-path", type=str, default=str(DEEPSEEK_DEFAULT_MODEL_DIR),
+        help=(
+            "Ruta local del modelo DeepSeek-OCR "
+            f"(default: {DEEPSEEK_DEFAULT_MODEL_DIR}; sobreescribe si quieres otra ruta)"
+        )
     )
     parser.add_argument(
         "--deepseek-prompt", type=str, default="<image>\\nFree OCR.",
@@ -928,17 +932,21 @@ def main() -> None:
         # DeepSeek local
         if "deepseek" in requested_engines:
             deepseek_ready = False
-            if HAS_DEEPSEEK_DEPS and args.deepseek_model_path:
+            deepseek_model_path = Path(args.deepseek_model_path)
+            if HAS_DEEPSEEK_DEPS:
                 if not torch.cuda.is_available():
                     print("[WARN] deepseek solicitado pero CUDA no disponible; se omite.")
-                elif not Path(args.deepseek_model_path).exists():
-                    print("[WARN] deepseek-model-path no existe; se omite.")
+                elif not deepseek_model_path.exists():
+                    print(
+                        "[WARN] Modelo DeepSeek no encontrado en "
+                        f"'{deepseek_model_path}'. Ejecuta install.bat o usa --deepseek-model-path."
+                    )
                 else:
                     print("[i] Inicializando DeepSeek OCR local...")
                     t0 = time.perf_counter()
-                    tokenizer = AutoTokenizer.from_pretrained(args.deepseek_model_path, trust_remote_code=True)
+                    tokenizer = AutoTokenizer.from_pretrained(str(deepseek_model_path), trust_remote_code=True)
                     model = AutoModel.from_pretrained(
-                        args.deepseek_model_path,
+                        str(deepseek_model_path),
                         trust_remote_code=True,
                         use_safetensors=True,
                     )
@@ -949,7 +957,7 @@ def main() -> None:
                     print(f"[OK] DeepSeek listo en {(time.perf_counter()-t0)*1000:.0f}ms")
                     deepseek_ready = True
             else:
-                print("[WARN] deepseek solicitado pero faltan deps o --deepseek-model-path; se omite.")
+                print("[WARN] deepseek solicitado pero faltan dependencias (torch/transformers); se omite.")
             if deepseek_ready:
                 active_engines.append("deepseek")
 

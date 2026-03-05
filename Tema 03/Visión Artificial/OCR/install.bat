@@ -17,7 +17,7 @@ echo ===========================================================================
 echo.
 
 REM Verificar Python 3.11
-echo [1/5] Verificando Python 3.11...
+echo [1/6] Verificando Python 3.11...
 py -3.11 --version >nul 2>&1
 if errorlevel 1 (
     echo [X] Python 3.11 NO encontrado
@@ -35,7 +35,7 @@ py -3.11 --version
 echo.
 
 REM Verificar Tesseract
-echo [2/5] Verificando Tesseract OCR...
+echo [2/6] Verificando Tesseract OCR...
 tesseract --version >nul 2>&1
 if errorlevel 1 (
     echo [X] Tesseract NO encontrado
@@ -57,7 +57,7 @@ if errorlevel 1 (
 echo.
 
 REM Verificar Git (opcional)
-echo [3/5] Verificando Git (recomendado)...
+echo [3/6] Verificando Git (recomendado)...
 git --version >nul 2>&1
 if errorlevel 1 (
     echo [W] Git NO encontrado ^(recomendado para descargar modelos^)
@@ -68,7 +68,7 @@ if errorlevel 1 (
 echo.
 
 REM Verificar GPU
-echo [4/5] Verificando GPU NVIDIA...
+echo [4/6] Verificando GPU NVIDIA...
 nvidia-smi >nul 2>&1
 if errorlevel 1 (
     set GPU_AVAILABLE=0
@@ -92,7 +92,7 @@ if errorlevel 1 (
 echo.
 
 REM Verificacion completada
-echo [5/5] Verificacion completada
+echo [5/6] Verificacion completada
 echo.
 
 echo ================================================================================
@@ -104,7 +104,7 @@ if !GPU_AVAILABLE!==1 (
     echo Instalacion con GPU NVIDIA ^(CUDA 11.8^)
     echo --------------------------------------------------------------------------------
     echo.
-    echo [1/5] Comprobando PyTorch 2.2.2+cu118...
+    echo [1/6] Comprobando PyTorch 2.2.2+cu118...
     py -3.11 -c "import torch; v=torch.__version__; exit^(0 if v=='2.2.2+cu118' else 1^)" >nul 2>&1
     if not errorlevel 1 (
         echo [OK] PyTorch 2.2.2+cu118 ya instalado - saltando
@@ -118,7 +118,7 @@ if !GPU_AVAILABLE!==1 (
     )
     echo.
 
-    echo [2/5] Comprobando paddlepaddle==3.2.2 ^(PINNED^)...
+    echo [2/6] Comprobando paddlepaddle==3.2.2 ^(PINNED^)...
     py -3.11 -c "import pkg_resources; pkg_resources.require^('paddlepaddle==3.2.2'^)" >nul 2>&1
     if not errorlevel 1 (
         echo [OK] paddlepaddle 3.2.2 ya instalado - saltando
@@ -136,7 +136,7 @@ if !GPU_AVAILABLE!==1 (
     )
     echo.
 
-    echo [3/5] Comprobando Docling...
+    echo [3/6] Comprobando Docling...
     py -3.11 -m pip show docling >nul 2>&1
     if not errorlevel 1 (
         echo [OK] docling ya instalado - saltando
@@ -151,7 +151,7 @@ if !GPU_AVAILABLE!==1 (
 
     echo.
 
-    echo [4/5] Instalando resto de paquetes ^(pip omite los ya satisfechos^)...
+    echo [4/6] Instalando resto de paquetes ^(pip omite los ya satisfechos^)...
     REM Filtrar requirements.txt para excluir lineas con +cu118 ^(si existen^)
     findstr /V /C:"+cu118" requirements.txt > requirements_temp.txt
     py -3.11 -m pip install --no-warn-script-location -r requirements_temp.txt
@@ -180,7 +180,7 @@ if !GPU_AVAILABLE!==1 (
     echo Instalacion CPU ^(sin GPU^)
     echo --------------------------------------------------------------------------------
     echo.
-    echo [1/5] Comprobando PyTorch 2.2.2+cpu...
+    echo [1/6] Comprobando PyTorch 2.2.2+cpu...
     py -3.11 -c "import torch; v=torch.__version__; exit^(0 if v=='2.2.2+cpu' else 1^)" >nul 2>&1
     if not errorlevel 1 (
         echo [OK] PyTorch 2.2.2+cpu ya instalado - saltando
@@ -199,7 +199,7 @@ if !GPU_AVAILABLE!==1 (
     )
     echo.
 
-    echo [2/5] Comprobando paddlepaddle==3.2.2 ^(PINNED^)...
+    echo [2/6] Comprobando paddlepaddle==3.2.2 ^(PINNED^)...
     py -3.11 -c "import pkg_resources; pkg_resources.require^('paddlepaddle==3.2.2'^)" >nul 2>&1
     if not errorlevel 1 (
         echo [OK] paddlepaddle 3.2.2 ya instalado - saltando
@@ -218,7 +218,7 @@ if !GPU_AVAILABLE!==1 (
     )
     echo.
 
-    echo [3/5] Comprobando Docling...
+    echo [3/6] Comprobando Docling...
     py -3.11 -m pip show docling >nul 2>&1
     if not errorlevel 1 (
         echo [OK] docling ya instalado - saltando
@@ -227,7 +227,7 @@ if !GPU_AVAILABLE!==1 (
     )
     echo.
 
-    echo [4/5] Instalando resto de paquetes ^(pip omite los ya satisfechos^)...
+    echo [4/6] Instalando resto de paquetes ^(pip omite los ya satisfechos^)...
     REM Filtrar requirements.txt para excluir lineas con +cu118 ^(GPU^)
     findstr /V /C:"+cu118" requirements.txt > requirements_temp.txt
     py -3.11 -m pip install --no-warn-script-location -r requirements_temp.txt
@@ -241,7 +241,7 @@ if !GPU_AVAILABLE!==1 (
 )
 echo.
 
-echo [5/5] Descargando modelo DocLayout-YOLO...
+echo [5/6] Descargando modelo DocLayout-YOLO...
 py -3.11 download_doclayout_model.py
 if errorlevel 1 (
     echo [W] Error descargando modelo DocLayout-YOLO ^(puedes intentarlo manualmente despues^)
@@ -249,9 +249,21 @@ if errorlevel 1 (
     echo [OK] Modelo DocLayout-YOLO descargado correctamente
 )
 echo.
+echo [6/6] Descargando modelo DeepSeek-OCR-2 desde Hugging Face...
+set DEEPSEEK_MODEL_DIR=%~dp0models\DeepSeek-OCR-2
+if not exist "%~dp0models" mkdir "%~dp0models"
+py -3.11 -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='deepseek-ai/DeepSeek-OCR-2', local_dir=r'%DEEPSEEK_MODEL_DIR%', local_dir_use_symlinks=False); print('DeepSeek-OCR-2: OK')"
+if errorlevel 1 (
+    echo [W] Error descargando DeepSeek-OCR-2 ^(puedes reintentar despues con internet estable^)
+    echo [W] Comando manual: py -3.11 -c "from huggingface_hub import snapshot_download; snapshot_download^(repo_id='deepseek-ai/DeepSeek-OCR-2', local_dir=r'%DEEPSEEK_MODEL_DIR%', local_dir_use_symlinks=False^)"
+) else (
+    echo [OK] Modelo DeepSeek-OCR-2 descargado en: %DEEPSEEK_MODEL_DIR%
+)
+echo.
 echo NOTA: El modelo YOLO11 (Armaggheddon/yolo11-document-layout) se descarga
 echo       automaticamente de Hugging Face en la primera ejecucion con --method yolo11
 echo NOTA: Los modelos de PaddleOCR y Docling tambien se descargan en primera ejecucion
+echo NOTA: DeepSeek-OCR-2 se descarga automaticamente en models\DeepSeek-OCR-2
 echo.
 
 echo ================================================================================
@@ -289,6 +301,9 @@ echo   easyocr      - OCR neuronal CPU/GPU
 echo   tesseract    - OCR clasico ^(requiere binario instalado + pytesseract^)
 echo   paddle       - OCR de PaddleOCR
 echo   deepseek     - OCR VLM local ^(requiere GPU CUDA + modelo descargado^)
+echo.
+echo Ruta modelo DeepSeek sugerida para validate_ocr.py:
+echo   --deepseek-model-path "%DEEPSEEK_MODEL_DIR%"
 echo.
 echo Proximos pasos:
 echo 1. Probar cada metodo:
