@@ -887,53 +887,68 @@ Seleccionar 3-5 imágenes representativas y revisar manualmente:
 
 ---
 
-## FASE 5: Decisión Final y Deployment (2-3 horas)
+## FASE 5: Definición de Ground Truth y Criterio de Decisión Final (3-4 horas)
 
-### 5.1 Scoring final
+> **Cambio de estrategia**: FASE 5 y FASE 6 quedan centradas en comparar los resultados reales de `validate_ocr.py` (todos los motores OCR ejecutados) contra un archivo de texto real por imagen (ground truth), que actualmente no existe y debe crearse primero.
 
-**Criterios de evaluación** (pesos):
+### 5.1 Crear archivo de verdad terreno (ground truth)
 
-1. **Calidad OCR** (40%): Más palabras/caracteres extraídos sin duplicaciones
-2. **No duplicaciones** (25%): Mínimas duplicaciones en detección
-3. **Cobertura** (20%): No perder regiones de texto
-4. **Velocidad** (10%): Tiempo de procesamiento
-5. **Mantenibilidad** (5%): Complejidad de dependencias
+**Nuevo archivo**: `ground_truth/ocr_ground_truth.json`
 
-**Matriz de decisión** (por rellenar tras grid search):
+**Formato propuesto**:
 
-| Configuración | OCR Quality | No Dups | Coverage | Speed | Maintain | **TOTAL** |
-| ------------- | ----------- | ------- | -------- | ----- | -------- | --------- |
-| PaddleOCR     | ?/40        | ?/25    | ?/20     | ?/10  | ?/5      | ?/100     |
-| Docling       | ?/40        | ?/25    | ?/20     | ?/10  | ?/5      | ?/100     |
-| DocLayout+PP  | ?/40        | ?/25    | ?/20     | ?/10  | ?/5      | ?/100     |
-| YOLO11        | ?/40        | ?/25    | ?/20     | ?/10  | ?/5      | ?/100     |
-| OpenCV        | ?/40        | ?/25    | ?/20     | ?/10  | ?/5      | ?/100     |
-
-### 5.2 Decisión
-
-**Si score ganador > 85**: Usar esa configuración como default
-
-**Si score ganador 75-85**: Usar ganador pero documentar limitaciones
-
-**Si todos < 75**: Considerar enfoque híbrido (ejemplo: Surya para layouts complejos, DocLayout para simples)
-
-### 5.3 Actualizar defaults en `detect_columns.py`
-
-```python
-# Ejemplo: si gana PaddleOCR
-DEFAULT_METHOD = 'paddleocr'
-
-# O si gana Docling
-DEFAULT_METHOD = 'docling'
-
-# O si gana DocLayout mejorado
-DEFAULT_METHOD = 'doclayout'
-DEFAULT_CONF = 0.2
-DEFAULT_NMS_IOU = 0.4
-DEFAULT_MERGE_DISTANCE = 15
+```json
+{
+  "popurri01.jpg": {
+    "text": "...transcripción real completa...",
+    "notes": "Opcional: observaciones de lectura"
+  },
+  "popurri02.jpg": {
+    "text": "..."
+  }
+}
 ```
 
-### 5.4 Documentación
+**Reglas para crear el ground truth**:
+
+1. Transcripción manual fiel del texto visible de cada imagen.
+2. Normalizar saltos de línea y espacios duplicados.
+3. Mantener signos de puntuación relevantes.
+4. Guardar un único bloque de texto por imagen (sin segmentación por caja).
+
+### 5.2 Criterios de evaluación final (basados en ground truth)
+
+**Métricas obligatorias**:
+
+1. **CER** (Character Error Rate) — principal
+2. **WER** (Word Error Rate) — principal
+3. **Tiempo medio por imagen** — secundario
+4. **Duplicados de detección** — secundario
+
+**Score final recomendado**:
+
+```text
+score_final = (1 - CER) * 50 + (1 - WER) * 35 - (time_per_image_ms / 1000) * 10 - (dup_promedio) * 5
+```
+
+> Si no hay ground truth completo para las 18 imágenes, usar subset mínimo de 5 imágenes representativas (cabeceras, multicolumna densa, publicidad, texto pequeño, contraste bajo).
+
+### 5.3 Decisión final de stack (layout + OCR)
+
+La decisión final ya no se toma solo por heurísticas de caracteres/palabras.
+Se elige la combinación:
+
+`configuración de layout + motor OCR`
+
+que minimice CER/WER frente a `ground_truth/ocr_ground_truth.json`.
+
+### 5.4 Actualizar defaults y documentación
+
+1. Actualizar default de layout en `detect_columns.py` (si aplica).
+2. Documentar motor OCR ganador en `README.md`.
+3. Generar informe final con tabla de CER/WER por combinación.
+
+### 5.5 Documentación
 
 Crear `LAYOUT_DETECTION_EXPERIMENTS.md`:
 
@@ -996,179 +1011,100 @@ py -3.11 detect_columns.py --image imgs/ --method [ganador] --conf X.XX
 
 ---
 
-## FASE 6: Benchmark de Motores OCR (4-6 horas)
+## FASE 6: Comparación de Resultados de Validación contra Ground Truth (5-7 horas)
 
-> Esta fase se ejecuta una vez decidido y fijado el modelo de detección de layout ganador (FASE 5).
-> El objetivo es averiguar qué motor OCR extrae texto con mayor precisión sobre las regiones detectadas.
+> Esta fase reemplaza el benchmark heurístico: en vez de comparar por métricas indirectas, se comparan **todos los resultados de validación OCR ya generados** contra un archivo de texto real por imagen.
 
 ### 6.1 Prerrequisitos
 
-- Modelo de layout ganador seleccionado (FASE 5)
-- Regiones detectadas con la configuración óptima en las 18 imágenes (`validation_results/<ganador>/`)
-- Instalar dependencias de los motores OCR:
+1. Haber ejecutado `validate_ocr.py` con los motores OCR deseados.
+2. Disponer de resultados en:
+     - `validation_results/<layout_config>/results_easyocr.json`
+     - `validation_results/<layout_config>/results_tesseract.json`
+     - `validation_results/<layout_config>/results_paddle.json`
+     - `validation_results/<layout_config>/results_deepseek.json` (si aplica)
+3. Crear el archivo de ground truth:
+     - `ground_truth/ocr_ground_truth.json`
 
-```bash
-# EasyOCR (probablemente ya instalado)
-pip install easyocr
+### 6.2 Script de comparación (nuevo flujo)
 
-# Tesseract (binario externo + wrapper Python)
-# Binario: https://github.com/UB-Mannheim/tesseract/wiki
-pip install pytesseract
+**Nuevo archivo**: `compare_validation_vs_ground_truth.py`
 
-# PaddleOCR (probablemente ya instalado, reutilizar desde FASE 2)
-# paddlepaddle==3.2.2 + paddleocr[doc-parser] ya instalados
+**Entrada**:
 
-# DeepSeek-OCR-2 (modelo local — REQUIERE GPU + CUDA 11.8, NO ejecutable en CPU-only Windows)
-# git clone https://github.com/deepseek-ai/DeepSeek-OCR-2.git
-# pip install torch==2.6.0 torchvision --index-url https://download.pytorch.org/whl/cu118
-# pip install -r requirements.txt
-# pip install flash-attn==2.7.3 --no-build-isolation
-# Modelo HuggingFace: deepseek-ai/DeepSeek-OCR-2 (AutoModel + .eval().cuda().to(torch.bfloat16))
-# ALTERNATIVA sin GPU: omitir DeepSeek-OCR-2 del benchmark o usar API remota si disponible
-````
+1. `validation_results/` completo (todas las configuraciones y motores OCR)
+2. `ground_truth/ocr_ground_truth.json`
 
-### 6.2 Motores OCR a comparar
+**Salida**:
 
-| Motor              | Tipo                         | Implementación                                                                                  | GPU necesaria                                      |
-| ------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **EasyOCR**        | Deep Learning (CRAFT + CRNN) | `easyocr.Reader(['es','en'])`                                                                   | No (CPU ok)                                        |
-| **Tesseract**      | HMM / LSTM                   | `pytesseract.image_to_string()`                                                                 | No                                                 |
-| **PaddleOCR**      | Deep Learning (PP-OCRv4)     | `PaddleOCR(use_textline_orientation=False)`                                                     | No (`enable_mkldnn=False`)                         |
-| **DeepSeek-OCR-2** | Vision-Language Model (VLM)  | `AutoModel.from_pretrained('deepseek-ai/DeepSeek-OCR-2', trust_remote_code=True).eval().cuda()` | **Sí — CUDA 11.8 + torch 2.6 + flash_attention_2** |
+1. `ocr_gt_comparison_report.csv`
+2. `ocr_gt_comparison_report.json`
+3. `ocr_gt_comparison_report.txt`
 
-> **Nota sobre DeepSeek-OCR-2:** Modelo real disponible en HuggingFace (`deepseek-ai/DeepSeek-OCR-2`). Requiere CUDA 11.8, torch 2.6.0 y `flash_attention_2`. Inferencia local via `transformers.AutoModel`; para producción, se recomienda vLLM (Linux). Prompt recomendado: `"<image>\nFree OCR."` Para extracción estructurada: `"<image>\n<|grounding|>Convert the document to markdown."`. **En el equipo actual (CPU-only, Windows):** omitir del benchmark o ejecutar en servidor remoto con GPU.
-
-### 6.3 Script `benchmark_ocr_engines.py`
-
-**Archivo**: `benchmark_ocr_engines.py`
-
-**Flujo**:
+### 6.3 Lógica de comparación
 
 ```
-Para cada imagen (18 imgs):
-  1. Cargar regiones del modelo ganador (validate_ocr.py ya las guarda en per_region)
-     O re-ejecutar detect_columns con la config ganadora para obtener las cajas
-  2. Para cada motor OCR [easyocr, tesseract, paddleocr, deepseek]:
-     a. Pasar cada region (crop de imagen) al motor
-     b. Acumular texto extraido
-  3. Calcular métricas por motor y por imagen
-4. Generar informe comparativo
+Para cada configuración de layout en validation_results/:
+    Para cada motor OCR disponible (results_*.json):
+        Para cada imagen del dataset:
+            1. Reconstruir texto OCR (concatenación per_region en orden)
+            2. Cargar texto real desde ground_truth/ocr_ground_truth.json
+            3. Calcular CER y WER
+            4. Guardar métricas por imagen
+        5. Agregar métricas globales por (layout_config, ocr_engine)
+6. Rankear combinaciones por menor CER/WER
 ```
 
-**Estructura del script**:
+### 6.4 Métricas obligatorias
 
-```python
-def run_easyocr(regions: list[np.ndarray], langs=["es","en"]) -> list[str]:
-    """EasyOCR: inicializar Reader una vez y reutilizar"""
+| Métrica             | Descripción                                              | Objetivo |
+| ------------------- | -------------------------------------------------------- | -------- |
+| `CER`               | Character Error Rate vs ground truth                     | Menor    |
+| `WER`               | Word Error Rate vs ground truth                          | Menor    |
+| `time_per_image_ms` | Tiempo promedio por imagen (de resultados de validación) | Menor    |
+| `dup_mean`          | Duplicados medios de detección (layout)                  | Menor    |
 
-def run_tesseract(regions: list[np.ndarray], lang="spa+eng") -> list[str]:
-    """Tesseract: pytesseract.image_to_string con PSM 6 (bloque uniforme)"""
-
-def run_paddleocr(regions: list[np.ndarray]) -> list[str]:
-    """PaddleOCR PP-OCRv4: reutilizar instancia con enable_mkldnn=False"""
-
-def run_deepseek(regions: list[np.ndarray], model, tokenizer) -> list[str]:
-    """DeepSeek-OCR-2: inferencia local via transformers (REQUIERE GPU/CUDA).
-    Modelo: deepseek-ai/DeepSeek-OCR-2
-    Prompt: '<image>\\nFree OCR.'  (alternativa: '<image>\\n<|grounding|>Convert the document to markdown.')
-    Carga: AutoModel.from_pretrained(..., _attn_implementation='flash_attention_2',
-                                     trust_remote_code=True).eval().cuda().to(torch.bfloat16)
-    NOTA: En CPU-only Windows devuelve lista vacía con aviso; no lanza excepción.
-    """
-
-def score_ocr_output(text: str, reference_vocab: set = None) -> dict:
-    """
-    Calcula metricas de calidad del texto extraido:
-      - total_chars: caracteres sin espacios
-      - total_words: palabras (>=2 letras)
-      - vocab_ratio: fraccion de palabras en diccionario ES/EN
-      - no_garbage_ratio: fraccion de regiones con texto coherente (>5 palabras reales)
-      - avg_word_len: longitud media de palabra (basura suele tener <2)
-      - wer: Word Error Rate si se dispone de ground truth
-      - cer: Character Error Rate si se dispone de ground truth
-    """
-
-def compare_engines(
-    image_paths: list[Path],
-    winner_config: dict,
-    engines: list[str] = ["easyocr", "tesseract", "paddleocr", "deepseek"],
-    output_dir: Path = Path("ocr_benchmark"),
-    skip_deepseek_if_no_gpu: bool = True,  # omite DeepSeek automáticamente en CPU-only
-) -> None:
-    """Punto de entrada principal. Genera:
-      - ocr_benchmark_report.json
-      - ocr_benchmark_report.csv
-      - ocr_benchmark_report.txt (tabla comparativa)
-    DeepSeek-OCR-2 se omite si no hay CUDA disponible y skip_deepseek_if_no_gpu=True.
-    """
-```
-
-### 6.4 Métricas de evaluación
-
-**Sin ground truth** (modo automático, usando heurísticas):
-
-| Métrica             | Descripción                                      | Rango ideal   |
-| ------------------- | ------------------------------------------------ | ------------- |
-| `total_chars`       | Total caracteres extraídos (sin espacios)        | Mayor = mejor |
-| `total_words`       | Palabras con ≥2 letras                           | Mayor = mejor |
-| `vocab_ratio`       | Fracción de palabras en diccionario ES+EN        | > 0.80        |
-| `no_garbage_ratio`  | Regiones con ≥5 palabras reales / total regiones | > 0.85        |
-| `avg_word_len`      | Longitud media de palabra (basura ≈ 1–2 chars)   | 4–6           |
-| `time_per_image_ms` | Tiempo medio por imagen                          | Menor = mejor |
-
-**Con ground truth** (si se genera manualmente para 3–5 imágenes):
-
-| Métrica | Descripción          | Rango ideal |
-| ------- | -------------------- | ----------- |
-| `WER`   | Word Error Rate      | < 15%       |
-| `CER`   | Character Error Rate | < 8%        |
-
-**Fórmula de scoring OCR benchmark**:
+**Score global recomendado**:
 
 ```
-score = vocab_ratio * 40  +  no_garbage_ratio * 30  +  (total_words / max_words_entre_engines) * 20  -  (time_per_image_ms / 1000) * 10
+score = (1 - CER) * 50 + (1 - WER) * 35 - (time_per_image_ms / 1000) * 10 - dup_mean * 5
 ```
 
-### 6.5 Informe comparativo
-
-**Salidas del script**:
-
-- `ocr_benchmark_report.txt` — tabla comparativa legible por columna
-- `ocr_benchmark_report.csv` — datos tabulados para análisis
-- `ocr_benchmark_report.json` — datos detallados por motor, imagen y región
-- `ocr_benchmark/<motor>/<imagen>/` — texto extraido por región y total
-
-**Ejemplo de tabla esperada**:
+### 6.5 Tabla de salida esperada
 
 ```
-============================================================================================
-BENCHMARK OCR — Comparativa de motores sobre layout [ganador]
-============================================================================================
-  Motor        Words    Chars   VocabR%  NoGarb%  AvgWLen  Time/img(ms)   SCORE
-  ----------   ------   ------  -------  -------  -------  ------------   -----
-  easyocr       XXXX    XXXXX    XX.X      XX.X     X.X         XXXX       XX.X
-  tesseract     XXXX    XXXXX    XX.X      XX.X     X.X         XXXX       XX.X
-  paddleocr     XXXX    XXXXX    XX.X      XX.X     X.X         XXXX       XX.X
-  deepseek      XXXX    XXXXX    XX.X      XX.X     X.X         XXXX       XX.X  <-- GPU (omitido en CPU-only)
-============================================================================================
-Ganador: [motor] con score XX.X
+====================================================================================================
+COMPARATIVA OCR VS GROUND TRUTH
+====================================================================================================
+    Layout Config                      OCR Engine   CER      WER      Time/img(ms)   Dups    SCORE
+    ---------------------------------  ----------   ------   ------   ------------   ----    -----
+    doclayout_conf0.20_nms0.40_mg15    easyocr      0.082    0.141          820       0.3     79.4
+    doclayout_conf0.20_nms0.40_mg15    tesseract    0.097    0.169          640       0.3     74.8
+    paddleocr_nms0.40_mg10             paddle       0.089    0.152          710       0.5     77.2
+    opencv_mg10                        deepseek      0.061    0.118         1450       1.1     81.6
+====================================================================================================
+Ganador: [layout_config + ocr_engine] con menor CER/WER y mejor score global
 ```
 
 ### 6.6 Selección final del stack completo
 
-Al concluir esta fase se dispone del **pipeline óptimo completo**:
+Al concluir esta fase se selecciona:
+
+1. Configuración de layout ganadora
+2. Motor OCR ganador
+3. Configuración reproducible final en `README.md`
+
+Pipeline final:
 
 ```
 Imagen de documento
-    ↓
-[Modelo de layout ganador, FASE 5]
-    ↓  regiones detectadas
-[Motor OCR ganador, FASE 6]
-    ↓
-Texto estructurado por columnas
+        ↓
+[Layout config ganador]
+        ↓
+[OCR engine ganador]
+        ↓
+Texto final validado contra ground truth
 ```
-
-Este pipeline se documenta en `README.md` y queda disponible como configuración por defecto del proyecto.
 
 ---
 
@@ -1237,23 +1173,23 @@ Este pipeline se documenta en `README.md` y queda disponible como configuración
 
 ### Día 8 (4 horas)
 
-- [ ] **Mañana (3h)**: FASE 5 — Decisión y deployment
-  - Actualizar defaults en `detect_columns.py`
-  - Generar `LAYOUT_DETECTION_EXPERIMENTS.md`
-- [ ] **Tarde (1h)**: Preparar regiones para FASE 6
-  - Ejecutar modelo ganador sobre las 18 imágenes
-  - Verificar que `validation_results/<ganador>/` está completo
+- [ ] **Mañana (2h)**: FASE 5 — Crear ground truth
+    - Crear `ground_truth/ocr_ground_truth.json` con texto real por imagen
+    - Validar cobertura mínima (ideal 18/18 imágenes; mínimo 5 representativas)
+- [ ] **Tarde (2h)**: FASE 5 — Criterio de decisión final
+    - Definir score final basado en CER/WER
+    - Preparar plantilla de informe final
 
 ### Día 9 (6 horas)
 
-- [ ] **Mañana (4h)**: FASE 6 — Benchmark de motores OCR
-  - Crear `benchmark_ocr_engines.py`
-  - Ejecutar EasyOCR + Tesseract + PaddleOCR sobre las 18 imágenes
-  - Ejecutar DeepSeek OCR (API) si se dispone de clave
-- [ ] **Tarde (2h)**: FASE 6 — Análisis e informe final
-  - Calcular métricas automáticas (`vocab_ratio`, `no_garbage_ratio`, `time_per_image`)
-  - Revisar manualmente 3–5 imágenes representativas
-  - Generar `ocr_benchmark_report.txt` + `README.md` actualizado
+- [ ] **Mañana (4h)**: FASE 6 — Comparación vs ground truth
+    - Crear `compare_validation_vs_ground_truth.py`
+    - Procesar todos los `results_*.json` de `validation_results/`
+    - Calcular CER/WER por imagen y por combinación (layout + OCR)
+- [ ] **Tarde (2h)**: FASE 6 — Informe final y selección
+    - Generar `ocr_gt_comparison_report.txt/csv/json`
+    - Seleccionar stack final (layout + OCR)
+    - Actualizar `README.md` con configuración ganadora
 
 **Total estimado**: ~65 horas (~9 días laborables)
 
@@ -1262,8 +1198,8 @@ Este pipeline se documenta en `README.md` y queda disponible como configuración
 - Días 4–5 (8h): FASE 3.1 + scripts ✅
 - Día 6 (8h): FASE 3.2–3.3 (grid search + análisis)
 - Día 7 (8h): FASE 4 (validación OCR layout)
-- Día 8 (4h): FASE 5 (decisión + deployment)
-- Día 9 (6h): FASE 6 (benchmark motores OCR)
+- Día 8 (4h): FASE 5 (ground truth + criterio final)
+- Día 9 (6h): FASE 6 (comparación vs ground truth)
 
 ---
 
@@ -1275,7 +1211,8 @@ Este pipeline se documenta en `README.md` y queda disponible como configuración
 - [x] `experiment_models.py` - Grid search automático ✅ COMPLETADO
 - [x] `analyze_experiments.py` - Análisis de resultados ✅ COMPLETADO
 - [x] `validate_ocr.py` - Validación OCR top-N configuraciones (FASE 4) ✅ COMPLETADO
-- [ ] `benchmark_ocr_engines.py` - Benchmark EasyOCR vs Tesseract vs PaddleOCR vs DeepSeek (FASE 6)
+- [ ] `ground_truth/ocr_ground_truth.json` - Texto real por imagen (FASE 5)
+- [ ] `compare_validation_vs_ground_truth.py` - Comparación de resultados OCR vs ground truth (FASE 6)
 - [ ] `LAYOUT_DETECTION_EXPERIMENTS.md` - Documentación de experimentos
 
 ### Archivos a modificar
@@ -1300,10 +1237,10 @@ Este pipeline se documenta en `README.md` y queda disponible como configuración
 
 ### Objetivos cuantitativos — OCR Benchmark (FASE 6)
 
-- [ ] Motor ganador con `vocab_ratio` > 0.85 sobre el dataset completo
-- [ ] `no_garbage_ratio` > 0.90 (< 10% de regiones con texto basura)
-- [ ] Si se crea ground truth: WER < 15%, CER < 8%
-- [ ] Diferencia clara (> 5 puntos de score) entre el ganador y el segundo
+- [ ] Ground truth disponible para 18 imágenes (o mínimo 5 representativas)
+- [ ] Motor/stack ganador con `WER < 15%` y `CER < 8%`
+- [ ] Diferencia clara (> 3 puntos de score final) entre el ganador y el segundo
+- [ ] Tiempo medio por imagen dentro de umbral operativo acordado
 
 ### Objetivos cualitativos
 
@@ -1358,3 +1295,4 @@ Este pipeline se documenta en `README.md` y queda disponible como configuración
 ```
 
 ```
+````

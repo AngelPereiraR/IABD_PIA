@@ -3,7 +3,8 @@ setlocal enabledelayedexpansion
 REM =============================================================================
 REM install.bat - Script de instalación interactivo para Windows
 REM Proyecto: Detección de Layout Multi-Método (FASE 2.2)
-REM Métodos: opencv | doclayout | yolo11 | paddleocr | docling | layoutparser
+REM Métodos: opencv | doclayout | yolo11 | paddleocr | docling
+REM Motores OCR: easyocr | tesseract | paddleocr | deepseek (dependencias locales)
 REM NOTA: Usa Python 3.11 directamente mediante py launcher
 REM =============================================================================
 
@@ -11,7 +12,7 @@ REM Cambiar al directorio donde está el script
 cd /d "%~dp0"
 
 echo ================================================================================
-echo INSTALACION: Deteccion de Layout Multi-Metodo (DocLayout + YOLO11 + PaddleOCR + Docling)
+echo INSTALACION: Layout + OCR (EasyOCR + Tesseract + PaddleOCR + DeepSeek deps)
 echo ================================================================================
 echo.
 
@@ -46,6 +47,12 @@ if errorlevel 1 (
     exit /b 1
 ) else (
     tesseract --version 2>&1 | findstr /C:"tesseract"
+    tesseract --list-langs 2>nul | findstr /R /C:"^spa$" >nul
+    if errorlevel 1 (
+        echo [W] Idioma 'spa' no detectado en Tesseract ^(se recomienda instalarlo^)
+    ) else (
+        echo [OK] Idioma 'spa' detectado en Tesseract
+    )
 )
 echo.
 
@@ -155,6 +162,20 @@ if !GPU_AVAILABLE!==1 (
         exit /b 1
     )
     del requirements_temp.txt
+
+    echo.
+    echo [i] Dependencia opcional DeepSeek: flash-attn ^(recomendado en GPU^)
+    py -3.11 -m pip show flash-attn >nul 2>&1
+    if not errorlevel 1 (
+        echo [OK] flash-attn ya instalado - saltando
+    ) else (
+        py -3.11 -m pip install --no-warn-script-location flash-attn==2.7.3 --no-build-isolation
+        if errorlevel 1 (
+            echo [W] No se pudo instalar flash-attn. DeepSeek puede funcionar con atencion eager ^(mas lento^).
+        ) else (
+            echo [OK] flash-attn instalado correctamente
+        )
+    )
 ) else (
     echo Instalacion CPU ^(sin GPU^)
     echo --------------------------------------------------------------------------------
@@ -247,6 +268,9 @@ py -3.11 -c "from ultralytics import YOLO; print('Ultralytics YOLO11: OK')" 2>nu
 py -3.11 -c "from paddleocr import LayoutDetection; print('PaddleOCR LayoutDetection: OK')" 2>nul
 py -3.11 -c "from docling.document_converter import DocumentConverter; print('Docling: OK')" 2>nul
 py -3.11 -c "import easyocr; print('EasyOCR: OK')" 2>nul
+py -3.11 -c "import pytesseract; print('PyTesseract: OK')" 2>nul
+py -3.11 -c "import transformers; print('Transformers: OK')" 2>nul
+py -3.11 -c "import accelerate, safetensors, tokenizers; print('DeepSeek deps: OK')" 2>nul
 echo.
 
 echo ================================================================================
@@ -259,6 +283,12 @@ echo   doclayout    - DocLayout-YOLO YOLOv10 (mejor calidad general)
 echo   yolo11       - YOLO11 fine-tuned DocLayNet (descarga auto en 1a ejecucion)
 echo   paddleocr    - PaddleOCR LayoutDetection PP-DocLayout_plus-L (16 regiones)
 echo   docling      - Docling RT-DETR IBM (15 regiones, descarga ~500 MB 1a vez)
+echo.
+echo Motores OCR disponibles para validate_ocr.py:
+echo   easyocr      - OCR neuronal CPU/GPU
+echo   tesseract    - OCR clasico ^(requiere binario instalado + pytesseract^)
+echo   paddle       - OCR de PaddleOCR
+echo   deepseek     - OCR VLM local ^(requiere GPU CUDA + modelo descargado^)
 echo.
 echo Proximos pasos:
 echo 1. Probar cada metodo:

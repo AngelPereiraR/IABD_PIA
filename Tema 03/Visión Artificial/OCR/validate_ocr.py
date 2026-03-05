@@ -2,9 +2,9 @@
 
 FASE 4 — Validacion OCR completo con las mejores configuraciones del grid search.
 
-Para cada configuracion seleccionada:
+Para cada configuracion seleccionada y cada motor OCR:
   1. Ejecuta deteccion de regions (detect_columns.detect_columns)
-  2. Ejecuta EasyOCR sobre cada region detectada
+    2. Ejecuta OCR sobre cada region detectada (EasyOCR/Tesseract/Paddle/DeepSeek)
   3. Recopila metricas: caracteres, palabras, columnas, duplicados, tiempo
   4. Genera informe comparativo
 
@@ -36,9 +36,11 @@ Modos de uso:
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import sys
 import time
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -61,6 +63,28 @@ try:
 except ImportError:
     HAS_EASYOCR = False
     print("[WARN] easyocr no instalado: pip install easyocr")
+
+try:
+    import pytesseract
+    HAS_TESSERACT = True
+except ImportError:
+    HAS_TESSERACT = False
+    print("[WARN] pytesseract no instalado: pip install pytesseract")
+
+try:
+    from paddleocr import PaddleOCR
+    HAS_PADDLE_OCR = True
+except ImportError:
+    HAS_PADDLE_OCR = False
+    print("[WARN] paddleocr no instalado: pip install paddleocr")
+
+try:
+    import torch
+    from transformers import AutoModel, AutoTokenizer
+    HAS_DEEPSEEK_DEPS = True
+except ImportError:
+    HAS_DEEPSEEK_DEPS = False
+    print("[WARN] transformers/torch no instalados; DeepSeek no disponible")
 
 # Añadir directorio actual al path para importar detect_columns como modulo
 _HERE = Path(__file__).parent
@@ -92,6 +116,8 @@ CHARS_WEIGHT = 1.0       # por caracter extraido
 WORDS_WEIGHT = 5.0       # bonus por palabra detectada
 DUP_PENALTY = 50.0       # penalizacion por duplicado en deteccion
 MISSED_PENALTY = 20.0    # penalizacion por imagen sin regiones detectadas
+
+SUPPORTED_ENGINES = ["easyocr", "tesseract", "paddle", "deepseek"]
 
 
 # ---------------------------------------------------------------------------
@@ -152,6 +178,172 @@ def run_easyocr_on_regions(
         total_chars += chars
         total_words += words
         per_region.append({"region": i, "text": text, "chars": chars, "words": words})
+
+    return {
+        "total_chars": total_chars,
+        "total_words": total_words,
+        "per_region": per_region,
+    }
+
+
+def run_tesseract_on_regions(
+    img_bgr: np.ndarray,
+    boxes: List,
+) -> Dict[str, Any]:
+    """Extrae texto de cada region detectada con Tesseract."""
+    per_region: List[Dict[str, Any]] = []
+    total_chars = 0
+    total_words = 0
+
+    for i, box in enumerate(boxes, start=1):
+        x1, y1, x2, y2 = box.x1, box.y1, box.x2, box.y2
+        h, w = img_bgr.shape[:2]
+        x1, y1 = max(0, x1), max(0, y1)
+        x2, y2 = min(w, x2), min(h, y2)
+
+        if x2 <= x1 or y2 <= y1:
+            per_region.append({"region": i, "text": "", "chars": 0, "words": 0})
+            continue
+
+        region = img_bgr[y1:y2, x1:x2]
+        try:
+            text = pytesseract.image_to_string(region, lang="spa+eng")
+            text = clean_ocr_text(text)
+        except Exception as exc:
+            text = ""
+            print(f"    [WARN] Tesseract fallo en region {i}: {exc}")
+
+        chars = len(text.replace(" ", "").replace("\n", ""))
+        words = count_words(text)
+        total_chars += chars
+        total_words += words
+        per_region.append({"region": i, "text": text, "chars": chars, "words": words})
+
+    return {
+        "total_chars": total_chars,
+        "total_words": total_words,
+        "per_region": per_region,
+    }
+
+
+def run_paddle_on_regions(
+    img_bgr: np.ndarray,
+    boxes: List,
+    paddle_reader: "PaddleOCR",
+) -> Dict[str, Any]:
+    """Extrae texto de cada region detectada con PaddleOCR."""
+    per_region: List[Dict[str, Any]] = []
+    total_chars = 0
+    total_words = 0
+
+    with tempfile.TemporaryDirectory(prefix="ocr_paddle_") as tmp_dir:
+        tmp_path = Path(tmp_dir)
+
+        for i, box in enumerate(boxes, start=1):
+            x1, y1, x2, y2 = box.x1, box.y1, box.x2, box.y2
+            h, w = img_bgr.shape[:2]
+            x1, y1 = max(0, x1), max(0, y1)
+            x2, y2 = min(w, x2), min(h, y2)
+
+            if x2 <= x1 or y2 <= y1:
+                per_region.append({"region": i, "text": "", "chars": 0, "words": 0})
+                continue
+
+            region = img_bgr[y1:y2, x1:x2]
+            region_file = tmp_path / f"region_{i}.png"
+            cv2.imwrite(str(region_file), region)
+
+            text = ""
+            try:
+                pred = paddle_reader.predict(str(region_file))
+                if pred and isinstance(pred, list) and len(pred) > 0:
+                    rec_texts = pred[0].get("rec_texts", [])
+                    text = clean_ocr_text("\n".join(rec_texts))
+            except Exception as exc:
+                print(f"    [WARN] PaddleOCR fallo en region {i}: {exc}")
+
+            chars = len(text.replace(" ", "").replace("\n", ""))
+            words = count_words(text)
+            total_chars += chars
+            total_words += words
+            per_region.append({"region": i, "text": text, "chars": chars, "words": words})
+
+    return {
+        "total_chars": total_chars,
+        "total_words": total_words,
+        "per_region": per_region,
+    }
+
+
+def _deepseek_result_to_text(result: Any) -> str:
+    """Intenta extraer texto OCR de distintos formatos devueltos por DeepSeek."""
+    if result is None:
+        return ""
+    if isinstance(result, str):
+        return clean_ocr_text(result)
+    if isinstance(result, dict):
+        for key in ("text", "result", "output", "markdown"):
+            val = result.get(key)
+            if isinstance(val, str) and val.strip():
+                return clean_ocr_text(val)
+        return clean_ocr_text(json.dumps(result, ensure_ascii=False))
+    if isinstance(result, list):
+        parts = [_deepseek_result_to_text(x) for x in result]
+        return clean_ocr_text("\n".join([p for p in parts if p]))
+    return clean_ocr_text(str(result))
+
+
+def run_deepseek_on_regions(
+    img_bgr: np.ndarray,
+    boxes: List,
+    deepseek_model: Any,
+    deepseek_tokenizer: Any,
+    prompt: str,
+) -> Dict[str, Any]:
+    """Extrae texto de cada region detectada con DeepSeek OCR local."""
+    per_region: List[Dict[str, Any]] = []
+    total_chars = 0
+    total_words = 0
+
+    with tempfile.TemporaryDirectory(prefix="ocr_deepseek_") as tmp_dir:
+        tmp_path = Path(tmp_dir)
+
+        for i, box in enumerate(boxes, start=1):
+            x1, y1, x2, y2 = box.x1, box.y1, box.x2, box.y2
+            h, w = img_bgr.shape[:2]
+            x1, y1 = max(0, x1), max(0, y1)
+            x2, y2 = min(w, x2), min(h, y2)
+
+            if x2 <= x1 or y2 <= y1:
+                per_region.append({"region": i, "text": "", "chars": 0, "words": 0})
+                continue
+
+            region = img_bgr[y1:y2, x1:x2]
+            region_file = tmp_path / f"region_{i}.png"
+            cv2.imwrite(str(region_file), region)
+
+            text = ""
+            try:
+                result = deepseek_model.infer(
+                    deepseek_tokenizer,
+                    prompt=prompt,
+                    image_file=str(region_file),
+                    output_path=str(tmp_path / f"out_{i}"),
+                    base_size=640,
+                    image_size=640,
+                    crop_mode=False,
+                    save_results=False,
+                    test_compress=False,
+                )
+                text = _deepseek_result_to_text(result)
+            except Exception as exc:
+                print(f"    [WARN] DeepSeek fallo en region {i}: {exc}")
+
+            chars = len(text.replace(" ", "").replace("\n", ""))
+            words = count_words(text)
+            total_chars += chars
+            total_words += words
+            per_region.append({"region": i, "text": text, "chars": chars, "words": words})
 
     return {
         "total_chars": total_chars,
@@ -297,19 +489,16 @@ def build_config_label(cfg: Dict[str, Any]) -> str:
 def run_config(
     cfg: Dict[str, Any],
     image_paths: List[Path],
-    reader: Optional["easyocr.Reader"],
+    ocr_engine: str,
+    engine_ctx: Dict[str, Any],
     output_dir: Path,
     resume: bool = False,
 ) -> Dict[str, Any]:
-    """Ejecuta deteccion + OCR para una configuracion sobre todas las imagenes.
-
-    Guarda resultados incrementalmente en output_dir/results.json.
-    Returns el dict de resultados agregados.
-    """
+    """Ejecuta deteccion + OCR para una configuracion y un motor OCR."""
     label = build_config_label(cfg)
     config_dir = output_dir / label
     config_dir.mkdir(parents=True, exist_ok=True)
-    results_file = config_dir / "results.json"
+    results_file = config_dir / f"results_{ocr_engine}.json"
 
     # Cargar resultados previos si se resume
     existing: Dict[str, Any] = {}
@@ -317,7 +506,7 @@ def run_config(
         with open(results_file, encoding="utf-8") as f:
             existing = json.load(f)
         already_done = set(existing.get("per_image", {}).keys())
-        print(f"    [resume] {len(already_done)} imagenes ya procesadas, saltando.")
+        print(f"    [resume] {ocr_engine}: {len(already_done)} imagenes ya procesadas, saltando.")
     else:
         already_done = set()
 
@@ -336,9 +525,24 @@ def run_config(
         num_boxes = len(boxes)
 
         # --- OCR ---
-        if reader is not None and num_boxes > 0:
+        if num_boxes > 0 and ocr_engine in engine_ctx:
             ocr_start = time.perf_counter()
-            ocr_data = run_easyocr_on_regions(img_bgr, boxes, reader)
+            if ocr_engine == "easyocr":
+                ocr_data = run_easyocr_on_regions(img_bgr, boxes, engine_ctx["easyocr"])
+            elif ocr_engine == "tesseract":
+                ocr_data = run_tesseract_on_regions(img_bgr, boxes)
+            elif ocr_engine == "paddle":
+                ocr_data = run_paddle_on_regions(img_bgr, boxes, engine_ctx["paddle"])
+            elif ocr_engine == "deepseek":
+                ocr_data = run_deepseek_on_regions(
+                    img_bgr,
+                    boxes,
+                    engine_ctx["deepseek_model"],
+                    engine_ctx["deepseek_tokenizer"],
+                    engine_ctx.get("deepseek_prompt", "<image>\nFree OCR."),
+                )
+            else:
+                ocr_data = {"total_chars": 0, "total_words": 0, "per_region": []}
             ocr_ms = (time.perf_counter() - ocr_start) * 1000
         else:
             ocr_data = {"total_chars": 0, "total_words": 0, "per_region": []}
@@ -385,6 +589,7 @@ def run_config(
     summary = {
         "config": cfg,
         "label": label,
+        "ocr_engine": ocr_engine,
         "n_images": n_imgs,
         "total_chars": total_chars,
         "total_words": total_words,
@@ -436,9 +641,10 @@ def generate_reports(summaries: List[Dict[str, Any]]) -> None:
         cfg = s["config"]
         rows.append({
             "label": s["label"],
+            "ocr_engine": s.get("ocr_engine", "easyocr"),
             "method": cfg["method"],
             "conf": cfg.get("conf", ""),
-            "nms_iou": cfg["nms_iou"],
+            "nms_iou": cfg.get("nms_iou", ""),
             "merge_distance": cfg["merge_distance"],
             "total_chars": s["total_chars"],
             "total_words": s["total_words"],
@@ -480,9 +686,9 @@ def _write_txt_report(summaries: List[Dict[str, Any]]) -> None:
     lines.append("")
 
     # Tabla resumen
-    col_w = [35, 8, 8, 8, 8, 8, 8, 10, 10]
+    col_w = [42, 10, 8, 8, 8, 8, 8, 10, 10]
     headers = [
-        "Configuracion", "Chars", "Palabras", "Dups", "Bxs/img",
+        "Configuracion", "OCR", "Chars", "Palabras", "Dups", "Bxs/img",
         "NoBx", "Det(ms)", "OCR(ms)", "SCORE"
     ]
     sep = "  ".join("-" * w for w in col_w)
@@ -494,14 +700,15 @@ def _write_txt_report(summaries: List[Dict[str, Any]]) -> None:
     for rank, s in enumerate(ranked, start=1):
         row = [
             f"#{rank} {s['label']}"[:col_w[0]].ljust(col_w[0]),
-            str(s["total_chars"]).rjust(col_w[1]),
-            str(s["total_words"]).rjust(col_w[2]),
-            str(s["total_duplicates"]).rjust(col_w[3]),
-            f"{s['mean_boxes']:.1f}".rjust(col_w[4]),
-            str(s["imgs_no_boxes"]).rjust(col_w[5]),
-            f"{s['mean_det_ms']:.0f}".rjust(col_w[6]),
-            f"{s['mean_ocr_ms']:.0f}".rjust(col_w[7]),
-            f"{s['ocr_score']:.1f}".rjust(col_w[8]),
+            s.get("ocr_engine", "easyocr")[:col_w[1]].ljust(col_w[1]),
+            str(s["total_chars"]).rjust(col_w[2]),
+            str(s["total_words"]).rjust(col_w[3]),
+            str(s["total_duplicates"]).rjust(col_w[4]),
+            f"{s['mean_boxes']:.1f}".rjust(col_w[5]),
+            str(s["imgs_no_boxes"]).rjust(col_w[6]),
+            f"{s['mean_det_ms']:.0f}".rjust(col_w[7]),
+            f"{s['mean_ocr_ms']:.0f}".rjust(col_w[8]),
+            f"{s['ocr_score']:.1f}".rjust(col_w[9]),
         ]
         lines.append("  ".join(row))
 
@@ -514,9 +721,10 @@ def _write_txt_report(summaries: List[Dict[str, Any]]) -> None:
     lines.append(f"GANADOR: {winner['label']}")
     lines.append("=" * 60)
     lines.append(f"  Metodo          : {winner['config']['method']}")
+    lines.append(f"  OCR engine      : {winner.get('ocr_engine', 'easyocr')}")
     if "conf" in winner["config"]:
         lines.append(f"  Confianza       : {winner['config']['conf']}")
-    lines.append(f"  NMS IoU         : {winner['config']['nms_iou']}")
+    lines.append(f"  NMS IoU         : {winner['config'].get('nms_iou', 'N/A')}")
     lines.append(f"  Merge distance  : {winner['config']['merge_distance']} px")
     lines.append(f"  Total caracteres: {winner['total_chars']}")
     lines.append(f"  Total palabras  : {winner['total_words']}")
@@ -567,7 +775,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--method", type=str, default=None,
-        choices=["doclayout", "yolo11", "paddleocr", "docling"],
+        choices=["opencv", "doclayout", "yolo11", "paddleocr", "docling"],
         help="Filtrar por metodo al leer el ranking"
     )
     parser.add_argument(
@@ -601,6 +809,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--langs", type=str, default="es,en",
         help="Idiomas para EasyOCR separados por coma (default: es,en)"
+    )
+    parser.add_argument(
+        "--ocr-engines", type=str, default="easyocr,tesseract,paddle,deepseek",
+        help="Motores OCR a usar separados por coma (easyocr,tesseract,paddle,deepseek)"
+    )
+    parser.add_argument(
+        "--deepseek-model-path", type=str, default=None,
+        help="Ruta local del modelo DeepSeek-OCR (si se incluye deepseek en --ocr-engines)"
+    )
+    parser.add_argument(
+        "--deepseek-prompt", type=str, default="<image>\\nFree OCR.",
+        help="Prompt para inferencia DeepSeek por region"
+    )
+    parser.add_argument(
+        "--tesseract-cmd", type=str, default=None,
+        help="Ruta a tesseract.exe (opcional, para Windows)"
     )
     return parser.parse_args()
 
@@ -655,17 +879,85 @@ def main() -> None:
         print(f"    {build_config_label(cfg)}")
     print()
 
-    # --- Inicializar EasyOCR ---
-    reader = None
-    if not args.no_ocr:
-        if not HAS_EASYOCR:
-            print("[WARN] EasyOCR no disponible; se ejecutara solo deteccion.")
-        else:
-            langs = [lang.strip() for lang in args.langs.split(",")]
-            print(f"[i] Inicializando EasyOCR (idiomas: {langs})...")
-            t0 = time.perf_counter()
-            reader = easyocr.Reader(langs, gpu=False, verbose=False)
-            print(f"[OK] EasyOCR listo en {(time.perf_counter()-t0)*1000:.0f}ms\n")
+    # --- Resolver motores OCR solicitados ---
+    requested_engines = [e.strip().lower() for e in args.ocr_engines.split(",") if e.strip()]
+    invalid = [e for e in requested_engines if e not in SUPPORTED_ENGINES]
+    if invalid:
+        sys.exit(f"[ERROR] Motores OCR no validos: {invalid}. Validos: {SUPPORTED_ENGINES}")
+
+    if args.no_ocr:
+        active_engines: List[str] = []
+        print("[WARN] --no-ocr activo: se ejecutara solo deteccion.")
+    else:
+        active_engines = []
+        engine_ctx: Dict[str, Any] = {}
+
+        # EasyOCR
+        if "easyocr" in requested_engines:
+            if HAS_EASYOCR:
+                langs = [lang.strip() for lang in args.langs.split(",") if lang.strip()]
+                print(f"[i] Inicializando EasyOCR (idiomas: {langs})...")
+                t0 = time.perf_counter()
+                engine_ctx["easyocr"] = easyocr.Reader(langs, gpu=False, verbose=False)
+                print(f"[OK] EasyOCR listo en {(time.perf_counter()-t0)*1000:.0f}ms")
+                active_engines.append("easyocr")
+            else:
+                print("[WARN] easyocr solicitado pero no disponible; se omite.")
+
+        # Tesseract
+        if "tesseract" in requested_engines:
+            if HAS_TESSERACT:
+                if args.tesseract_cmd:
+                    pytesseract.pytesseract.tesseract_cmd = args.tesseract_cmd
+                active_engines.append("tesseract")
+                print("[OK] Tesseract disponible")
+            else:
+                print("[WARN] tesseract solicitado pero pytesseract no disponible; se omite.")
+
+        # PaddleOCR
+        if "paddle" in requested_engines:
+            if HAS_PADDLE_OCR:
+                print("[i] Inicializando PaddleOCR...")
+                t0 = time.perf_counter()
+                engine_ctx["paddle"] = PaddleOCR(lang="es", use_textline_orientation=False)
+                print(f"[OK] PaddleOCR listo en {(time.perf_counter()-t0)*1000:.0f}ms")
+                active_engines.append("paddle")
+            else:
+                print("[WARN] paddle solicitado pero paddleocr no disponible; se omite.")
+
+        # DeepSeek local
+        if "deepseek" in requested_engines:
+            deepseek_ready = False
+            if HAS_DEEPSEEK_DEPS and args.deepseek_model_path:
+                if not torch.cuda.is_available():
+                    print("[WARN] deepseek solicitado pero CUDA no disponible; se omite.")
+                elif not Path(args.deepseek_model_path).exists():
+                    print("[WARN] deepseek-model-path no existe; se omite.")
+                else:
+                    print("[i] Inicializando DeepSeek OCR local...")
+                    t0 = time.perf_counter()
+                    tokenizer = AutoTokenizer.from_pretrained(args.deepseek_model_path, trust_remote_code=True)
+                    model = AutoModel.from_pretrained(
+                        args.deepseek_model_path,
+                        trust_remote_code=True,
+                        use_safetensors=True,
+                    )
+                    model = model.eval().cuda().to(torch.bfloat16)
+                    engine_ctx["deepseek_model"] = model
+                    engine_ctx["deepseek_tokenizer"] = tokenizer
+                    engine_ctx["deepseek_prompt"] = args.deepseek_prompt
+                    print(f"[OK] DeepSeek listo en {(time.perf_counter()-t0)*1000:.0f}ms")
+                    deepseek_ready = True
+            else:
+                print("[WARN] deepseek solicitado pero faltan deps o --deepseek-model-path; se omite.")
+            if deepseek_ready:
+                active_engines.append("deepseek")
+
+        if not active_engines:
+            print("[WARN] Ningun motor OCR disponible; se ejecutara solo deteccion.")
+            engine_ctx = {}
+
+        print(f"[i] Motores OCR activos: {active_engines if active_engines else ['none']}\n")
 
     # --- Ejecutar cada configuracion ---
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -674,14 +966,34 @@ def main() -> None:
     for i, cfg in enumerate(configs, start=1):
         label = build_config_label(cfg)
         print(f"[{i}/{len(configs)}] {label}")
-        summary = run_config(
-            cfg, image_paths, reader, args.output_dir, resume=args.resume
-        )
-        summaries.append(summary)
-        print(
-            f"    -> chars={summary['total_chars']}, words={summary['total_words']}, "
-            f"dups={summary['total_duplicates']}, score={summary['ocr_score']:.1f}\n"
-        )
+
+        engines_to_run = active_engines if not args.no_ocr else ["none"]
+        for ocr_engine in engines_to_run:
+            print(f"    [OCR: {ocr_engine}]")
+            if ocr_engine == "none":
+                summary = run_config(
+                    cfg,
+                    image_paths,
+                    "none",
+                    {},
+                    args.output_dir,
+                    resume=args.resume,
+                )
+            else:
+                summary = run_config(
+                    cfg,
+                    image_paths,
+                    ocr_engine,
+                    engine_ctx,
+                    args.output_dir,
+                    resume=args.resume,
+                )
+            summaries.append(summary)
+            print(
+                f"      -> chars={summary['total_chars']}, words={summary['total_words']}, "
+                f"dups={summary['total_duplicates']}, score={summary['ocr_score']:.1f}"
+            )
+        print()
 
     # --- Informes ---
     generate_reports(summaries)
@@ -694,11 +1006,14 @@ def _load_existing_summaries(output_dir: Path) -> List[Dict[str, Any]]:
     if not output_dir.exists():
         return summaries
     for config_dir in sorted(output_dir.iterdir()):
-        results_file = config_dir / "results.json"
-        if results_file.exists():
+        if not config_dir.is_dir():
+            continue
+        for results_file in sorted(config_dir.glob("results*.json")):
             with open(results_file, encoding="utf-8") as f:
                 data = json.load(f)
             if "per_image" in data and "ocr_score" in data:
+                if "ocr_engine" not in data:
+                    data["ocr_engine"] = "easyocr"
                 summaries.append(data)
     return summaries
 
@@ -711,12 +1026,12 @@ def _print_ranking_table(summaries: List[Dict[str, Any]]) -> None:
     print("=" * 90)
     print("RANKING FINAL — VALIDACION OCR")
     print("=" * 90)
-    print(f"  {'#':<3} {'Configuracion':<36} {'Chars':>7} {'Words':>6} {'Dups':>5} {'Score':>9}")
-    print(f"  {'-'*3} {'-'*36} {'-'*7} {'-'*6} {'-'*5} {'-'*9}")
+    print(f"  {'#':<3} {'Configuracion':<36} {'OCR':<10} {'Chars':>7} {'Words':>6} {'Dups':>5} {'Score':>9}")
+    print(f"  {'-'*3} {'-'*36} {'-'*10} {'-'*7} {'-'*6} {'-'*5} {'-'*9}")
     for rank, s in enumerate(ranked, start=1):
         marker = " <-- GANADOR" if rank == 1 else ""
         print(
-            f"  {rank:<3} {s['label']:<36} {s['total_chars']:>7} "
+            f"  {rank:<3} {s['label']:<36} {s.get('ocr_engine', 'easyocr'):<10} {s['total_chars']:>7} "
             f"{s['total_words']:>6} {s['total_duplicates']:>5} {s['ocr_score']:>9.1f}{marker}"
         )
     print("=" * 90)
