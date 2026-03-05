@@ -44,3 +44,5 @@ einops>=0.7.0
 timm>=0.9.16
 sentencepiece>=0.1.99
 kagglehub>=0.2.0
+addict>=2.4.0
+wheel>=0.43.0

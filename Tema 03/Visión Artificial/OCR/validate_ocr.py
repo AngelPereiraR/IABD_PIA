@@ -47,6 +47,9 @@ from typing import Any, Dict, List, Optional, Tuple
 import cv2
 import numpy as np
 
+# Evita chequeos de conectividad de Paddle al iniciar modelos.
+os.environ.setdefault("PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "True")
+
 # ---------------------------------------------------------------------------
 # Dependencias opcionales con feedback claro
 # ---------------------------------------------------------------------------
@@ -944,18 +947,27 @@ def main() -> None:
                 else:
                     print("[i] Inicializando DeepSeek OCR local...")
                     t0 = time.perf_counter()
-                    tokenizer = AutoTokenizer.from_pretrained(str(deepseek_model_path), trust_remote_code=True)
-                    model = AutoModel.from_pretrained(
-                        str(deepseek_model_path),
-                        trust_remote_code=True,
-                        use_safetensors=True,
-                    )
-                    model = model.eval().cuda().to(torch.bfloat16)
-                    engine_ctx["deepseek_model"] = model
-                    engine_ctx["deepseek_tokenizer"] = tokenizer
-                    engine_ctx["deepseek_prompt"] = args.deepseek_prompt
-                    print(f"[OK] DeepSeek listo en {(time.perf_counter()-t0)*1000:.0f}ms")
-                    deepseek_ready = True
+                    try:
+                        tokenizer = AutoTokenizer.from_pretrained(
+                            str(deepseek_model_path),
+                            trust_remote_code=True,
+                        )
+                        model = AutoModel.from_pretrained(
+                            str(deepseek_model_path),
+                            trust_remote_code=True,
+                            use_safetensors=True,
+                        )
+                        model = model.eval().cuda().to(torch.bfloat16)
+                        engine_ctx["deepseek_model"] = model
+                        engine_ctx["deepseek_tokenizer"] = tokenizer
+                        engine_ctx["deepseek_prompt"] = args.deepseek_prompt
+                        print(f"[OK] DeepSeek listo en {(time.perf_counter()-t0)*1000:.0f}ms")
+                        deepseek_ready = True
+                    except Exception as exc:
+                        print(
+                            "[WARN] No se pudo inicializar DeepSeek; se omite este motor. "
+                            f"Detalle: {exc}"
+                        )
             else:
                 print("[WARN] deepseek solicitado pero faltan dependencias (torch/transformers); se omite.")
             if deepseek_ready:

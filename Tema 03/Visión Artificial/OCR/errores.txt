@@ -1,0 +1,122 @@
+install.bat
+
+[i] Dependencia opcional DeepSeek: flash-attn (recomendado en GPU)
+Collecting flash-attn==2.7.3
+  Using cached flash_attn-2.7.3.tar.gz (3.2 MB)
+  Preparing metadata (setup.py) ... error
+  error: subprocess-exited-with-error
+
+  × python setup.py egg_info did not run successfully.
+  │ exit code: 1
+  ╰─> [6 lines of output]
+      Traceback (most recent call last):
+        File "<string>", line 2, in <module>
+        File "<pip-setuptools-caller>", line 34, in <module>
+        File "C:\Users\Usuario\AppData\Local\Temp\pip-install-ea585i3e\flash-attn_3298a2de69cf4fc7a9348ad31afae175\setup.py", line 20, in <module>
+          from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+      ModuleNotFoundError: No module named 'wheel'
+      [end of output]
+
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+error: metadata-generation-failed
+
+× Encountered error while generating package metadata.
+╰─> See above for output.
+
+note: This is an issue with the package mentioned above, not pip.
+hint: See above for details.
+
+[notice] A new release of pip available: 22.3 -> 26.0.1
+[notice] To update, run: C:\Users\Usuario\AppData\Local\Programs\Python\Python311\python.exe -m pip install --upgrade pip
+[W] No se pudo instalar flash-attn. DeepSeek puede funcionar con atencion eager (mas lento).
+
+
+
+validate_ocr.py
+
+PS C:\Users\Usuario\Documents\IABD_PIA\Tema 03\Visión Artificial\OCR> py -3.11 .\validate_ocr.py --top 10
+C:\Users\Usuario\AppData\Local\Programs\Python\Python311\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.0.1)/charset_normalizer (3.4.4) doesn't match a supported version!
+  warnings.warn(
+Checking connectivity to the model hosters, this may take a while. To bypass this check, set `PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK` to `True`.
+[i] Imagenes encontradas: 18 en C:\Users\Usuario\Documents\IABD_PIA\Tema 03\Visión Artificial\OCR\imgs
+[i] Top-10 configuraciones del ranking:
+    docling_nms0.60_mg5
+    docling_nms0.50_mg5
+    docling_nms0.40_mg5
+    paddleocr_nms0.50_mg5
+    paddleocr_nms0.40_mg5
+    paddleocr_nms0.30_mg5
+    docling_nms0.30_mg5
+    doclayout_conf0.30_nms0.40_mg10
+    doclayout_conf0.30_nms0.30_mg10
+    docling_nms0.60_mg10
+
+[i] Inicializando EasyOCR (idiomas: ['es', 'en'])...
+[OK] EasyOCR listo en 1317ms
+[OK] Tesseract disponible
+[i] Inicializando PaddleOCR...
+INFORMACIÓN: no se pudo encontrar ningún archivo para los patrones dados.
+C:\Users\Usuario\AppData\Local\Programs\Python\Python311\Lib\site-packages\paddle\utils\cpp_extension\extension_utils.py:718: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
+  warnings.warn(warning_message)
+Creating model: ('PP-LCNet_x1_0_doc_ori', None)
+Using official model (PP-LCNet_x1_0_doc_ori), the model files will be automatically downloaded and saved in `C:\Users\Usuario\.paddlex\official_models\PP-LCNet_x1_0_doc_ori`.
+.gitattributes: 1.57kB [00:00, ?B/s]                                                                                 | 0/6 [00:00<?, ?it/s]
+config.json: 2.56kB [00:00, ?B/s]████▎                                                                       | 1/6 [00:00<00:01,  4.95it/s] 
+inference.yml: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 766/766 [00:00<?, ?B/s] 
+inference.json: 104kB [00:00, ?B/s]                                                                              | 0.00/766 [00:00<?, ?B/s] 
+README.md: 6.85kB [00:00, ?B/s]B/s]
+inference.pdiparams: 100%|████████████████████████████████████████████████████████████████████████████| 6.75M/6.75M [00:01<00:00, 6.58MB/s]
+Fetching 6 files: 100%|██████████████████████████████████████████████████████████████████████████████████████| 6/6 [00:01<00:00,  4.50it/s]
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+I0305 17:09:19.219031 11540 onednn_context.cc:81] oneDNN v3.6.2
+Creating model: ('UVDoc', None)
+Using official model (UVDoc), the model files will be automatically downloaded and saved in `C:\Users\Usuario\.paddlex\official_models\UVDoc`.
+inference.yml: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 330/330 [00:00<?, ?B/s] 
+config.json: 1.49kB [00:00, 95.3kB/s]                                                                            | 0.00/330 [00:00<?, ?B/s] 
+.gitattributes: 1.57kB [00:00, 651kB/s]
+README.md: 4.46kB [00:00, 4.46MB/s]
+inference.json: 191kB [00:00, 97.7MB/s]
+inference.pdiparams: 100%|████████████████████████████████████████████████████████████████████████████| 32.1M/32.1M [00:00<00:00, 38.6MB/s] 
+Fetching 6 files: 100%|██████████████████████████████████████████████████████████████████████████████████████| 6/6 [00:01<00:00,  5.03it/s]
+Creating model: ('PP-OCRv5_server_det', None)
+Using official model (PP-OCRv5_server_det), the model files will be automatically downloaded and saved in `C:\Users\Usuario\.paddlex\official_models\PP-OCRv5_server_det`.
+inference.json: 402kB [00:00, ?B/s]                                                                                  | 0/6 [00:00<?, ?it/s]
+inference.yml: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 903/903 [00:00<?, ?B/s] 
+.gitattributes: 1.57kB [00:00, ?B/s]                                                                             | 0.00/903 [00:00<?, ?B/s] 
+README.md: 15.9kB [00:00, ?B/s]██████▎                                                                       | 1/6 [00:00<00:01,  4.60it/s] 
+config.json: 2.87kB [00:00, ?B/s]
+inference.pdiparams: 100%|████████████████████████████████████████████████████████████████████████████| 87.9M/87.9M [00:01<00:00, 87.1MB/s]
+Fetching 6 files: 100%|██████████████████████████████████████████████████████████████████████████████████████| 6/6 [00:01<00:00,  4.56it/s]
+Creating model: ('latin_PP-OCRv5_mobile_rec', None)
+Using official model (latin_PP-OCRv5_mobile_rec), the model files will be automatically downloaded and saved in `C:\Users\Usuario\.paddlex\official_models\latin_PP-OCRv5_mobile_rec`.
+inference.json: 218kB [00:00, ?B/s]                                                                                  | 0/6 [00:00<?, ?it/s]
+.gitattributes: 1.57kB [00:00, ?B/s]
+inference.yml: 6.82kB [00:00, ?B/s]██▎                                                                       | 1/6 [00:00<00:01,  4.52it/s] 
+README.md: 7.08kB [00:00, ?B/s]/s]
+config.json: 17.7kB [00:00, ?B/s]
+inference.pdiparams: 100%|████████████████████████████████████████████████████████████████████████████| 7.97M/7.97M [00:00<00:00, 19.1MB/s]
+Fetching 6 files: 100%|██████████████████████████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00,  8.52it/s]
+[OK] PaddleOCR listo en 8133ms
+[i] Inicializando DeepSeek OCR local...
+Encountered exception while importing addict: No module named 'addict'
+Traceback (most recent call last):
+  File "C:\Users\Usuario\Documents\IABD_PIA\Tema 03\Visión Artificial\OCR\validate_ocr.py", line 1054, in <module>
+    main()
+  File "C:\Users\Usuario\Documents\IABD_PIA\Tema 03\Visión Artificial\OCR\validate_ocr.py", line 948, in main
+    model = AutoModel.from_pretrained(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python311\Lib\site-packages\transformers\models\auto\auto_factory.py", line 549, in from_pretrained
+    config, kwargs = AutoConfig.from_pretrained(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python311\Lib\site-packages\transformers\models\auto\configuration_auto.py", line 1346, in from_pretrained
+    config_class = get_class_from_dynamic_module(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python311\Lib\site-packages\transformers\dynamic_module_utils.py", line 604, in get_class_from_dynamic_module
+    final_module = get_cached_module_file(
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python311\Lib\site-packages\transformers\dynamic_module_utils.py", line 427, in get_cached_module_file
+    modules_needed = check_imports(resolved_module_file)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python311\Lib\site-packages\transformers\dynamic_module_utils.py", line 260, in check_imports
+    raise ImportError(
+ImportError: This modeling file requires the following packages that were not found in your environment: addict. Run `pip install addict`

@@ -169,6 +169,8 @@ if !GPU_AVAILABLE!==1 (
     if not errorlevel 1 (
         echo [OK] flash-attn ya instalado - saltando
     ) else (
+        REM flash-attn puede requerir wheel/setuptools para generar metadatos
+        py -3.11 -m pip install --no-warn-script-location --upgrade wheel setuptools >nul 2>&1
         py -3.11 -m pip install --no-warn-script-location flash-attn==2.7.3 --no-build-isolation
         if errorlevel 1 (
             echo [W] No se pudo instalar flash-attn. DeepSeek puede funcionar con atencion eager ^(mas lento^).
@@ -282,7 +284,7 @@ py -3.11 -c "from docling.document_converter import DocumentConverter; print('Do
 py -3.11 -c "import easyocr; print('EasyOCR: OK')" 2>nul
 py -3.11 -c "import pytesseract; print('PyTesseract: OK')" 2>nul
 py -3.11 -c "import transformers; print('Transformers: OK')" 2>nul
-py -3.11 -c "import accelerate, safetensors, tokenizers; print('DeepSeek deps: OK')" 2>nul
+py -3.11 -c "import accelerate, safetensors, tokenizers, addict; print('DeepSeek deps: OK')" 2>nul
 echo.
 
 echo ================================================================================
