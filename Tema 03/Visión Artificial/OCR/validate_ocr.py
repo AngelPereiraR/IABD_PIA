@@ -9,11 +9,26 @@ Para cada configuracion seleccionada y cada motor OCR:
   4. Genera informe comparativo
 
 Modos de uso:
-  # Automatico: lee experiment_ranking.csv (tras ejecutar analyze_experiments.py)
-  py -3.11 validate_ocr.py
+    # Automatico (default usa 4 OCR: easyocr,tesseract,paddle,deepseek)
+    # Requiere pasar ruta de Tesseract y modelo DeepSeek:
+    py -3.11 validate_ocr.py \
+            --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" \
+            --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
+
+    # Automatico solo con OCR que no requieren argumentos extra (sin tesseract/deepseek)
+    py -3.11 validate_ocr.py --ocr-engines easyocr,paddle
+
+    # Automatico usando Tesseract + DeepSeek (requiere rutas explicitas en Windows)
+    py -3.11 validate_ocr.py --ocr-engines tesseract,deepseek \
+            --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" \
+            --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
 
   # Top-N configuraciones globales:
   py -3.11 validate_ocr.py --top 5
+
+    # Top-N con DeepSeek:
+    py -3.11 validate_ocr.py --top 5 --ocr-engines deepseek \
+            --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
 
   # Configuraciones manuales (sin necesitar Phase 3):
   py -3.11 validate_ocr.py --configs '[
@@ -24,11 +39,35 @@ Modos de uso:
       {"method":"opencv","merge_distance":10}
   ]'
 
+  # Configuraciones manuales con Tesseract:
+  py -3.11 validate_ocr.py --configs '[{"method":"docling","nms_iou":0.5,"merge_distance":10}]' \
+      --ocr-engines tesseract \
+      --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+
   # Solo un metodo concreto:
   py -3.11 validate_ocr.py --method paddleocr
 
+  # Solo un metodo concreto con DeepSeek:
+  py -3.11 validate_ocr.py --method docling --ocr-engines deepseek \
+      --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
+
   # Reanudar ejecucion interrumpida:
   py -3.11 validate_ocr.py --resume
+
+  # Reanudar con Tesseract + DeepSeek:
+  py -3.11 validate_ocr.py --resume --ocr-engines tesseract,deepseek \
+      --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" \
+      --deepseek-model-path ".\\models\\DeepSeek-OCR-2"
+
+  # DeepSeek (prompt agresivo para texto borroso / baja calidad)
+  py -3.11 validate_ocr.py --ocr-engines deepseek \
+      --deepseek-model-path ".\\models\\DeepSeek-OCR-2" \
+      --deepseek-prompt "<image>\nPerform robust OCR on this noisy or blurred document region. Recover as much readable text as possible while preserving reading order and line breaks. Output plain text only."
+
+  # DeepSeek (prompt conservador anti-alucinacion)
+  py -3.11 validate_ocr.py --ocr-engines deepseek \
+      --deepseek-model-path ".\\models\\DeepSeek-OCR-2" \
+      --deepseek-prompt "<image>\nExtract only clearly readable text from this document region. Do not guess, infer, or complete missing words. If text is unreadable, omit it. Preserve reading order and line breaks. Output plain text only."
 
   # Ver solo resultados sin reejecutar:
   py -3.11 validate_ocr.py --report-only
@@ -636,7 +675,16 @@ def run_config(
                         boxes,
                         engine_ctx["deepseek_model"],
                         engine_ctx["deepseek_tokenizer"],
-                        engine_ctx.get("deepseek_prompt", "<image>\nFree OCR."),
+                        engine_ctx.get(
+                            "deepseek_prompt",
+                            (
+                                "<image>\n"
+                                "Extract all readable text from this document region. "
+                                "Keep original reading order and line breaks. "
+                                "Output plain text only, without markdown, explanations, "
+                                "or extra symbols. Languages may include Spanish and English."
+                            ),
+                        ),
                     )
                 else:
                     ocr_data = {"total_chars": 0, "total_words": 0, "per_region": []}
@@ -936,7 +984,15 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument(
-        "--deepseek-prompt", type=str, default="<image>\\nFree OCR.",
+        "--deepseek-prompt",
+        type=str,
+        default=(
+            "<image>\n"
+            "Extract all readable text from this document region. "
+            "Keep original reading order and line breaks. "
+            "Output plain text only, without markdown, explanations, "
+            "or extra symbols. Languages may include Spanish and English."
+        ),
         help="Prompt para inferencia DeepSeek por region"
     )
     parser.add_argument(
