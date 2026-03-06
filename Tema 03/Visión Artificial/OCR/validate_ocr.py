@@ -49,11 +49,11 @@ Modos de uso:
     # Reanudar con Tesseract + DeepSeek:
     py -3.11 validate_ocr.py --resume --ocr-engines tesseract,deepseek --tesseract-cmd "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" --deepseek-model-path ".\\models\\DeepSeek-OCR"
 
-    # DeepSeek (prompt agresivo para texto borroso / baja calidad)
-    py -3.11 validate_ocr.py --ocr-engines deepseek --deepseek-model-path ".\\models\\DeepSeek-OCR" --deepseek-prompt "<image>\nPerform robust OCR on this noisy or blurred document region. Recover as much readable text as possible while preserving reading order and line breaks. Output plain text only."
+    # DeepSeek sobre recortes detectados (recomendado: prompt oficial)
+    py -3.11 validate_ocr.py --ocr-engines deepseek --deepseek-model-path ".\\models\\DeepSeek-OCR" --deepseek-prompt "<image>\n<|grounding|>Convert the document to markdown."
 
-    # DeepSeek (prompt conservador anti-alucinacion)
-    py -3.11 validate_ocr.py --ocr-engines deepseek --deepseek-model-path ".\\models\\DeepSeek-OCR" --deepseek-prompt "<image>\nExtract only clearly readable text from this document region. Do not guess, infer, or complete missing words. If text is unreadable, omit it. Preserve reading order and line breaks. Output plain text only."
+    # Nota: prompts libres de "plain text only" pueden devolver salida vacia en recortes.
+    # Si personalizas el prompt, valida primero sobre una sola configuracion.
 
   # Ver solo resultados sin reejecutar:
   py -3.11 validate_ocr.py --report-only
@@ -61,13 +61,12 @@ Modos de uso:
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import os
 import json
+import re
 import sys
 import time
 import tempfile
-import types
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -110,7 +109,6 @@ except ImportError:
 
 try:
     import torch
-    import transformers as hf_transformers
     from transformers import AutoModel, AutoTokenizer
     HAS_DEEPSEEK_DEPS = True
 except ImportError:
@@ -150,509 +148,38 @@ DUP_PENALTY = 50.0       # penalizacion por duplicado en deteccion
 MISSED_PENALTY = 20.0    # penalizacion por imagen sin regiones detectadas
 
 SUPPORTED_ENGINES = ["easyocr", "tesseract", "paddle", "deepseek"]
+DEEPSEEK_DEFAULT_REGION_PROMPT = "<image>\n<|grounding|>Convert the document to markdown."
 
 
 class DeepSeekFatalError(RuntimeError):
     """Error fatal de DeepSeek que invalida continuar con ese motor."""
 
 
-def _version_tuple(v: str) -> Tuple[int, int, int]:
-    """Convierte 'x.y.z' a tupla comparable tolerando sufijos."""
-    parts = []
-    for p in v.split(".")[:3]:
-        num = "".join(ch for ch in p if ch.isdigit())
-        parts.append(int(num) if num else 0)
-    while len(parts) < 3:
-        parts.append(0)
-    return tuple(parts)  # type: ignore[return-value]
-
-
-def _is_transformers_compatible_for_deepseek() -> bool:
-    """DeepSeek-OCR falla con transformers demasiado nuevos (ej. 4.57.x)."""
-    if not HAS_DEEPSEEK_DEPS:
-        return False
-    current = _version_tuple(hf_transformers.__version__)
-    return _version_tuple("4.51.1") <= current < _version_tuple("4.56.0")
-
-
-def _ensure_llama_flashattention2_symbol() -> None:
-    """Crea alias de compatibilidad si la clase ya no existe en transformers nuevos.
-
-    Algunos repos con trust_remote_code importan `LlamaFlashAttention2` directamente.
-    En versiones recientes de transformers esa clase puede no existir. En vez de
-    alias directo (incompatible por cambios de firma), se inyecta un shim que
-    adapta la API antigua a `LlamaAttention` moderna.
-    """
-    if not HAS_DEEPSEEK_DEPS:
-        return
-    try:
-        from transformers.models.llama import modeling_llama as llama_mod
-
-        if (not hasattr(llama_mod, "LlamaFlashAttention2")) and hasattr(llama_mod, "LlamaAttention"):
-            class _LlamaFlashAttention2Compat(llama_mod.LlamaAttention):
-                """Shim de compatibilidad para código que espera LlamaFlashAttention2.
-
-                DeepSeek (trust_remote_code) invoca la firma legacy:
-                  forward(hidden_states, attention_mask, position_ids, past_key_value, ...)
-                mientras que `LlamaAttention` moderna requiere `position_embeddings`.
-                """
-
-                def forward(
-                    self,
-                    hidden_states: torch.Tensor,
-                    attention_mask: Optional[torch.Tensor] = None,
-                    position_ids: Optional[torch.LongTensor] = None,
-                    past_key_value: Optional[Any] = None,
-                    output_attentions: bool = False,
-                    use_cache: bool = False,
-                    **kwargs: Any,
-                ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Any]]:
-                    cache_position = kwargs.pop("cache_position", None)
-                    position_embeddings = kwargs.pop("position_embeddings", None)
-
-                    if position_embeddings is None:
-                        if position_ids is None:
-                            seq_len = hidden_states.shape[1]
-                            position_ids = torch.arange(
-                                seq_len, device=hidden_states.device, dtype=torch.long
-                            ).unsqueeze(0)
-                        if hasattr(self, "rotary_emb"):
-                            try:
-                                position_embeddings = self.rotary_emb(hidden_states, position_ids)
-                            except TypeError:
-                                position_embeddings = self.rotary_emb(
-                                    hidden_states, position_ids=position_ids
-                                )
-
-                    attn_output, attn_weights = super().forward(
-                        hidden_states=hidden_states,
-                        position_embeddings=position_embeddings,
-                        attention_mask=attention_mask,
-                        past_key_value=past_key_value,
-                        cache_position=cache_position,
-                        **kwargs,
-                    )
-
-                    if not output_attentions:
-                        attn_weights = None
-
-                    present_key_value = past_key_value if use_cache else None
-                    return attn_output, attn_weights, present_key_value
-
-            llama_mod.LlamaFlashAttention2 = _LlamaFlashAttention2Compat
-    except Exception:
-        # Si falla este parche, se gestionará en el bloque de carga del modelo.
-        pass
-
-
-def _ensure_llama_attention_forward_compat() -> None:
-    """Hace compatible LlamaAttention.forward con llamadas legacy.
-
-    En transformers recientes, `LlamaAttention.forward` exige `position_embeddings`.
-    Algunos modelos con trust_remote_code (incluyendo DeepSeek OCR) siguen
-    llamando con la firma antigua basada en `position_ids`.
-    """
-    if not HAS_DEEPSEEK_DEPS:
-        return
-    try:
-        from transformers.models.llama import modeling_llama as llama_mod
-        if not hasattr(llama_mod, "LlamaAttention"):
-            return
-
-        original_forward = llama_mod.LlamaAttention.forward
-        if getattr(original_forward, "_ocr_compat_patched", False):
-            return
-
-        def patched_forward(self: Any, *args: Any, **kwargs: Any) -> Any:
-            # Si ya se pasa position_embeddings explícito, no tocar.
-            if kwargs.get("position_embeddings", None) is not None:
-                return original_forward(self, *args, **kwargs)
-
-            # Resolver hidden_states tanto por kwargs como por args posicionales.
-            hidden_states = kwargs.get("hidden_states", None)
-            if hidden_states is None and args:
-                hidden_states = args[0]
-
-            # Resolver position_ids (si no vienen, crear secuencia 0..L-1).
-            position_ids = kwargs.get("position_ids", None)
-            if position_ids is None and isinstance(hidden_states, torch.Tensor):
-                seq_len = hidden_states.shape[1]
-                position_ids = torch.arange(
-                    seq_len, dtype=torch.long, device=hidden_states.device
-                ).unsqueeze(0)
-
-            # Construir position_embeddings con rotary emb cuando sea posible.
-            if isinstance(hidden_states, torch.Tensor) and position_ids is not None and hasattr(self, "rotary_emb"):
-                try:
-                    kwargs["position_embeddings"] = self.rotary_emb(hidden_states, position_ids)
-                except TypeError:
-                    kwargs["position_embeddings"] = self.rotary_emb(
-                        hidden_states, position_ids=position_ids
-                    )
-
-            # El API nuevo no acepta position_ids explícito.
-            kwargs.pop("position_ids", None)
-            return original_forward(self, *args, **kwargs)
-
-        patched_forward._ocr_compat_patched = True  # type: ignore[attr-defined]
-        llama_mod.LlamaAttention.forward = patched_forward
-    except Exception:
-        # No bloquear ejecución si el parche no aplica en este entorno.
-        pass
-
-
-def _ensure_dynamic_cache_seen_tokens() -> None:
-    """Parche de compatibilidad para modelos que esperan DynamicCache.seen_tokens.
-
-    Algunas combinaciones de trust_remote_code + transformers recientes usan
-    internamente `DynamicCache` sin exponer `seen_tokens`, lo que provoca:
-      'DynamicCache' object has no attribute 'seen_tokens'
-    Este parche añade una propiedad compatible en caliente.
-    """
-    if not HAS_DEEPSEEK_DEPS:
-        return
-    try:
-        from transformers.cache_utils import DynamicCache  # type: ignore
-
-        # seen_tokens (compat con código que usa contadores de decodificación)
-        if not hasattr(DynamicCache, "seen_tokens"):
-            def _get_seen_tokens(self: Any) -> int:
-                # Compatibilidad con variantes internas de transformers
-                if hasattr(self, "_seen_tokens"):
-                    return int(getattr(self, "_seen_tokens") or 0)
-                if hasattr(self, "get_seq_length"):
-                    try:
-                        return int(self.get_seq_length())
-                    except Exception:
-                        return 0
-                return 0
-
-            def _set_seen_tokens(self: Any, value: Any) -> None:
-                setattr(self, "_seen_tokens", int(value) if value is not None else 0)
-
-            DynamicCache.seen_tokens = property(_get_seen_tokens, _set_seen_tokens)  # type: ignore[attr-defined]
-
-        # get_max_length (compat con código legacy de cache API)
-        if not hasattr(DynamicCache, "get_max_length"):
-            def _get_max_length(self: Any) -> Optional[int]:
-                for attr in ("max_cache_len", "max_length", "_max_length"):
-                    val = getattr(self, attr, None)
-                    if isinstance(val, int):
-                        return val
-                return None
-
-            DynamicCache.get_max_length = _get_max_length  # type: ignore[attr-defined]
-
-        # get_usable_length (algunos modelos llaman esta API legacy)
-        if not hasattr(DynamicCache, "get_usable_length"):
-            def _get_usable_length(self: Any, *args: Any, **kwargs: Any) -> int:
-                try:
-                    return int(self.get_seq_length())  # type: ignore[misc]
-                except Exception:
-                    return 0
-
-            DynamicCache.get_usable_length = _get_usable_length  # type: ignore[attr-defined]
-    except Exception:
-        # Si no se puede parchear, se continuará y se reportará al inicializar/inferir.
-        pass
-
-
-def _patch_generation_warnings(model: Any, tokenizer: Any) -> None:
-    """Reduce warnings comunes de generate() en modelos trust_remote_code.
-
-    - Asegura pad_token_id/eos_token_id en config y kwargs.
-    - Inyecta attention_mask cuando falta y hay input_ids.
-    - Elimina temperature si do_sample=False para evitar warning de flags.
-    """
-    if not HAS_DEEPSEEK_DEPS:
-        return
-
-    # Configurar tokens por defecto para generación
-    try:
-        if getattr(tokenizer, "pad_token_id", None) is None and getattr(tokenizer, "eos_token_id", None) is not None:
-            tokenizer.pad_token_id = tokenizer.eos_token_id
-    except Exception:
-        pass
-
-
-def _ensure_masked_scatter_compat() -> None:
-    """Parche defensivo para mismatch +/-1 fila en masked_scatter_ de DeepSeek.
-
-    Se limita al patrón observado en DeepSeek-OCR donde `images_in_this_batch`
-    difiere en una fila respecto al número de placeholders visuales.
-    """
-    if not HAS_DEEPSEEK_DEPS:
-        return
-    try:
-        original_masked_scatter = torch.Tensor.masked_scatter_
-        if getattr(original_masked_scatter, "_ocr_compat_patched", False):
-            return
-
-        max_delta_rows = 64
-
-        def patched_masked_scatter(self: torch.Tensor, mask: torch.Tensor, source: torch.Tensor) -> torch.Tensor:
-            # Normalizar desajuste leve de longitud en máscara visual (off-by-one).
-            if (
-                isinstance(mask, torch.Tensor)
-                and mask.dim() == 2
-                and mask.shape[1] == 1
-                and self.dim() == 2
-            ):
-                m_rows = int(mask.shape[0])
-                t_rows = int(self.shape[0])
-                d_rows = t_rows - m_rows
-                if 0 < d_rows <= max_delta_rows:
-                    pad = torch.zeros((d_rows, 1), dtype=mask.dtype, device=mask.device)
-                    mask = torch.cat([mask, pad], dim=0)
-                elif 0 > d_rows >= -max_delta_rows:
-                    mask = mask[:t_rows, :]
-
-            try:
-                return original_masked_scatter(self, mask, source)
-            except RuntimeError as exc:
-                msg = str(exc)
-                if "expanded size of the tensor" not in msg:
-                    raise
-
-                if not (
-                    isinstance(source, torch.Tensor)
-                    and self.dim() == 2
-                    and source.dim() == 2
-                    and self.shape[1] == source.shape[1]
-                    and mask.dim() == 2
-                    and mask.shape[1] == 1
-                ):
-                    raise
-
-                # Reintento: corregir máscara si aún no coincide exactamente.
-                if mask.shape[0] != self.shape[0]:
-                    m_rows = int(mask.shape[0])
-                    t_rows = int(self.shape[0])
-                    d_rows = t_rows - m_rows
-                    if 0 < d_rows <= max_delta_rows:
-                        pad = torch.zeros((d_rows, 1), dtype=mask.dtype, device=mask.device)
-                        mask = torch.cat([mask, pad], dim=0)
-                    elif 0 > d_rows >= -max_delta_rows:
-                        mask = mask[:t_rows, :]
-                    else:
-                        raise
-
-                true_rows = int(mask.squeeze(-1).sum().item())
-                src_rows = int(source.shape[0])
-                delta = true_rows - src_rows
-                if abs(delta) > max_delta_rows:
-                    raise
-
-                if delta > 0:
-                    # Si falta 1 fila, repetir la última para mantener continuidad.
-                    pad = source[-1:, :].expand(delta, -1)
-                    source = torch.cat([source, pad], dim=0)
-                elif delta < 0:
-                    source = source[:true_rows, :]
-
-                return original_masked_scatter(self, mask, source)
-
-        patched_masked_scatter._ocr_compat_patched = True  # type: ignore[attr-defined]
-        torch.Tensor.masked_scatter_ = patched_masked_scatter  # type: ignore[assignment]
-    except Exception:
-        pass
-
-
-def _patch_deepseek_attention_instances(model: Any) -> int:
-    """Parchea instancias de LlamaAttention en el modelo DeepSeek cargado.
-
-    Objetivo:
-      - Aceptar llamadas legacy con `position_ids` (sin `position_embeddings`).
-      - Devolver 3 valores (output, attn_weights, present_kv) como espera
-        el decoder de DeepSeek trust_remote_code.
-    """
-    if not HAS_DEEPSEEK_DEPS:
-        return 0
-
-    patched = 0
-    for module in model.modules():
-        if module.__class__.__name__ != "LlamaAttention":
-            continue
-
-        original_forward = module.forward
-        if getattr(original_forward, "_ocr_deepseek_instance_patched", False):
-            continue
-
-        def _patched_forward(self: Any, *args: Any, **kwargs: Any) -> Any:
-            # Compatibilidad con llamada legacy de DeepSeek.
-            hidden_states = kwargs.get("hidden_states", None)
-            if hidden_states is None and args:
-                hidden_states = args[0]
-
-            attention_mask = kwargs.get("attention_mask", None)
-            # Forzar modo sin cache para evitar desajustes de longitud entre
-            # API legacy y API nueva de atención en transformers recientes.
-            past_key_value = None
-            use_cache = False
-            output_attentions = bool(kwargs.get("output_attentions", False))
-            cache_position = None
-
-            position_embeddings = kwargs.get("position_embeddings", None)
-            position_ids = kwargs.get("position_ids", None)
-            if position_embeddings is None and isinstance(hidden_states, torch.Tensor):
-                if position_ids is None:
-                    seq_len = hidden_states.shape[1]
-                    position_ids = torch.arange(
-                        seq_len, dtype=torch.long, device=hidden_states.device
-                    ).unsqueeze(0)
-                if hasattr(self, "rotary_emb"):
-                    try:
-                        position_embeddings = self.rotary_emb(hidden_states, position_ids)
-                    except TypeError:
-                        position_embeddings = self.rotary_emb(
-                            hidden_states, position_ids=position_ids
-                        )
-
-                # Fallback para variantes de LlamaAttention sin `self.rotary_emb`.
-                if position_embeddings is None:
-                    try:
-                        from transformers.models.llama import modeling_llama as llama_mod
-
-                        rotary = getattr(self, "_ocr_rotary_emb", None)
-                        if rotary is None:
-                            cfg = getattr(self, "config", None)
-                            if cfg is not None:
-                                rotary = llama_mod.LlamaRotaryEmbedding(cfg)
-                                rotary = rotary.to(device=hidden_states.device)
-                                setattr(self, "_ocr_rotary_emb", rotary)
-
-                        if rotary is not None:
-                            try:
-                                position_embeddings = rotary(hidden_states, position_ids)
-                            except TypeError:
-                                position_embeddings = rotary(
-                                    hidden_states, position_ids=position_ids
-                                )
-                    except Exception:
-                        position_embeddings = None
-
-            if position_embeddings is None:
-                raise RuntimeError(
-                    "No se pudo construir position_embeddings para LlamaAttention compat"
-                )
-
-            out, attn = original_forward(
-                hidden_states=hidden_states,
-                position_embeddings=position_embeddings,
-                attention_mask=attention_mask,
-                past_key_value=past_key_value,
-                cache_position=cache_position,
-            )
-
-            if not output_attentions:
-                attn = None
-            present_kv = None
-            return out, attn, present_kv
-
-        _patched_forward._ocr_deepseek_instance_patched = True  # type: ignore[attr-defined]
-        module.forward = types.MethodType(_patched_forward, module)
-        patched += 1
-
-    return patched
-
-    pad_id = getattr(tokenizer, "pad_token_id", None)
-    eos_id = getattr(tokenizer, "eos_token_id", None)
-
-    try:
-        if hasattr(model, "generation_config") and model.generation_config is not None:
-            if getattr(model.generation_config, "pad_token_id", None) is None and pad_id is not None:
-                model.generation_config.pad_token_id = pad_id
-            if getattr(model.generation_config, "eos_token_id", None) is None and eos_id is not None:
-                model.generation_config.eos_token_id = eos_id
-    except Exception:
-        pass
-
-    # Envolver generate para normalizar kwargs y evitar warnings repetitivos.
-    try:
-        original_generate = model.generate
-        if getattr(original_generate, "_ocr_warning_patched", False):
-            return
-
-        def patched_generate(*args: Any, **kwargs: Any) -> Any:
-            do_sample = bool(kwargs.get("do_sample", False))
-            if ("temperature" in kwargs) and (not do_sample):
-                kwargs.pop("temperature", None)
-
-            if kwargs.get("pad_token_id", None) is None:
-                if pad_id is not None:
-                    kwargs["pad_token_id"] = pad_id
-                elif eos_id is not None:
-                    kwargs["pad_token_id"] = eos_id
-
-            if kwargs.get("attention_mask", None) is None:
-                input_ids = kwargs.get("input_ids", None)
-                if input_ids is None and args:
-                    first = args[0]
-                    if isinstance(first, torch.Tensor):
-                        input_ids = first
-                if isinstance(input_ids, torch.Tensor):
-                    kwargs["attention_mask"] = torch.ones_like(input_ids)
-
-            return original_generate(*args, **kwargs)
-
-        patched_generate._ocr_warning_patched = True  # type: ignore[attr-defined]
-        model.generate = patched_generate
-    except Exception:
-        pass
-
-
 def _load_deepseek_model_with_fallback(model_dir: Path) -> Tuple[Any, Any, str]:
-    """Carga DeepSeek intentando flash-attn y, si falla, vuelve a eager.
+    """Carga DeepSeek con la misma estrategia de pruebas-deepseek.py.
 
     Returns:
         tokenizer, model, attn_impl_utilizada
     """
-    _ensure_llama_flashattention2_symbol()
-    _ensure_llama_attention_forward_compat()
-    _ensure_dynamic_cache_seen_tokens()
-    _ensure_masked_scatter_compat()
-
     tokenizer = AutoTokenizer.from_pretrained(str(model_dir), trust_remote_code=True)
 
-    has_flash_attn = importlib.util.find_spec("flash_attn") is not None
-
     try:
-        if has_flash_attn:
-            model = AutoModel.from_pretrained(
-                str(model_dir),
-                trust_remote_code=True,
-                use_safetensors=True,
-                _attn_implementation="flash_attention_2",
-            )
-            attn_impl = "flash_attention_2"
-        else:
-            # Igual que pruebas-deepseek.py: fallback por defecto sin forzar eager
-            model = AutoModel.from_pretrained(
-                str(model_dir),
-                trust_remote_code=True,
-                use_safetensors=True,
-            )
-            attn_impl = "default"
-        model = model.eval().cuda().to(torch.bfloat16)
-        patched_count = _patch_deepseek_attention_instances(model)
-        if patched_count > 0:
-            print(f"[i] DeepSeek compat: parcheadas {patched_count} capas LlamaAttention")
-        _patch_generation_warnings(model, tokenizer)
-        return tokenizer, model, attn_impl
-    except Exception:
-        # Segundo intento forzando eager para no depender de flash-attn.
         model = AutoModel.from_pretrained(
             str(model_dir),
             trust_remote_code=True,
             use_safetensors=True,
-            _attn_implementation="eager",
+            _attn_implementation="flash_attention_2",
         )
         model = model.eval().cuda().to(torch.bfloat16)
-        patched_count = _patch_deepseek_attention_instances(model)
-        if patched_count > 0:
-            print(f"[i] DeepSeek compat: parcheadas {patched_count} capas LlamaAttention")
-        _patch_generation_warnings(model, tokenizer)
-        return tokenizer, model, "eager"
+        return tokenizer, model, "flash_attention_2"
+    except Exception:
+        model = AutoModel.from_pretrained(
+            str(model_dir),
+            trust_remote_code=True,
+            use_safetensors=True,
+        )
+        model = model.eval().cuda().to(torch.bfloat16)
+        return tokenizer, model, "default"
 
 
 # ---------------------------------------------------------------------------
@@ -812,20 +339,27 @@ def run_paddle_on_regions(
 
 def _deepseek_result_to_text(result: Any) -> str:
     """Intenta extraer texto OCR de distintos formatos devueltos por DeepSeek."""
+    def _normalize(text: str) -> str:
+        text = text.replace("<｜end▁of▁sentence｜>", "")
+        text = re.sub(r"<\|ref\|>.*?<\|/ref\|>", "", text, flags=re.DOTALL)
+        text = re.sub(r"<\|det\|>.*?<\|/det\|>", "", text, flags=re.DOTALL)
+        text = re.sub(r"!\[\]\([^)]*\)", "", text)
+        return clean_ocr_text(text)
+
     if result is None:
         return ""
     if isinstance(result, str):
-        return clean_ocr_text(result)
+        return _normalize(result)
     if isinstance(result, dict):
         for key in ("text", "result", "output", "markdown"):
             val = result.get(key)
             if isinstance(val, str) and val.strip():
-                return clean_ocr_text(val)
-        return clean_ocr_text(json.dumps(result, ensure_ascii=False))
+                return _normalize(val)
+        return _normalize(json.dumps(result, ensure_ascii=False))
     if isinstance(result, list):
         parts = [_deepseek_result_to_text(x) for x in result]
         return clean_ocr_text("\n".join([p for p in parts if p]))
-    return clean_ocr_text(str(result))
+    return _normalize(str(result))
 
 
 def _prepare_region_for_deepseek(region_bgr: np.ndarray, min_side: int = 640) -> np.ndarray:
@@ -856,7 +390,12 @@ def run_deepseek_on_regions(
     image_size: int = 1024,
     crop_mode: bool = False,
 ) -> Dict[str, Any]:
-    """Extrae texto de cada region detectada con DeepSeek OCR local."""
+    """Extrae texto de cada region detectada con DeepSeek OCR local.
+
+    Se fuerza eval_mode=True porque el modelo remoto devuelve el texto OCR de
+    forma fiable por retorno en ese modo. Con save_results=False y eval_mode=False
+    puede no devolver texto util aunque la inferencia termine correctamente.
+    """
     per_region: List[Dict[str, Any]] = []
     total_chars = 0
     total_words = 0
@@ -864,7 +403,7 @@ def run_deepseek_on_regions(
     with tempfile.TemporaryDirectory(prefix="ocr_deepseek_") as tmp_dir:
         tmp_path = Path(tmp_dir)
 
-        canonical_prompt = "<image>\n<|grounding|>Convert the document to markdown."
+        canonical_prompt = DEEPSEEK_DEFAULT_REGION_PROMPT
 
         for i, box in enumerate(boxes, start=1):
             x1, y1, x2, y2 = box.x1, box.y1, box.x2, box.y2
@@ -893,6 +432,7 @@ def run_deepseek_on_regions(
                     crop_mode=crop_mode,
                     save_results=False,
                     test_compress=False,
+                    eval_mode=True,
                 )
                 text = _deepseek_result_to_text(result)
             except Exception as exc:
@@ -911,6 +451,7 @@ def run_deepseek_on_regions(
                             crop_mode=False,
                             save_results=False,
                             test_compress=False,
+                            eval_mode=True,
                         )
                         text = _deepseek_result_to_text(result)
                         print(
@@ -1191,13 +732,7 @@ def run_config(
                             engine_ctx["deepseek_tokenizer"],
                             engine_ctx.get(
                                 "deepseek_prompt",
-                                (
-                                    "<image>\n"
-                                    "Extract all readable text from this document region. "
-                                    "Keep original reading order and line breaks. "
-                                    "Output plain text only, without markdown, explanations, "
-                                    "or extra symbols. Languages may include Spanish and English."
-                                ),
+                                DEEPSEEK_DEFAULT_REGION_PROMPT,
                             ),
                             base_size=int(engine_ctx.get("deepseek_base_size", 1024)),
                             image_size=int(engine_ctx.get("deepseek_image_size", 1024)),
@@ -1514,14 +1049,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--deepseek-prompt",
         type=str,
-        default=(
-            "<image>\n"
-            "Extract all readable text from this document region. "
-            "Keep original reading order and line breaks. "
-            "Output plain text only, without markdown, explanations, "
-            "or extra symbols. Languages may include Spanish and English."
-        ),
-        help="Prompt para inferencia DeepSeek por region"
+        default=DEEPSEEK_DEFAULT_REGION_PROMPT,
+        help="Prompt para inferencia DeepSeek por region (default: prompt oficial con grounding)"
     )
     parser.add_argument(
         "--deepseek-base-size", type=int, default=1024,
@@ -1671,8 +1200,8 @@ def main() -> None:
                         msg = str(exc)
                         if "LlamaFlashAttention2" in msg:
                             msg += (
-                                " | Sugerencia: instala transformers compatible y/o usa fallback eager. "
-                                "Ejemplo: pip install \"transformers>=4.51.1,<4.56.0\""
+                                " | Sugerencia: reinstala el entorno con install.bat y verifica que "
+                                "sitecustomize.py se haya copiado al site-packages de Python 3.11."
                             )
                         print(
                             "[WARN] No se pudo inicializar DeepSeek; se omite este motor. "
