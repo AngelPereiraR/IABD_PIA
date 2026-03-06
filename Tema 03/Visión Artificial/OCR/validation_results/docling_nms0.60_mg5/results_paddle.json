@@ -1,0 +1,110 @@
+{
+  "config": {
+    "method": "docling",
+    "merge_distance": 5,
+    "nms_iou": 0.6
+  },
+  "label": "docling_nms0.60_mg5",
+  "per_image": {
+    "popurri01.jpg": {
+      "num_boxes": 15,
+      "duplicates": 0,
+      "det_ms": 26985.4,
+      "ocr_ms": 24758.6,
+      "total_chars": 1638,
+      "total_words": 391,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "uo un uma\ntí vengo a cantarte el popa\nquiero hacer saber yo a\nlo que he visto por ahí",
+          "chars": 66,
+          "words": 18
+        },
+        {
+          "region": 2,
+          "text": "Cadiz tan bonito\ncon esa hermosa bal\npero otros detallitos\nlesmerecen tu valía",
+          "chars": 66,
+          "words": 13
+        },
+        {
+          "region": 3,
+          "text": "La puerta del muelle\ncuándo pensarán abrir\n1 turista que viene\nI mirarla le dá risa.",
+          "chars": 69,
+          "words": 14
+        },
+        {
+          "region": 4,
+          "text": "Lo mismo pasa con las muralla\nque si se asoman\nienen que irse por tantas ratas\ncomo hay tantos animalitos\nse hace un safari\nno queda ni un negrito.",
+          "chars": 119,
+          "words": 29
+        },
+        {
+          "region": 5,
+          "text": "Vestidos como Don Nadie\nmas bien de mamarracho\noues lo que llevamos puesto\nes prestado como ven\na camisa y los zapatos\nvo no sé ni de quién es\nl traje es de un pelagatos\nue lo enterraron ayer.",
+          "chars": 154,
+          "words": 36
+        },
+        {
+          "region": 6,
+          "text": "or la cane de Alcalá\nhasta la Puerta del Sol\nnucha gente esperaba el Año Nuev\nel reloj se agarrotó\na campana no sonó\ndecían por la calle igual que yo",
+          "chars": 119,
+          "words": 30
+        },
+        {
+          "region": 7,
+          "text": "Cuando, cuando cabali\nsonará ese reloj\nporque esto está tardand\nmás que tarda el Cádiz\npara meter un gol.",
+          "chars": 87,
+          "words": 19
+        },
+        {
+          "region": 8,
+          "text": "Yo no ire nunca a la luna\naunque no me cueste ná\nla razón es solo una\nque no sé si voy a bajar\nBartolo ya me dijo un a\nque se acuerda el día\nque se echó a volar\nBartolo tiene todavía\nuna peste encima algo e",
+          "chars": 159,
+          "words": 43
+        },
+        {
+          "region": 9,
+          "text": "Tengo la tripa como la espada\nde un mosquetero\ndel tiempo que hace que yo en mi casa\nno veo un puchero\nsi huelo el guiso de la vecina\nme vuelvo loco\ny cojo moscas por las esquinas\ny cocorocos\nvaya canina la que tenemos\ntodos nosotros\nsi me hablan de la carne de la ternera\nyo no sé lo que es segunda\nni qué es primera",
+          "chars": 251,
+          "words": 65
+        },
+        {
+          "region": 10,
+          "text": "sto es por míabaea\nde que estave eu la miliy iuré",
+          "chars": 39,
+          "words": 11
+        },
+        {
+          "region": 11,
+          "text": "Mi cniquo foaqui pregumto er oire\noaseando por ahí, la pregunta decía\nrente a la plaza toros casi, casi escondida\noteguntó con un tono en el cual se veía\nnucha melancolía:",
+          "chars": 141,
+          "words": 30
+        },
+        {
+          "region": 12,
+          "text": "e se ve en la ruina\ncuando fué tan honro\ncon carteles airosos\ne la fiesta taurina ?",
+          "chars": 66,
+          "words": 15
+        },
+        {
+          "region": 13,
+          "text": "A mi Cádiz de mi alma he canta\n1 pasión\nte quiero tierra mia con todo\ni corazón",
+          "chars": 62,
+          "words": 15
+        },
+        {
+          "region": 14,
+          "text": "de tan bella geografía\nfú eres la gloria de espuma flotan\ngracia tienes mucha gracia\ntu mujer es seductora\na más arrogante, la más elegante\na más señorona.",
+          "chars": 128,
+          "words": 26
+        },
+        {
+          "region": 15,
+          "text": "Adios, ya se marchan los Don Na\naquí dejan su amor\nesean mucha felicidad\noara el respetable que escuchó\nAdios mi Cádiz. mi Cádiz de mi amo",
+          "chars": 112,
+          "words": 27
+        }
+      ]
+    }
+  }
+}

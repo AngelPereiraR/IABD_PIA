@@ -156,13 +156,13 @@ Ejemplos:
 ### 6.1 Top-3 del ranking con los 4 motores
 
 ```powershell
-py -3.11 validate_ocr.py --top 3 --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR-2" --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe"
+py -3.11 validate_ocr.py --top 3 --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR" --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe"
 ```
 
 ### 6.2 Solo metodo `opencv` con los 4 motores
 
 ```powershell
-py -3.11 validate_ocr.py --method opencv --top 4 --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR-2"
+py -3.11 validate_ocr.py --method opencv --top 4 --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR"
 ```
 
 ### 6.3 Configs manuales para todos los metodos de layout
@@ -174,7 +174,7 @@ py -3.11 validate_ocr.py --configs '[
   {"method":"paddleocr","nms_iou":0.4,"merge_distance":10},
   {"method":"docling","nms_iou":0.4,"merge_distance":10},
   {"method":"opencv","merge_distance":10}
-]' --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR-2"
+]' --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR"
 ```
 
 ### 6.4 Solo deteccion (sin OCR)
@@ -186,7 +186,7 @@ py -3.11 validate_ocr.py --top 5 --no-ocr
 ### 6.5 Reanudar ejecucion
 
 ```powershell
-py -3.11 validate_ocr.py --top 5 --resume --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR-2"
+py -3.11 validate_ocr.py --top 5 --resume --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR"
 ```
 
 ### 6.6 Solo regenerar informes

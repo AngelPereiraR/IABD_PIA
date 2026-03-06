@@ -1,0 +1,110 @@
+{
+  "config": {
+    "method": "docling",
+    "merge_distance": 5,
+    "nms_iou": 0.6
+  },
+  "label": "docling_nms0.60_mg5",
+  "per_image": {
+    "popurri01.jpg": {
+      "num_boxes": 15,
+      "duplicates": 0,
+      "det_ms": 26985.4,
+      "ocr_ms": 6471.1,
+      "total_chars": 1751,
+      "total_words": 411,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "Cádiz de mi alma a tí vengo a cantarte el popurrí y te quiero hacer saber yo a tí todo lo que he visto por ahí.",
+          "chars": 86,
+          "words": 22
+        },
+        {
+          "region": 2,
+          "text": "Cádiz tan bonito con esa hermnosa bahía pero otros detallitos desmerecen tu valía.",
+          "chars": 70,
+          "words": 13
+        },
+        {
+          "region": 3,
+          "text": "La puerta del muelle cuándo pensarán abrirla el turista que viene al mirarla le dá risa.",
+          "chars": 73,
+          "words": 16
+        },
+        {
+          "region": 4,
+          "text": "Lo mismo pasa con las murallas que si se asoman tienen que irse por tantas ratas como hay tantos animalitos se hace un safari y n0 queda ni un negrito.",
+          "chars": 122,
+          "words": 28
+        },
+        {
+          "region": 5,
+          "text": "Vestidos como Don Nadies 0 mas bien de mamarracho pues lo que llevamos puesto es prestado como ven la camisa y los zapatos yo no sé ni de quién es el traje es de un pelagatos que lo enterraron ayer .",
+          "chars": 159,
+          "words": 38
+        },
+        {
+          "region": 6,
+          "text": "Por la calle de Alcalá hasta la Puerta del Sol mucha gente esperaba el Año Nuevo el reloj se agarrotó la campana no sonó decían por la calle igual que yo-",
+          "chars": 124,
+          "words": 31
+        },
+        {
+          "region": 7,
+          "text": "Cuando, cuando caballero sonará ese reloj porque esto está tardando más que tarda el Cádiz para meter un gol,",
+          "chars": 91,
+          "words": 19
+        },
+        {
+          "region": 8,
+          "text": "Yo no iré nunca a la luna aunque n0 me cueste ná la razón es solo una que no sé si voy a bajar Bartolo ya me dijo un que se acuerda el día que se echó a volar Bartolo tiene todavía una peste encima algo exagerá",
+          "chars": 164,
+          "words": 43
+        },
+        {
+          "region": 9,
+          "text": "Tengo la tripa como la espada de un mosquetero del tiempo que hace que yo en mi casa no veo un puchero si huelo el guiso de la vecina me vuelvo loco y cojo moscas por las esquinas y cocorocos vaya canina la que tenemos todos nosotros si me hablan de la carne de la ternera yo no sé lo-que es segunda ni qué es primera",
+          "chars": 252,
+          "words": 64
+        },
+        {
+          "region": 10,
+          "text": "esto es por mi abuela desde que estuve en la mili y juré bandera",
+          "chars": 51,
+          "words": 13
+        },
+        {
+          "region": 11,
+          "text": "Mi chiquillo Joaquín   preguntò el oiro día paseando por ahí, la pregunta decía frente a la plaza toros casi, casi escondida preguntó con un tono en el cual se veía mucha melancolía:",
+          "chars": 149,
+          "words": 31
+        },
+        {
+          "region": 12,
+          "text": "que se vé en la ruina cuando fué tan honroso con carteles airosos de la fiesta taurina ?",
+          "chars": 71,
+          "words": 17
+        },
+        {
+          "region": 13,
+          "text": "A mni Cádiz de mi alma he cantado con pasión yo te quiero tierra mía con todo mi corazón",
+          "chars": 70,
+          "words": 18
+        },
+        {
+          "region": 14,
+          "text": "Olé esta tierra bonita de tan bella geografía tú eres la gloria de espuma flotante gracia tienes mucha gracia tu mujer es seductora la màs arrogante; la más elegante {a más señorona.",
+          "chars": 151,
+          "words": 31
+        },
+        {
+          "region": 15,
+          "text": "Adios, ya se marchan los Don Nadies aquí dejan su amor desean mucha felicidad para el respetable que escucho Adios mi Cádiz, mi Cádiz de mi amor",
+          "chars": 118,
+          "words": 27
+        }
+      ]
+    }
+  }
+}

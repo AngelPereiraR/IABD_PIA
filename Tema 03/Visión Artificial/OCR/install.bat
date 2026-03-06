@@ -163,7 +163,7 @@ if !GPU_AVAILABLE!==1 (
     )
     del requirements_temp.txt
 
-    REM DeepSeek-OCR-2: fijar versión de transformers compatible
+    REM DeepSeek-OCR: fijar versión de transformers compatible
     py -3.11 -m pip install --no-warn-script-location --upgrade "transformers>=4.51.1,<4.56.0"
 
     echo.
@@ -255,21 +255,21 @@ if errorlevel 1 (
     echo [OK] Modelo DocLayout-YOLO descargado correctamente
 )
 echo.
-echo [6/6] Descargando modelo DeepSeek-OCR-2 desde Hugging Face...
-set DEEPSEEK_MODEL_DIR=%~dp0models\DeepSeek-OCR-2
+echo [6/6] Descargando modelo DeepSeek-OCR desde Hugging Face...
+set DEEPSEEK_MODEL_DIR=%~dp0models\DeepSeek-OCR
 if not exist "%~dp0models" mkdir "%~dp0models"
-py -3.11 -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='deepseek-ai/DeepSeek-OCR-2', local_dir=r'%DEEPSEEK_MODEL_DIR%', local_dir_use_symlinks=False); print('DeepSeek-OCR-2: OK')"
+py -3.11 -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='deepseek-ai/DeepSeek-OCR', local_dir=r'%DEEPSEEK_MODEL_DIR%', local_dir_use_symlinks=False); print('DeepSeek-OCR: OK')"
 if errorlevel 1 (
-    echo [W] Error descargando DeepSeek-OCR-2 ^(puedes reintentar despues con internet estable^)
-    echo [W] Comando manual: py -3.11 -c "from huggingface_hub import snapshot_download; snapshot_download^(repo_id='deepseek-ai/DeepSeek-OCR-2', local_dir=r'%DEEPSEEK_MODEL_DIR%', local_dir_use_symlinks=False^)"
+    echo [W] Error descargando DeepSeek-OCR ^(puedes reintentar despues con internet estable^)
+    echo [W] Comando manual: py -3.11 -c "from huggingface_hub import snapshot_download; snapshot_download^(repo_id='deepseek-ai/DeepSeek-OCR', local_dir=r'%DEEPSEEK_MODEL_DIR%', local_dir_use_symlinks=False^)"
 ) else (
-    echo [OK] Modelo DeepSeek-OCR-2 descargado en: %DEEPSEEK_MODEL_DIR%
+    echo [OK] Modelo DeepSeek-OCR descargado en: %DEEPSEEK_MODEL_DIR%
 )
 echo.
 echo NOTA: El modelo YOLO11 (Armaggheddon/yolo11-document-layout) se descarga
 echo       automaticamente de Hugging Face en la primera ejecucion con --method yolo11
 echo NOTA: Los modelos de PaddleOCR y Docling tambien se descargan en primera ejecucion
-echo NOTA: DeepSeek-OCR-2 se descarga automaticamente en models\DeepSeek-OCR-2
+echo NOTA: DeepSeek-OCR se descarga automaticamente en models\DeepSeek-OCR
 echo.
 
 echo ================================================================================

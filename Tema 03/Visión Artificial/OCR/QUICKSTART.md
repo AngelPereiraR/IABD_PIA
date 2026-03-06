@@ -262,7 +262,7 @@ python validate_18_popurris.py --method doclayout
 
 ```powershell
 # Default (4 OCR): easyocr,tesseract,paddle,deepseek
-python validate_ocr.py --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe" --deepseek-model-path ".\models\DeepSeek-OCR-2"
+python validate_ocr.py --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe" --deepseek-model-path ".\models\DeepSeek-OCR"
 
 # Solo OCR sin args extra
 python validate_ocr.py --ocr-engines easyocr,paddle

@@ -23,7 +23,7 @@ numpy>=1.24.0,<2.0
 
 # Hugging Face
 huggingface-hub>=0.36.2
-# DeepSeek-OCR-2 requiere branch de transformers donde existe LlamaFlashAttention2
+# DeepSeek-OCR requiere branch de transformers donde existe LlamaFlashAttention2
 transformers>=4.51.1,<4.56.0
 accelerate>=0.20.0
 safetensors>=0.4.0

@@ -60,12 +60,12 @@ py -3.11 paddle-pruebas.py imgs/ --method doclayout
 ### Validacion multi-motor OCR (FASE 4)
 
 ```powershell
-py -3.11 validate_ocr.py --ocr-engines easyocr,tesseract,paddle,deepseek --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe" --deepseek-model-path ".\models\DeepSeek-OCR-2"
+py -3.11 validate_ocr.py --ocr-engines easyocr,tesseract,paddle,deepseek --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe" --deepseek-model-path ".\models\DeepSeek-OCR"
 ```
 
 ## Notas DeepSeek
 
-- Modelo local recomendado: `.\models\DeepSeek-OCR-2`
+- Modelo local recomendado: `.\models\DeepSeek-OCR`
 - Rango recomendado de `transformers`:
 
 ```powershell

@@ -1,0 +1,110 @@
+{
+  "config": {
+    "method": "docling",
+    "merge_distance": 5,
+    "nms_iou": 0.6
+  },
+  "label": "docling_nms0.60_mg5",
+  "per_image": {
+    "popurri01.jpg": {
+      "num_boxes": 15,
+      "duplicates": 0,
+      "det_ms": 26985.4,
+      "ocr_ms": 4193.8,
+      "total_chars": 1757,
+      "total_words": 414,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "Cádiz de mi alma\na ti vengo a cantarte el popurrí\ny te quiero hacer saber yo a tí\ntodo lo que he visto por ahí.",
+          "chars": 86,
+          "words": 22
+        },
+        {
+          "region": 2,
+          "text": "Cádiz tan bonito\ncon esa hermosa bahía\npero otros detallitos\ndesmerecen tu valía.",
+          "chars": 69,
+          "words": 13
+        },
+        {
+          "region": 3,
+          "text": "La puerta del muelle\ncuándo pensarán abrirla\nel turista que viene\nal mirarla le dá risa.",
+          "chars": 73,
+          "words": 16
+        },
+        {
+          "region": 4,
+          "text": "Lo mismo pasa con las murallas\nque si se asoman\ntienen que irse por tantas ratas\ncomo hay tantos animalitos\nse hace un safari\ny no queda ni un negrito.",
+          "chars": 122,
+          "words": 29
+        },
+        {
+          "region": 5,
+          "text": "Vestidos como Don Nadies\no mas bien de mamarracho\npues lo que llevamos puesto\nes prestado como ven\nla camisa y los zapatos\nyo no sé ni de quién es\nel traje es de un pelagatos\nque lo enterraron ayer.",
+          "chars": 159,
+          "words": 38
+        },
+        {
+          "region": 6,
+          "text": "Por la calle de Alcalá\nhasta la Puerta del Sol\nmucha gente esperaba el Año Nuevo\nel reloj se agarrotó\nla campaña no sonó\ny decían por la calle igual que yo.",
+          "chars": 125,
+          "words": 31
+        },
+        {
+          "region": 7,
+          "text": "Cuando, cuando caballero\nsonará ese reloj\nporque esto está tardando\nmás que tarda el Cádiz\npara meter un gol.",
+          "chars": 91,
+          "words": 19
+        },
+        {
+          "region": 8,
+          "text": "Yo no iré nunca a la luna\naunque no me cueste ná\nla razón es solo una\nque no sé si voy a bajar\nBartolo ya me dijo un qa\nque se acuerda el día\nque se echó a volar\nBartolo tiene todavía ~\nuna peste encima algo exagerá.",
+          "chars": 168,
+          "words": 45
+        },
+        {
+          "region": 9,
+          "text": "Tengo la tripa como la espada\nde un mosquetero\ndel tiempo que hace que yo en mi casa\nno veo un puchero\nsi huelo el guiso de la vecina\nme vuelvo loco\ny cojo moscas por las esquinas\ny cocorocos\nvaya canina la que tenemos\ntodos nosotros ~\nsi me hablan de la carne de la ternera\nyo no sé lo-que es segunda\nni qué es primera",
+          "chars": 253,
+          "words": 64
+        },
+        {
+          "region": 10,
+          "text": "esto es por mi abuela\ndesde que estuve en la mili y juré bandera.",
+          "chars": 52,
+          "words": 13
+        },
+        {
+          "region": 11,
+          "text": "Mi chiquillo Joaquín preguntó el oiro día\npaseando por ahí, la pregunta decía\nfrente a la plaza toros casi, casi escondida\npreguntó con un tonoen el cual se veía\nmucha melancolía:",
+          "chars": 149,
+          "words": 30
+        },
+        {
+          "region": 12,
+          "text": "que se vé en la ruina\ncuando fué tan honroso\ncon carteles airosos\nde la fiesta taurina ?",
+          "chars": 71,
+          "words": 17
+        },
+        {
+          "region": 13,
+          "text": "A mi Cádiz de mi alma he cantado\ncon pasión\nyo te quiero tierra mía con todo\nmi corazón",
+          "chars": 69,
+          "words": 18
+        },
+        {
+          "region": 14,
+          "text": "Olé esta tierra bonita\nde tan bella geografía\ntú eres la gloria de espuma flotante\ngracia tienes mucha gracia\ntu mujer es seductora\nla más arrogante, la más elegante\nla más señorona.",
+          "chars": 151,
+          "words": 32
+        },
+        {
+          "region": 15,
+          "text": "Adios, ya se marchan los Don Nadies\naquí dejan su amor\ndesean mucha felicidad\npara el respetable que escuchó\nAdios mi Cádiz, mi Cádiz de mi amor .",
+          "chars": 119,
+          "words": 27
+        }
+      ]
+    }
+  }
+}
