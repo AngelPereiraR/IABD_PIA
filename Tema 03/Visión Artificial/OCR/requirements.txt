@@ -23,11 +23,14 @@ numpy>=1.24.0,<2.0
 
 # Hugging Face
 huggingface-hub>=0.36.2
-# DeepSeek-OCR requiere branch de transformers donde existe LlamaFlashAttention2
-transformers>=4.51.1,<4.56.0
+# Docling necesita RT-DETR v2 y DeepSeek-OCR requiere el simbolo LlamaFlashAttention2.
+# sitecustomize.py reexpone ese simbolo sobre esta rama moderna de transformers.
+transformers==4.53.3
 accelerate>=0.20.0
 safetensors>=0.4.0
-tokenizers>=0.14.0
+tokenizers>=0.21.0,<0.22.0
+typing_extensions>=4.12.0,<5.0.0
+chardet>=5.2.0,<6.0.0
 
 # Data Science
 pandas>=2.0.0

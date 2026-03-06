@@ -66,11 +66,8 @@ py -3.11 validate_ocr.py --ocr-engines easyocr,tesseract,paddle,deepseek --tesse
 ## Notas DeepSeek
 
 - Modelo local recomendado: `.\models\DeepSeek-OCR`
-- Rango recomendado de `transformers`:
-
-```powershell
-py -3.11 -m pip install --upgrade "transformers>=4.51.1,<4.56.0"
-```
+- Para convivir con Docling en el mismo entorno, usa `install.bat` o fija `transformers==4.53.3`.
+- El proyecto instala un `sitecustomize.py` de compatibilidad para reexponer la API de Llama que DeepSeek-OCR remoto espera.
 
 ## Proximos pasos del roadmap
 

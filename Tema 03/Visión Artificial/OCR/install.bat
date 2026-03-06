@@ -32,6 +32,7 @@ if errorlevel 1 (
 
 REM Mostrar version de Python
 py -3.11 --version
+for /f "delims=" %%P in ('py -3.11 -c "import site; print(site.getsitepackages()[0])"') do set SITE_PKG=%%P
 echo.
 
 REM Verificar Tesseract
@@ -163,8 +164,10 @@ if !GPU_AVAILABLE!==1 (
     )
     del requirements_temp.txt
 
-    REM DeepSeek-OCR: fijar versión de transformers compatible
-    py -3.11 -m pip install --no-warn-script-location --upgrade "transformers>=4.51.1,<4.56.0"
+    REM Compatibilidad cruzada: Docling requiere RT-DETR v2 y DeepSeek usa shim en sitecustomize.py
+    py -3.11 -m pip install --no-warn-script-location --upgrade "transformers==4.53.3" "tokenizers>=0.21.0,<0.22.0" "typing_extensions>=4.12,<5" "chardet>=5.2,<6"
+
+    copy /Y "%~dp0sitecustomize.py" "!SITE_PKG!\sitecustomize.py" >nul
 
     echo.
     echo [i] Dependencia opcional DeepSeek: flash-attn ^(recomendado en GPU^)
@@ -244,6 +247,8 @@ if !GPU_AVAILABLE!==1 (
         exit /b 1
     )
     del requirements_temp.txt
+
+    copy /Y "%~dp0sitecustomize.py" "!SITE_PKG!\sitecustomize.py" >nul
 )
 echo.
 
@@ -288,6 +293,7 @@ py -3.11 -c "from docling.document_converter import DocumentConverter; print('Do
 py -3.11 -c "import easyocr; print('EasyOCR: OK')" 2>nul
 py -3.11 -c "import pytesseract; print('PyTesseract: OK')" 2>nul
 py -3.11 -c "import transformers; print('Transformers: OK')" 2>nul
+py -3.11 -c "from transformers.models.llama.modeling_llama import LlamaAttention, LlamaFlashAttention2; print('Transformers Llama compat: OK')" 2>nul
 py -3.11 -c "import accelerate, safetensors, tokenizers, addict; print('DeepSeek deps: OK')" 2>nul
 echo.
 

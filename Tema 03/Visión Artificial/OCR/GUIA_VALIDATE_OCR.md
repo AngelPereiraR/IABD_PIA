@@ -84,7 +84,7 @@ py -3.11 -m pip install torch transformers
 Version recomendada de `transformers` en este proyecto (compatibilidad DeepSeek):
 
 ```powershell
-py -3.11 -m pip install --upgrade "transformers>=4.51.1,<4.56.0"
+py -3.11 -m pip install --upgrade "transformers==4.53.3"
 ```
 
 Ejemplo de uso en este proyecto: ver `pruebas-deepseek.py`.
