@@ -55,8 +55,6 @@ Modos de uso:
     # Nota: prompts libres de "plain text only" pueden devolver salida vacia en recortes.
     # Si personalizas el prompt, valida primero sobre una sola configuracion.
 
-  # Ver solo resultados sin reejecutar:
-  py -3.11 validate_ocr.py --report-only
 """
 from __future__ import annotations
 
@@ -134,9 +132,6 @@ except ImportError as _e:
 IMGS_DIR = _HERE / "imgs"
 RANKING_CSV = _HERE / "experiment_ranking.csv"
 RESULTS_DIR = _HERE / "validation_results"
-REPORT_JSON = _HERE / "ocr_validation_report.json"
-REPORT_TXT = _HERE / "ocr_validation_report.txt"
-REPORT_CSV = _HERE / "ocr_validation_report.csv"
 DEEPSEEK_DEFAULT_MODEL_DIR = _HERE / "models" / "DeepSeek-OCR"
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp"}
@@ -843,148 +838,6 @@ def _save_config_results(
 
 
 # ---------------------------------------------------------------------------
-# Generacion de informes
-# ---------------------------------------------------------------------------
-
-def generate_reports(summaries: List[Dict[str, Any]]) -> None:
-    """Genera ocr_validation_report.json / .txt / .csv"""
-
-    if not summaries:
-        print("[WARN] No hay resultados para generar informe.")
-        return
-
-    # --- JSON completo ---
-    with open(REPORT_JSON, "w", encoding="utf-8") as f:
-        # No incluir per_image en el JSON de alto nivel para que sea legible
-        compact = [{k: v for k, v in s.items() if k != "per_image"} for s in summaries]
-        json.dump(compact, f, ensure_ascii=False, indent=2)
-    print(f"\n[OK] Informe JSON: {REPORT_JSON}")
-
-    # --- CSV ---
-    rows = []
-    for s in summaries:
-        cfg = s["config"]
-        rows.append({
-            "label": s["label"],
-            "ocr_engine": s.get("ocr_engine", "easyocr"),
-            "method": cfg["method"],
-            "conf": cfg.get("conf", ""),
-            "nms_iou": cfg.get("nms_iou", ""),
-            "merge_distance": cfg["merge_distance"],
-            "total_chars": s["total_chars"],
-            "total_words": s["total_words"],
-            "total_duplicates": s["total_duplicates"],
-            "mean_boxes": s["mean_boxes"],
-            "imgs_no_boxes": s["imgs_no_boxes"],
-            "mean_det_ms": s["mean_det_ms"],
-            "mean_ocr_ms": s["mean_ocr_ms"],
-            "ocr_score": s["ocr_score"],
-        })
-
-    if HAS_PANDAS:
-        df = pd.DataFrame(rows).sort_values("ocr_score", ascending=False)
-        df.to_csv(REPORT_CSV, index=False, encoding="utf-8")
-        print(f"[OK] Informe CSV: {REPORT_CSV}")
-    else:
-        # Escribir CSV manual
-        import csv
-        with open(REPORT_CSV, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=rows[0].keys())
-            writer.writeheader()
-            writer.writerows(rows)
-        print(f"[OK] Informe CSV: {REPORT_CSV}")
-
-    # --- TXT legible ---
-    _write_txt_report(summaries)
-    print(f"[OK] Informe TXT: {REPORT_TXT}")
-
-
-def _write_txt_report(summaries: List[Dict[str, Any]]) -> None:
-    """Escribe un informe TXT tabulado con la comparacion."""
-    # Ordenar por ocr_score descendente
-    ranked = sorted(summaries, key=lambda s: s["ocr_score"], reverse=True)
-
-    lines = []
-    lines.append("=" * 100)
-    lines.append("FASE 4 — VALIDACION OCR COMPLETO: COMPARACION DE CONFIGURACIONES")
-    lines.append("=" * 100)
-    lines.append("")
-
-    # Tabla resumen
-    col_w = [42, 10, 8, 8, 8, 8, 8, 10, 10]
-    headers = [
-        "Configuracion", "OCR", "Chars", "Palabras", "Dups", "Bxs/img",
-        "NoBx", "Det(ms)", "OCR(ms)", "SCORE"
-    ]
-    sep = "  ".join("-" * w for w in col_w)
-    header_row = "  ".join(h.ljust(col_w[i]) for i, h in enumerate(headers))
-
-    lines.append(header_row)
-    lines.append(sep)
-
-    for rank, s in enumerate(ranked, start=1):
-        row = [
-            f"#{rank} {s['label']}"[:col_w[0]].ljust(col_w[0]),
-            s.get("ocr_engine", "easyocr")[:col_w[1]].ljust(col_w[1]),
-            str(s["total_chars"]).rjust(col_w[2]),
-            str(s["total_words"]).rjust(col_w[3]),
-            str(s["total_duplicates"]).rjust(col_w[4]),
-            f"{s['mean_boxes']:.1f}".rjust(col_w[5]),
-            str(s["imgs_no_boxes"]).rjust(col_w[6]),
-            f"{s['mean_det_ms']:.0f}".rjust(col_w[7]),
-            f"{s['mean_ocr_ms']:.0f}".rjust(col_w[8]),
-            f"{s['ocr_score']:.1f}".rjust(col_w[9]),
-        ]
-        lines.append("  ".join(row))
-
-    lines.append(sep)
-    lines.append("")
-
-    # Detalle por configuracion ganadora
-    winner = ranked[0]
-    lines.append("=" * 60)
-    lines.append(f"GANADOR: {winner['label']}")
-    lines.append("=" * 60)
-    lines.append(f"  Metodo          : {winner['config']['method']}")
-    lines.append(f"  OCR engine      : {winner.get('ocr_engine', 'easyocr')}")
-    if "conf" in winner["config"]:
-        lines.append(f"  Confianza       : {winner['config']['conf']}")
-    lines.append(f"  NMS IoU         : {winner['config'].get('nms_iou', 'N/A')}")
-    lines.append(f"  Merge distance  : {winner['config']['merge_distance']} px")
-    lines.append(f"  Total caracteres: {winner['total_chars']}")
-    lines.append(f"  Total palabras  : {winner['total_words']}")
-    lines.append(f"  Duplicados tot. : {winner['total_duplicates']}")
-    lines.append(f"  Imgs sin detec. : {winner['imgs_no_boxes']}")
-    lines.append(f"  Tiempo det. med.: {winner['mean_det_ms']:.0f} ms/imagen")
-    lines.append(f"  Tiempo OCR med. : {winner['mean_ocr_ms']:.0f} ms/imagen")
-    lines.append(f"  Score OCR       : {winner['ocr_score']:.1f}")
-    lines.append("")
-
-    # Detalle por imagen del ganador
-    lines.append("Detalle por imagen (ganador):")
-    lines.append("-" * 60)
-    per_img_hdr = f"  {'Imagen':<20} {'Boxes':>5} {'Dups':>4} {'Chars':>7} {'Words':>6}"
-    lines.append(per_img_hdr)
-    for img_name, img_data in sorted(winner["per_image"].items()):
-        lines.append(
-            f"  {img_name:<20} {img_data['num_boxes']:>5} {img_data['duplicates']:>4} "
-            f"{img_data['total_chars']:>7} {img_data['total_words']:>6}"
-        )
-    lines.append("")
-
-    # Formula de scoring
-    lines.append("Formula de scoring OCR:")
-    lines.append(
-        f"  score = chars*{CHARS_WEIGHT} + words*{WORDS_WEIGHT} "
-        f"- duplicados*{DUP_PENALTY} - imgs_sin_deteccion*{MISSED_PENALTY}"
-    )
-    lines.append("")
-
-    with open(REPORT_TXT, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
-
-
-# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -1026,10 +879,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--resume", action="store_true",
         help="Reanudar ejecucion anterior (salta imagenes ya procesadas)"
-    )
-    parser.add_argument(
-        "--report-only", action="store_true",
-        help="Generar informe leyendo resultados existentes sin reejecutar"
     )
     parser.add_argument(
         "--langs", type=str, default="es,en",
@@ -1077,18 +926,6 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-
-    # --- Modo report-only ---
-    if args.report_only:
-        summaries = _load_existing_summaries(args.output_dir)
-        if not summaries:
-            sys.exit(
-                "[ERROR] No se encontraron resultados en validation_results/\n"
-                "        Ejecuta primero sin --report-only"
-            )
-        generate_reports(summaries)
-        _print_ranking_table(summaries)
-        return
 
     # --- Buscar imagenes ---
     images_dir = args.images_dir
@@ -1257,51 +1094,6 @@ def main() -> None:
             )
         print()
 
-    # --- Informes ---
-    generate_reports(summaries)
-    _print_ranking_table(summaries)
-
-
-def _load_existing_summaries(output_dir: Path) -> List[Dict[str, Any]]:
-    """Carga los resultados existentes de cada subdirectorio de validation_results."""
-    summaries = []
-    if not output_dir.exists():
-        return summaries
-    for config_dir in sorted(output_dir.iterdir()):
-        if not config_dir.is_dir():
-            continue
-        for results_file in sorted(config_dir.glob("results*.json")):
-            with open(results_file, encoding="utf-8") as f:
-                data = json.load(f)
-            if "per_image" in data and "ocr_score" in data:
-                if "ocr_engine" not in data:
-                    data["ocr_engine"] = "easyocr"
-                summaries.append(data)
-    return summaries
-
-
-def _print_ranking_table(summaries: List[Dict[str, Any]]) -> None:
-    """Imprime tabla resumen en consola."""
-    ranked = sorted(summaries, key=lambda s: s["ocr_score"], reverse=True)
-
-    print()
-    print("=" * 90)
-    print("RANKING FINAL — VALIDACION OCR")
-    print("=" * 90)
-    print(f"  {'#':<3} {'Configuracion':<36} {'OCR':<10} {'Chars':>7} {'Words':>6} {'Dups':>5} {'Score':>9}")
-    print(f"  {'-'*3} {'-'*36} {'-'*10} {'-'*7} {'-'*6} {'-'*5} {'-'*9}")
-    for rank, s in enumerate(ranked, start=1):
-        marker = " <-- GANADOR" if rank == 1 else ""
-        print(
-            f"  {rank:<3} {s['label']:<36} {s.get('ocr_engine', 'easyocr'):<10} {s['total_chars']:>7} "
-            f"{s['total_words']:>6} {s['total_duplicates']:>5} {s['ocr_score']:>9.1f}{marker}"
-        )
-    print("=" * 90)
-    print()
-    print(f"Informes guardados en:")
-    print(f"  {REPORT_TXT}")
-    print(f"  {REPORT_CSV}")
-    print(f"  {REPORT_JSON}")
 
 
 if __name__ == "__main__":
