@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -27,12 +28,30 @@ DEFAULT_REPORT_JSON = HERE / "ocr_gt_comparison_report.json"
 DEFAULT_REPORT_CSV = HERE / "ocr_gt_comparison_report.csv"
 DEFAULT_REPORT_TXT = HERE / "ocr_gt_comparison_report.txt"
 
+CONTENT_CER_WEIGHT = 0.6
+CONTENT_WER_WEIGHT = 0.4
+REORDER_THRESHOLD = 0.05
+
 
 def normalize_text(text: str) -> str:
     """Normaliza espacios y saltos de linea para comparacion."""
     lines = [ln.strip() for ln in text.replace("\r", "").split("\n")]
     lines = [ln for ln in lines if ln]
     return "\n".join(lines)
+
+
+def tokenize_for_comparison(text: str) -> List[str]:
+    """Tokeniza de forma robusta para comparar contenido y orden."""
+    normalized = normalize_text(text).lower()
+    return re.findall(r"\w+", normalized, flags=re.UNICODE)
+
+
+def canonicalize_text_for_content(text: str) -> str:
+    """Reordena tokens alfabeticamente para medir contenido sin depender del orden."""
+    tokens = tokenize_for_comparison(text)
+    if not tokens:
+        return ""
+    return " ".join(sorted(tokens))
 
 
 def levenshtein_distance(a: str, b: str) -> int:
@@ -89,6 +108,58 @@ def wer(pred: str, gt: str) -> float:
     return prev[-1] / max(1, len(gt_tokens))
 
 
+def _lcs_length(seq_a: List[str], seq_b: List[str]) -> int:
+    """Longest Common Subsequence para medir similitud de orden."""
+    if not seq_a or not seq_b:
+        return 0
+
+    prev = [0] * (len(seq_b) + 1)
+    for token_a in seq_a:
+        curr = [0]
+        for j, token_b in enumerate(seq_b, start=1):
+            if token_a == token_b:
+                curr.append(prev[j - 1] + 1)
+            else:
+                curr.append(max(prev[j], curr[j - 1]))
+        prev = curr
+    return prev[-1]
+
+
+def ordering_disorder(pred: str, gt: str) -> float:
+    """Mide cuanto desorden tiene el texto predicho respecto al ground truth.
+
+    0.0 implica orden equivalente; 1.0 implica orden completamente incompatible
+    para las palabras coincidentes.
+    """
+    pred_tokens = tokenize_for_comparison(pred)
+    gt_tokens = tokenize_for_comparison(gt)
+
+    if not pred_tokens and not gt_tokens:
+        return 0.0
+    if not pred_tokens or not gt_tokens:
+        return 1.0
+
+    lcs = _lcs_length(pred_tokens, gt_tokens)
+    max_len = max(1, min(len(pred_tokens), len(gt_tokens)))
+    return 1.0 - (lcs / max_len)
+
+
+def content_accuracy(cer_content: float, wer_content: float) -> float:
+    """Accuracy priorizando contenido, en escala 0..1."""
+    weighted_error = (
+        cer_content * CONTENT_CER_WEIGHT
+        + wer_content * CONTENT_WER_WEIGHT
+    )
+    return max(0.0, min(1.0, 1.0 - weighted_error))
+
+
+def needs_reorder(disorder: float, cer_raw: float, cer_content: float, wer_raw: float, wer_content: float) -> bool:
+    """Detecta si el contenido parece correcto pero el orden requiere correccion."""
+    raw_error = (cer_raw + wer_raw) / 2.0
+    content_error = (cer_content + wer_content) / 2.0
+    return disorder >= REORDER_THRESHOLD and content_error < raw_error
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Compara validation_results contra ground truth (CER/WER).")
     parser.add_argument("--validation-dir", type=Path, default=DEFAULT_VALIDATION_DIR)
@@ -116,35 +187,83 @@ def reconstruct_text(per_region: List[Dict[str, Any]]) -> str:
 
 def build_rows(validation_dir: Path, gt_data: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
+    result_files: List[Path] = []
 
     for config_dir in sorted(validation_dir.iterdir()):
         if not config_dir.is_dir():
             continue
+        result_files.extend(sorted(config_dir.glob("results_*.json")))
 
-        for result_file in sorted(config_dir.glob("results_*.json")):
-            with open(result_file, encoding="utf-8") as f:
-                data = json.load(f)
+    total_files = len(result_files)
+    processed_files = 0
+    processed_images = 0
 
-            label = data.get("label", config_dir.name)
-            ocr_engine = data.get("ocr_engine") or result_file.stem.replace("results_", "")
-            per_image = data.get("per_image", {})
+    if total_files == 0:
+        print(f"[WARN] No se encontraron archivos results_*.json en {validation_dir}")
+        return rows
 
-            for image_name, image_data in per_image.items():
-                gt_text = str(gt_data.get(image_name, {}).get("text", ""))
-                pred_text = reconstruct_text(image_data.get("per_region", []))
+    print(f"[i] Archivos de resultados encontrados: {total_files}")
 
-                row = {
-                    "layout_config": label,
-                    "ocr_engine": ocr_engine,
-                    "image": image_name,
-                    "cer": round(cer(pred_text, gt_text), 6),
-                    "wer": round(wer(pred_text, gt_text), 6),
-                    "time_per_image_ms": float(image_data.get("det_ms", 0.0)) + float(image_data.get("ocr_ms", 0.0)),
-                    "duplicates": int(image_data.get("duplicates", 0)),
-                    "chars_pred": int(image_data.get("total_chars", 0)),
-                    "words_pred": int(image_data.get("total_words", 0)),
-                }
-                rows.append(row)
+    for result_file in result_files:
+        processed_files += 1
+        print(f"[i] Leyendo {processed_files}/{total_files}: {result_file.parent.name}/{result_file.name}", flush=True)
+
+        with open(result_file, encoding="utf-8") as f:
+            data = json.load(f)
+
+        label = data.get("label", result_file.parent.name)
+        ocr_engine = data.get("ocr_engine") or result_file.stem.replace("results_", "")
+        per_image = data.get("per_image", {})
+        total_images = len(per_image)
+
+        for image_index, (image_name, image_data) in enumerate(per_image.items(), start=1):
+            processed_images += 1
+            print(
+                f"    [img {image_index}/{total_images}] {image_name} "
+                f"(total procesadas: {processed_images})",
+                flush=True,
+            )
+            gt_text = str(gt_data.get(image_name, {}).get("text", ""))
+            pred_text = reconstruct_text(image_data.get("per_region", []))
+            pred_content_text = canonicalize_text_for_content(pred_text)
+            gt_content_text = canonicalize_text_for_content(gt_text)
+
+            cer_raw = cer(pred_text, gt_text)
+            wer_raw = wer(pred_text, gt_text)
+            cer_content = cer(pred_content_text, gt_content_text)
+            wer_content = wer(pred_content_text, gt_content_text)
+            disorder = ordering_disorder(pred_text, gt_text)
+            content_acc = content_accuracy(cer_content, wer_content)
+            reorder_needed = needs_reorder(
+                disorder,
+                cer_raw,
+                cer_content,
+                wer_raw,
+                wer_content,
+            )
+            time_per_image_ms = float(image_data.get("det_ms", 0.0)) + float(image_data.get("ocr_ms", 0.0))
+            duplicates = int(image_data.get("duplicates", 0))
+
+            row = {
+                "layout_config": label,
+                "ocr_engine": ocr_engine,
+                "image": image_name,
+                "cer_raw": round(cer_raw, 6),
+                "wer_raw": round(wer_raw, 6),
+                "cer_content": round(cer_content, 6),
+                "wer_content": round(wer_content, 6),
+                "content_accuracy": round(content_acc, 6),
+                "disorder": round(disorder, 6),
+                "needs_reorder": reorder_needed,
+                "reorder_status": "requires_reorder" if reorder_needed else "ordered",
+                "time_per_image_ms": time_per_image_ms,
+                "duplicates": duplicates,
+                "chars_pred": int(image_data.get("total_chars", 0)),
+                "words_pred": int(image_data.get("total_words", 0)),
+            }
+            rows.append(row)
+
+    print(f"[OK] Comparaciones por imagen generadas: {len(rows)}")
 
     return rows
 
@@ -153,6 +272,8 @@ def aggregate_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Agrega por layout_config + ocr_engine."""
     grouped: Dict[str, Dict[str, Any]] = {}
 
+    print(f"[i] Agregando {len(rows)} comparaciones por imagen...", flush=True)
+
     for row in rows:
         key = f"{row['layout_config']}||{row['ocr_engine']}"
         if key not in grouped:
@@ -160,44 +281,66 @@ def aggregate_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 "layout_config": row["layout_config"],
                 "ocr_engine": row["ocr_engine"],
                 "n_images": 0,
-                "cer_sum": 0.0,
-                "wer_sum": 0.0,
+                "cer_raw_sum": 0.0,
+                "wer_raw_sum": 0.0,
+                "cer_content_sum": 0.0,
+                "wer_content_sum": 0.0,
+                "content_accuracy_sum": 0.0,
+                "disorder_sum": 0.0,
                 "time_sum": 0.0,
                 "dup_sum": 0,
+                "reorder_count": 0,
             }
 
         g = grouped[key]
         g["n_images"] += 1
-        g["cer_sum"] += float(row["cer"])
-        g["wer_sum"] += float(row["wer"])
+        g["cer_raw_sum"] += float(row["cer_raw"])
+        g["wer_raw_sum"] += float(row["wer_raw"])
+        g["cer_content_sum"] += float(row["cer_content"])
+        g["wer_content_sum"] += float(row["wer_content"])
+        g["content_accuracy_sum"] += float(row["content_accuracy"])
+        g["disorder_sum"] += float(row["disorder"])
         g["time_sum"] += float(row["time_per_image_ms"])
         g["dup_sum"] += int(row["duplicates"])
+        if bool(row["needs_reorder"]):
+            g["reorder_count"] += 1
 
     out: List[Dict[str, Any]] = []
     for g in grouped.values():
         n = max(1, g["n_images"])
-        cer_mean = g["cer_sum"] / n
-        wer_mean = g["wer_sum"] / n
+        cer_raw_mean = g["cer_raw_sum"] / n
+        wer_raw_mean = g["wer_raw_sum"] / n
+        cer_content_mean = g["cer_content_sum"] / n
+        wer_content_mean = g["wer_content_sum"] / n
+        content_accuracy_mean = g["content_accuracy_sum"] / n
+        disorder_mean = g["disorder_sum"] / n
         time_mean = g["time_sum"] / n
         dup_mean = g["dup_sum"] / n
-        score = (1 - cer_mean) * 50 + (1 - wer_mean) * 35 - (time_mean / 1000) * 10 - dup_mean * 5
+        reorder_ratio = g["reorder_count"] / n
 
         out.append({
             "layout_config": g["layout_config"],
             "ocr_engine": g["ocr_engine"],
             "n_images": g["n_images"],
-            "cer": round(cer_mean, 6),
-            "wer": round(wer_mean, 6),
+            "cer_raw": round(cer_raw_mean, 6),
+            "wer_raw": round(wer_raw_mean, 6),
+            "cer_content": round(cer_content_mean, 6),
+            "wer_content": round(wer_content_mean, 6),
+            "content_accuracy": round(content_accuracy_mean, 6),
+            "disorder": round(disorder_mean, 6),
+            "images_requiring_reorder": g["reorder_count"],
+            "reorder_ratio": round(reorder_ratio, 6),
             "time_per_image_ms": round(time_mean, 2),
             "dup_mean": round(dup_mean, 4),
-            "score": round(score, 4),
         })
 
-    out.sort(key=lambda x: x["score"], reverse=True)
+    out.sort(key=lambda x: x["content_accuracy"], reverse=True)
+    print(f"[OK] Comparativas agregadas: {len(out)}")
     return out
 
 
 def write_outputs(rows: List[Dict[str, Any]], aggregate: List[Dict[str, Any]], out_json: Path, out_csv: Path, out_txt: Path) -> None:
+    print("[i] Escribiendo salidas...", flush=True)
     payload = {
         "per_image": rows,
         "aggregate": aggregate,
@@ -220,8 +363,12 @@ def write_outputs(rows: List[Dict[str, Any]], aggregate: List[Dict[str, Any]], o
         for idx, row in enumerate(aggregate, start=1):
             lines.append(
                 f"#{idx} {row['layout_config']} | {row['ocr_engine']} | "
-                f"CER={row['cer']:.4f} WER={row['wer']:.4f} "
-                f"Time={row['time_per_image_ms']:.1f}ms Dup={row['dup_mean']:.2f} Score={row['score']:.2f}"
+                f"CERraw={row['cer_raw']:.4f} WERraw={row['wer_raw']:.4f} "
+                f"CERcontent={row['cer_content']:.4f} WERcontent={row['wer_content']:.4f} "
+                f"AccContent={row['content_accuracy']*100:.2f}% Disorder={row['disorder']:.4f} "
+                f"Reorder={row['images_requiring_reorder']}/{row['n_images']} "
+                f"Time={row['time_per_image_ms']:.1f}ms Dup={row['dup_mean']:.2f} "
+                f"RankingMetric=AccContent"
             )
     lines.append("")
 
@@ -237,7 +384,12 @@ def main() -> None:
     if not args.ground_truth.exists():
         raise SystemExit(f"[ERROR] No existe ground truth: {args.ground_truth}")
 
+    print(f"[i] Validation dir: {args.validation_dir}")
+    print(f"[i] Ground truth:   {args.ground_truth}")
+    print("[i] Cargando ground truth...", flush=True)
     gt_data = load_ground_truth(args.ground_truth)
+    print(f"[OK] Entradas de ground truth: {len(gt_data)}")
+
     rows = build_rows(args.validation_dir, gt_data)
     aggregate = aggregate_rows(rows)
     write_outputs(rows, aggregate, args.out_json, args.out_csv, args.out_txt)
@@ -250,7 +402,8 @@ def main() -> None:
         print(
             "[TOP] "
             f"{top['layout_config']} + {top['ocr_engine']} "
-            f"(CER={top['cer']:.4f}, WER={top['wer']:.4f}, SCORE={top['score']:.2f})"
+            f"(AccContent={top['content_accuracy']*100:.2f}%, Reorder={top['images_requiring_reorder']}/{top['n_images']}, "
+            f"Disorder={top['disorder']:.4f})"
         )
 
 
