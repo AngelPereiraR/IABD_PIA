@@ -25,12 +25,14 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 import cv2
+import numpy as np
 
 # Ajustar sys.path para importar desde la misma carpeta
 sys.path.insert(0, str(Path(__file__).parent))
 
 from detect_columns import detect_columns, ColumnBox
 import post_processing as pp
+from output_utils import get_output_dir
 
 # ============================================================================
 # Grid de experimentos
@@ -57,6 +59,13 @@ METHODS_ONLY_MERGE = {"opencv"}
 IMAGES_DIR = Path(__file__).parent / "imgs"
 DEFAULT_OUTPUT = Path(__file__).parent / "experiment_results.json"
 
+MIN_EMPTY_FOREGROUND_PIXELS = 48
+MIN_EMPTY_FOREGROUND_RATIO = 0.003
+TINY_BOX_IMAGE_RATIO = 0.002
+MIN_COMPONENT_AREA_RATIO = 0.00015
+MIN_COMPONENT_DENSITY = 0.01
+MAX_COMPONENT_DENSITY = 0.55
+
 
 # ============================================================================
 # Helpers
@@ -77,6 +86,240 @@ def _count_duplicates(boxes: List[ColumnBox], iou_threshold: float = 0.7) -> int
     return count
 
 
+def _clip_box(box: ColumnBox, width: int, height: int) -> Tuple[int, int, int, int]:
+    """Recorta una caja a los límites válidos de la imagen."""
+    x1 = max(0, min(int(box.x1), width))
+    y1 = max(0, min(int(box.y1), height))
+    x2 = max(0, min(int(box.x2), width))
+    y2 = max(0, min(int(box.y2), height))
+    return x1, y1, x2, y2
+
+
+def _build_text_block_mask(img: Any) -> Dict[str, Any]:
+    """Extrae una máscara centrada en bloques de texto, no en cualquier tinta.
+
+    Devuelve tanto la máscara de tinta original como una máscara refinada donde
+    los componentes conectados intentan representar líneas/bloques textuales.
+    """
+    height, width = img.shape[:2]
+    image_area = max(1, height * width)
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    _, ink_mask = cv2.threshold(
+        blurred,
+        0,
+        255,
+        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
+    )
+    ink_mask = cv2.morphologyEx(
+        ink_mask,
+        cv2.MORPH_OPEN,
+        cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)),
+    )
+
+    horizontal_kernel = cv2.getStructuringElement(
+        cv2.MORPH_RECT,
+        (max(15, width // 60), 3),
+    )
+    line_mask = cv2.morphologyEx(ink_mask, cv2.MORPH_CLOSE, horizontal_kernel)
+
+    block_kernel = cv2.getStructuringElement(
+        cv2.MORPH_RECT,
+        (max(5, width // 100), max(11, height // 90)),
+    )
+    block_mask = cv2.morphologyEx(line_mask, cv2.MORPH_CLOSE, block_kernel)
+
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(block_mask, connectivity=8)
+    filtered = np.zeros_like(block_mask)
+    min_component_area = max(32, int(image_area * MIN_COMPONENT_AREA_RATIO))
+    min_component_width = max(12, width // 100)
+    min_component_height = max(12, height // 120)
+
+    for label_id in range(1, num_labels):
+        x, y, comp_width, comp_height, area = stats[label_id]
+        if area < min_component_area:
+            continue
+        if comp_width < min_component_width or comp_height < min_component_height:
+            continue
+
+        bbox_area = max(1, comp_width * comp_height)
+        ink_pixels = int((ink_mask[y:y + comp_height, x:x + comp_width] > 0).sum())
+        density = ink_pixels / bbox_area
+        if density < MIN_COMPONENT_DENSITY or density > MAX_COMPONENT_DENSITY:
+            continue
+
+        filtered[labels == label_id] = 255
+
+    if not np.any(filtered):
+        filtered = block_mask
+
+    return {
+        "ink_mask": ink_mask > 0,
+        "text_block_mask": filtered > 0,
+    }
+
+
+def _config_debug_tag(method: str, config: Dict[str, Any]) -> str:
+    """Genera una etiqueta legible para debug por experimento."""
+    parts = [method]
+    if "conf" in config:
+        parts.append(f"conf{config['conf']:.2f}")
+    if "nms_iou" in config:
+        parts.append(f"nms{config['nms_iou']:.2f}")
+    parts.append(f"mg{config['merge_distance']}")
+    return "-".join(parts).replace(".", "_")
+
+
+def _save_mask_debug(
+    image_path: str,
+    img: Any,
+    ink_mask: Any,
+    text_block_mask: Any,
+    debug_dir: Optional[Path] = None,
+) -> None:
+    """Guarda máscaras y overlay para inspeccionar la heurística de texto."""
+    base_dir = str(debug_dir) if debug_dir is not None else None
+    out_dir = get_output_dir(image_path, "layout-mask-debug", base_dir=base_dir)
+
+    ink_mask_u8 = (ink_mask.astype(np.uint8) * 255)
+    text_block_u8 = (text_block_mask.astype(np.uint8) * 255)
+
+    overlay = img.copy()
+    overlay[text_block_mask] = (0.4 * overlay[text_block_mask] + 0.6 * np.array([0, 220, 0])).astype(np.uint8)
+
+    cv2.imwrite(str(out_dir / "01_ink_mask.png"), ink_mask_u8)
+    cv2.imwrite(str(out_dir / "02_text_block_mask.png"), text_block_u8)
+    cv2.imwrite(str(out_dir / "03_text_block_overlay.png"), overlay)
+
+
+def _save_boxes_debug(
+    image_path: str,
+    img: Any,
+    boxes: List[ColumnBox],
+    method: str,
+    config: Dict[str, Any],
+    debug_dir: Optional[Path] = None,
+) -> None:
+    """Guarda las cajas detectadas para un experimento concreto."""
+    base_dir = str(debug_dir) if debug_dir is not None else None
+    out_dir = get_output_dir(
+        image_path,
+        f"layout-boxes-{_config_debug_tag(method, config)}",
+        base_dir=base_dir,
+    )
+
+    vis = img.copy()
+    boxes_payload: List[Dict[str, int]] = []
+    for index, box in enumerate(boxes, start=1):
+        x1, y1, x2, y2 = int(box.x1), int(box.y1), int(box.x2), int(box.y2)
+        boxes_payload.append({
+            "index": index,
+            "x1": x1,
+            "y1": y1,
+            "x2": x2,
+            "y2": y2,
+            "width": max(0, x2 - x1),
+            "height": max(0, y2 - y1),
+        })
+        cv2.rectangle(vis, (x1, y1), (x2, y2), (0, 255, 255), 2)
+        cv2.putText(
+            vis,
+            str(index),
+            (x1, max(18, y1 - 6)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, 255, 255),
+            2,
+            cv2.LINE_AA,
+        )
+
+    cv2.imwrite(str(out_dir / "01_boxes_overlay.png"), vis)
+    with open(out_dir / "02_boxes.json", "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "image": Path(image_path).name,
+                "method": method,
+                "config": config,
+                "num_boxes": len(boxes_payload),
+                "boxes": boxes_payload,
+            },
+            f,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+
+def _estimate_layout_quality(
+    img: Any,
+    boxes: List[ColumnBox],
+    debug_mask: bool = False,
+    image_path: Optional[str] = None,
+    debug_dir: Optional[Path] = None,
+) -> Dict[str, float]:
+    """Aproxima cobertura textual, solapamiento y basura sin usar ground truth."""
+    height, width = img.shape[:2]
+    image_area = max(1, width * height)
+
+    mask_data = _build_text_block_mask(img)
+    ink_mask = mask_data["ink_mask"]
+    text_block_mask = mask_data["text_block_mask"]
+    total_foreground = int(text_block_mask.sum())
+
+    if debug_mask and image_path:
+        _save_mask_debug(image_path, img, ink_mask, text_block_mask, debug_dir=debug_dir)
+
+    if not boxes:
+        return {
+            "text_coverage": 0.0,
+            "overlap_ratio": 0.0,
+            "empty_boxes": 0,
+            "empty_ratio": 0.0,
+            "tiny_boxes": 0,
+            "tiny_ratio": 0.0,
+        }
+
+    coverage_count = np.zeros((height, width), dtype=np.uint16)
+    empty_boxes = 0
+    tiny_boxes = 0
+
+    for box in boxes:
+        x1, y1, x2, y2 = _clip_box(box, width, height)
+        if x2 <= x1 or y2 <= y1:
+            empty_boxes += 1
+            continue
+
+        coverage_count[y1:y2, x1:x2] += 1
+        box_area = max(1, (x2 - x1) * (y2 - y1))
+        foreground_pixels = int(text_block_mask[y1:y2, x1:x2].sum())
+        foreground_ratio = foreground_pixels / box_area
+
+        if foreground_pixels < MIN_EMPTY_FOREGROUND_PIXELS or foreground_ratio < MIN_EMPTY_FOREGROUND_RATIO:
+            empty_boxes += 1
+
+        if (box_area / image_area) < TINY_BOX_IMAGE_RATIO:
+            tiny_boxes += 1
+
+    if total_foreground > 0:
+        covered_foreground = int((text_block_mask & (coverage_count > 0)).sum())
+        overlap_foreground = int((text_block_mask & (coverage_count > 1)).sum())
+        text_coverage = covered_foreground / total_foreground
+        overlap_ratio = overlap_foreground / total_foreground
+    else:
+        text_coverage = 0.0
+        overlap_ratio = 0.0
+
+    box_count = max(1, len(boxes))
+    return {
+        "text_coverage": round(float(text_coverage), 6),
+        "overlap_ratio": round(float(overlap_ratio), 6),
+        "empty_boxes": int(empty_boxes),
+        "empty_ratio": round(empty_boxes / box_count, 6),
+        "tiny_boxes": int(tiny_boxes),
+        "tiny_ratio": round(tiny_boxes / box_count, 6),
+    }
+
+
 # ============================================================================
 # Ejecución de un único experimento
 # ============================================================================
@@ -86,6 +329,9 @@ def run_single_experiment(
     image_path: str,
     method: str,
     config: Dict[str, Any],
+    debug_mask: bool = False,
+    debug_boxes: bool = False,
+    debug_dir: Optional[Path] = None,
 ) -> Dict[str, Any]:
     """Ejecuta un único experimento y devuelve sus métricas.
 
@@ -125,6 +371,22 @@ def run_single_experiment(
             sum(_box_area(b) for b in boxes) / num_boxes if num_boxes > 0 else 0.0
         )
         duplicates = _count_duplicates(boxes)
+        if debug_boxes:
+            _save_boxes_debug(
+                image_path,
+                img,
+                boxes,
+                method,
+                config,
+                debug_dir=debug_dir,
+            )
+        quality = _estimate_layout_quality(
+            img,
+            boxes,
+            debug_mask=debug_mask,
+            image_path=image_path,
+            debug_dir=debug_dir,
+        )
 
         return {
             "success": True,
@@ -132,6 +394,7 @@ def run_single_experiment(
             "avg_area": round(avg_area, 1),
             "duplicates": duplicates,
             "time_ms": round(elapsed_ms, 1),
+            **quality,
         }
 
     except Exception as exc:
@@ -142,6 +405,12 @@ def run_single_experiment(
             "avg_area": 0.0,
             "duplicates": 0,
             "time_ms": round(elapsed_ms, 1),
+            "text_coverage": 0.0,
+            "overlap_ratio": 0.0,
+            "empty_boxes": 0,
+            "empty_ratio": 0.0,
+            "tiny_boxes": 0,
+            "tiny_ratio": 0.0,
             "error": str(exc),
         }
 
@@ -197,6 +466,9 @@ def run_grid_search(
     output_file: Path = DEFAULT_OUTPUT,
     methods: Optional[List[str]] = None,
     resume: bool = False,
+    debug_mask: bool = False,
+    debug_boxes: bool = False,
+    debug_dir: Optional[Path] = None,
 ) -> List[Dict]:
     """Ejecuta el grid search completo y guarda resultados en output_file.
 
@@ -245,6 +517,7 @@ def run_grid_search(
     results = list(existing_results)
     exp_id = len(existing_results)
     prev_method: Optional[str] = None
+    debug_done_images: set[str] = set()
 
     for method, config in iter_configs(methods):
         # Checkpoint al terminar todos los experimentos de un método
@@ -272,7 +545,18 @@ def run_grid_search(
             if img is None:
                 continue
 
-            metrics = run_single_experiment(img, str(img_path), method, config)
+            should_debug_mask = debug_mask and img_name not in debug_done_images
+            metrics = run_single_experiment(
+                img,
+                str(img_path),
+                method,
+                config,
+                debug_mask=should_debug_mask,
+                debug_boxes=debug_boxes,
+                debug_dir=debug_dir,
+            )
+            if should_debug_mask:
+                debug_done_images.add(img_name)
 
             results.append({
                 "experiment_id": exp_id,
@@ -330,6 +614,21 @@ def main() -> None:
         action="store_true",
         help="Reanudar desde un archivo de resultados previo",
     )
+    parser.add_argument(
+        "--debug-mask",
+        action="store_true",
+        help="Guardar la mascara refinada de bloques de texto para inspeccion visual",
+    )
+    parser.add_argument(
+        "--debug-mask-dir",
+        default=None,
+        help="Carpeta base para guardar las mascaras debug (default: build/)",
+    )
+    parser.add_argument(
+        "--debug-boxes",
+        action="store_true",
+        help="Guardar una visualizacion y JSON con las cajas detectadas por experimento",
+    )
     args = parser.parse_args()
 
     run_grid_search(
@@ -337,6 +636,9 @@ def main() -> None:
         output_file=Path(args.output),
         methods=args.methods,
         resume=args.resume,
+        debug_mask=args.debug_mask,
+        debug_boxes=args.debug_boxes,
+        debug_dir=Path(args.debug_mask_dir) if args.debug_mask_dir else None,
     )
 
 

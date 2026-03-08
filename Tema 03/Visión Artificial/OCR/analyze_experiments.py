@@ -39,6 +39,12 @@ DEFAULT_INPUT = Path(__file__).parent / "experiment_results.json"
 DEFAULT_RANKING = Path(__file__).parent / "experiment_ranking.csv"
 DEFAULT_TOP = Path(__file__).parent / "experiment_top.txt"
 
+COVERAGE_WEIGHT = 100.0
+OVERLAP_PENALTY = 35.0
+EMPTY_PENALTY = 20.0
+TINY_PENALTY = 10.0
+DUPLICATE_PENALTY = 4.0
+
 
 # ============================================================================
 # Carga y aplanado del JSON
@@ -50,7 +56,8 @@ def load_results(json_path: Path) -> pd.DataFrame:
     Estructura por fila:
         experiment_id, image, method, conf (None para paddleocr/docling),
         nms_iou, merge_distance, success, num_boxes, avg_area, duplicates,
-        time_ms, error
+        text_coverage, overlap_ratio, empty_boxes, empty_ratio,
+        tiny_boxes, tiny_ratio, time_ms, error
     """
     with open(json_path, encoding="utf-8") as f:
         raw: List[Dict[str, Any]] = json.load(f)
@@ -73,6 +80,12 @@ def load_results(json_path: Path) -> pd.DataFrame:
                 "num_boxes": mts.get("num_boxes", 0),
                 "avg_area": mts.get("avg_area", 0.0),
                 "duplicates": mts.get("duplicates", 0),
+                "text_coverage": mts.get("text_coverage"),
+                "overlap_ratio": mts.get("overlap_ratio"),
+                "empty_boxes": mts.get("empty_boxes"),
+                "empty_ratio": mts.get("empty_ratio"),
+                "tiny_boxes": mts.get("tiny_boxes"),
+                "tiny_ratio": mts.get("tiny_ratio"),
                 "time_ms": mts.get("time_ms", 0.0),
                 "error": mts.get("error"),
             }
@@ -86,6 +99,12 @@ def load_results(json_path: Path) -> pd.DataFrame:
     df["num_boxes"] = df["num_boxes"].astype(int)
     df["duplicates"] = df["duplicates"].astype(int)
     df["merge_distance"] = df["merge_distance"].astype(int)
+    df["text_coverage"] = pd.to_numeric(df["text_coverage"], errors="coerce")
+    df["overlap_ratio"] = pd.to_numeric(df["overlap_ratio"], errors="coerce")
+    df["empty_boxes"] = pd.to_numeric(df["empty_boxes"], errors="coerce").fillna(0).astype(int)
+    df["empty_ratio"] = pd.to_numeric(df["empty_ratio"], errors="coerce")
+    df["tiny_boxes"] = pd.to_numeric(df["tiny_boxes"], errors="coerce").fillna(0).astype(int)
+    df["tiny_ratio"] = pd.to_numeric(df["tiny_ratio"], errors="coerce")
 
     return df
 
@@ -98,16 +117,19 @@ def score_formula(row: "pd.Series") -> float:
     """Heurística de puntuación por configuración.
 
     Objetivo:
-        - Maximizar num_boxes (más detección = mejor cobertura)
-        - Penalizar duplicados (indican ruido en la detección)
+        - Priorizar recuperar la máxima cantidad posible de texto visible.
+        - Penalizar solapamiento redundante entre cajas sobre el contenido.
+        - Penalizar cajas vacías o muy pequeñas (basura / fragmentación).
+        - Penalizar duplicados residuales.
 
-    score = mean_boxes * BOX_WEIGHT - total_duplicates * DUP_PENALTY
-
-    Los pesos se ajustarán en FASE 4 vistas las distribuciones reales.
+    La cobertura domina la puntuación; el resto de términos son penalizaciones.
     """
-    BOX_WEIGHT = 2.0
-    DUP_PENALTY = 10.0
-    return row["mean_boxes"] * BOX_WEIGHT - row["total_duplicates"] * DUP_PENALTY
+    score = row["mean_text_coverage"] * COVERAGE_WEIGHT
+    score -= row["mean_overlap_ratio"] * OVERLAP_PENALTY
+    score -= row["mean_empty_ratio"] * EMPTY_PENALTY
+    score -= row["mean_tiny_ratio"] * TINY_PENALTY
+    score -= row["mean_duplicates"] * DUPLICATE_PENALTY
+    return max(0.0, min(100.0, score))
 
 
 def build_ranking(df: pd.DataFrame) -> pd.DataFrame:
@@ -118,6 +140,14 @@ def build_ranking(df: pd.DataFrame) -> pd.DataFrame:
     """
     only_success = df[df["success"]].copy()
 
+    required_metrics = ["text_coverage", "overlap_ratio", "empty_ratio", "tiny_ratio"]
+    missing_metrics = [metric for metric in required_metrics if only_success[metric].isna().any()]
+    if missing_metrics:
+        sys.exit(
+            "[ERROR] experiment_results.json no contiene las nuevas métricas de layout "
+            f"{missing_metrics}. Regenera los experimentos con experiment_models.py antes de analizar."
+        )
+
     grouped = (
         only_success
         .groupby(["method", "conf", "nms_iou", "merge_distance"], dropna=False)
@@ -127,6 +157,13 @@ def build_ranking(df: pd.DataFrame) -> pd.DataFrame:
             std_boxes=("num_boxes", "std"),
             median_boxes=("num_boxes", "median"),
             mean_area=("avg_area", "mean"),
+            mean_text_coverage=("text_coverage", "mean"),
+            mean_overlap_ratio=("overlap_ratio", "mean"),
+            mean_empty_boxes=("empty_boxes", "mean"),
+            mean_empty_ratio=("empty_ratio", "mean"),
+            mean_tiny_boxes=("tiny_boxes", "mean"),
+            mean_tiny_ratio=("tiny_ratio", "mean"),
+            mean_duplicates=("duplicates", "mean"),
             total_duplicates=("duplicates", "sum"),
             mean_time_ms=("time_ms", "mean"),
         )
@@ -165,17 +202,19 @@ def format_top_report(top: Dict[str, pd.DataFrame]) -> str:
         lines.append(f"\n── {method.upper()} ──────────────────────────────────────")
         lines.append(
             f"{'Pos':>4}  {'conf':>6}  {'nms':>5}  {'merge':>5}  "
-            f"{'boxes':>6}  {'dups':>5}  {'score':>8}"
+            f"{'cov%':>6}  {'ovl%':>6}  {'empty%':>6}  {'dups':>5}  {'score':>8}"
         )
-        lines.append("-" * 56)
+        lines.append("-" * 78)
         for pos, row in df.iterrows():
             conf_str = f"{row['conf']:.2f}" if pd.notna(row["conf"]) else "N/A  "
             nms_str  = f"{row['nms_iou']:.2f}" if pd.notna(row["nms_iou"]) else "N/A "
             lines.append(
                 f"{pos:>4}  {conf_str:>6}  {nms_str:>5}  "
                 f"{int(row['merge_distance']):>5d}  "
-                f"{row['mean_boxes']:>6.1f}  "
-                f"{int(row['total_duplicates']):>5d}  "
+                f"{row['mean_text_coverage']*100:>5.1f}%  "
+                f"{row['mean_overlap_ratio']*100:>5.1f}%  "
+                f"{row['mean_empty_ratio']*100:>5.1f}%  "
+                f"{row['mean_duplicates']:>5.2f}  "
                 f"{row['score']:>8.2f}"
             )
     lines.append("\n" + "=" * 72)
