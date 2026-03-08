@@ -1,0 +1,427 @@
+{
+  "config": {
+    "method": "opencv",
+    "merge_distance": 5
+  },
+  "label": "opencv_mg5",
+  "per_image": {
+    "popurri01.jpg": {
+      "num_boxes": 3,
+      "duplicates": 0,
+      "det_ms": 39.8,
+      "ocr_ms": 1812.7,
+      "total_chars": 1807,
+      "total_words": 424,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "[[[popurr]]\nCádiz de mi alma\na ti vengo a cantarte el popurrí\ny te quiero hacer saber yo a tí\ntodo lo que he visto por ahí.\nCádiz tan bonito\ncon esa hermosa bahía\npero otros detallitos\ndesmerecen tu valía.\nLa puerta del muelle\ncuándo pensarán abrirla\nel turista que viene\nal mirarla le dá risa.\nLo mismo pasa con las murallas\nque si se asoman\ntienen que irse por tantas ratas\ncomo hay tantos animalitos\nse hace un safari\ny no queda ni un negrito.\nVestidos como Don Nadies\no mas bien de mamarracho\npues lo que llevamos puesto\nes prestado como ven\nla camisa y los zapatos\nyo no sé ni de quién es\nel traje es de un pelagatos\nque lo enterraron ayer.",
+          "chars": 520,
+          "words": 119
+        },
+        {
+          "region": 2,
+          "text": "Por la calle de Alcalá\nhasta la Puerta del Sol\nmucha gente esperaba el Año Nuevo\nel reloj se agarrotó\nla campaña no sonó\ny decían por la calle igual que yo.\nCuando, cuando caballero\nsonará ese reloj E\nporque esto está tardando\nmás que tarda el Cádiz\npara meter un gol.\nYo no iré nunca a la luna\naunque no me cueste ná\nla razón es solo una\nque no sé si voy a bajar\nBartolo ya me dijo un qa\nque se acuerda el día\nque se echó a volar\nBartolo tiene todavía ~\nuna peste encima algo exagerá.\nTengo la tripa como la espada\nde un mosquetero\ndel tiempo que hace que yo en mi cas:\nno veo un puchero\nsi huelo el guiso de la vecina\nme vuelvo loco\ny cojo moscas por las esquinas\ny cocorocos\nvaya canina la que tenemos\ntodos nosotros ~\nsi me hablan de la carne de la ternez\nyo no sé lo-que es segunda\nni qué es primera",
+          "chars": 637,
+          "words": 159
+        },
+        {
+          "region": 3,
+          "text": "y no veo un bistelito\nesto es por mi abuela\ndesde que estuve en la mili y juré bandera. -\nMi chiquillo Joaquín preguntó el oiro día\npaseando por ahí, la pregunta decía\nfrente a la plaza toros casi, casi escondida\npreguntó con un tonoen el cual se veía\nmucha melancolía:\n¿Qué le pasa a este coso\nque se vé en la ruina\ncuando fué tan honroso\ncon carteles airosos\nde la fiesta taurina ?\nA mi Cádiz de mi alma he cantado\ncon pasión\nyo te quiero tierra mía con todo\nmi corazón\nOlé esta tierra bonita\nde tan bella geografía\ntú eres la gloria de espuma flotante\ngracia tienes mucha gracia\ntu mujer es seductora\nla más arrogante, la más elegante\nla más señorona.\nAdios, ya se marchan los Don Nadies\naquí dejan su amor\ndesean mucha felicidad\npara el respetable que escuchó\nAdios mi Cádiz, mi Cádiz de mi amor ...",
+          "chars": 650,
+          "words": 146
+        }
+      ]
+    },
+    "popurri02.jpg": {
+      "num_boxes": 1,
+      "duplicates": 0,
+      "det_ms": 21.2,
+      "ocr_ms": 704.0,
+      "total_chars": 693,
+      "total_words": 152,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "=\nPASODOBLE DEDICADO POR ESTA\nER\nAGRUPACION A LAS FAMOSAS\nBODEGAS \"AGUSTIN BLAZQUEZ”\nJEREZ\nJerez dá igual si se escribe\ncon equis o con una jota\nde todas forma es sublime\nesa tierra tan famosa\nLa vida solo sería\nsin el calor de sus vinos\nuna existencia vacía\nsin aliciente y sentido\nLos vinos de Espoña\nson los más famosos por tierras extrañas\ny es que hay ciertas marcas\nque solo compiten con su calidad\npongo por ejemplo esa “CARTA BLANCA”\nque no más olerla gusta al paladar\nLa “CARTA BLANCA“ es mi bebida\nsolo al nombrarla ya trago saliva\nA mi que no se me venga'\ncon esas bebida de la nueva ola\nyo bebo coñac de España\nunas veces solo y algunas con soda\nMuchos no se han dado cuenta\nque todo lo nuestro\nes lo mejor del mundo\nlo dicen por tierra extraña\nel mejor coñac de España\n“Cofiac FELIPE 11”\n«MP. JIMENEZ-MENA.-CADIZ DEPOSITO LEGAL CA 6-1965\nil",
+          "chars": 693,
+          "words": 152
+        }
+      ]
+    },
+    "popurri03.jpg": {
+      "num_boxes": 2,
+      "duplicates": 0,
+      "det_ms": 41.3,
+      "ocr_ms": 1467.6,
+      "total_chars": 1256,
+      "total_words": 276,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "- PASODOBLE\nViene a esta tierra un barquito ,\nmás típico no lo hay — __\nmás blanco ni más bonito...\nen toíto el muelle de Cai -\nMire vd. si el barquito\ntiene una clase exquisita\nque hasta dió su viajecito\nla célebre Tía Norica\nLos barcos de velas\ncomo palomitas cruzan por su vero,\nlos grandes mercantes\nsuenan la sirena al verlo pasar.\nY es que ese barquito es tan pin-\nturero\nque le dan besitos las olas del mor\nComo ronea, como presume\nsobre las aguas plateadas y azules.\n¡Ay! vaporcito del Puerto\ncuando en tí me embarco, cuando\nen ti navego\n“me contagias los recuerdos\nde tus viejos sueños ¡sueños mari-\nneros!\niAy! vaporcito del Puerto\ntu eres la alegría, tu eres la alegría\nde este muelle tan hermoso\ncon ese rumbo garboso\nicon que cruzas la Bahia!\nCoñac Felipe 11",
+          "chars": 627,
+          "words": 136
+        },
+        {
+          "region": 2,
+          "text": "PASODOBLE\nNo sé por qué carambola\ntodo lo que se ha inventado\nresulta que a las señoras\nles viene que ni pintado\nLos thermos, las lavadoras\ncamisas que no se planchan\ncocinas de última moda\ny el carrito de la plaza\nLos sobres de sopa\nque se la preparan en una bicoca\nSe limpian los suelos\ncomo esos ingleses que juegan al\nLe friegan la loza con qoutes de\n| y quíeren las ollas que\nEn cambio el hombre que se cree\nlas espiochas funcionan lo mismo\nCon toda esa maquinita\nque ellas necesitan para no hacer\nhay la mar de señoritas [nada\nque encima se irritan porque no\nSi además de estas ventajas\ntodavía reclaman y algunas se que-\nllegará: el día de mañana ljan\nque desde la misma cama\n¡hagan todas las faenas!\ngoma\nsean de\npresión\nlisto\nhay criadas\nA |\nAmontillado Carta Blanca",
+          "chars": 629,
+          "words": 140
+        }
+      ]
+    },
+    "popurri04.jpg": {
+      "num_boxes": 3,
+      "duplicates": 0,
+      "det_ms": 38.2,
+      "ocr_ms": 2189.5,
+      "total_chars": 2106,
+      "total_words": 437,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "5\nCosta bella de Cádiz\ndonde quiera que esté\nsurcando los mares\nyo siempre volveré\nDe las cosas que yo vi\npor los puertos que toqué\nhemos hecho nuestro popurrit\nque ahora cantaremos para Vd.\nHemos visto en América\nla mar de cosas quiméricas\nmuchas cosas atmosféricas\ny muchas gentes histéricas\nTodo lo bello es de América\ntodo lo grande es de América\ntodo lo bueno es de América\n¡caray! que lista es América\nIndíscutiblemente que en este pais\ntodos viven en paz\npues navegando hemos visto por ahí\nmatándose a trompds\nAna, as\nDicen que la Olimpiada\ndicen que la Olimpiada\ncelebrada en el Japón\nse han traido diez medallas\nde esas que tienen colgadas\nlos chorizos de morcón\nPero nadie se preocupe\npues en México me han dicho\nvolverán a competir\ny traerán más medallas\nde la Virgen Guadalupe\nque es la Patrona de allí\nConstantemente vá cantando el mari-\nnero\nE a",
+          "chars": 705,
+          "words": 148
+        },
+        {
+          "region": 2,
+          "text": "POUPURRIT |\nalegremente por elancho de los mares\naunque a veces también sentimos el\nmiedo\nsi nos azotan los terribles temporales\nLas aventuras que por los puertos tu-\nES vieron\nyan recordando con sus típicas can-\nciones\ny las gaviotas que revuelan sobre el\nCielo\nllevan noticias a sus queridos amores\nay, ya yay, ya ya ya, ya yay\nay, ya yay, ya ya ya, ya yay\nPor la costa de La Habana\ncuando navego pasp a disgusto\nnos acribillan las bálas\ny que no hablemos\\nas del asunto\nEn vez de atacar a España\npor qué no atacan a otras nociones\nque en vez de cargar muñecas\nsus barcos fletan de municiones\ny no a una nave indefensa\nque eso demuestra que no hay con-\nciencia\nVivan nuestros navegantes\nque dieron al mundo un día\ncon su valor arrogante\nlos mares y tierras que se desconocían\nBan bará, ban bará, ban bara .\nBan bard, ban bard, ban bara\nPgra ser marineros\npara ser marineros, es importante -\nhalar de los remos\nST =—S",
+          "chars": 745,
+          "words": 160
+        },
+        {
+          "region": 3,
+          "text": "a alll oe ee\ndarle bien a los remos y no marearse\nAy, arriba y arriba\nay, arriba y arriba, ay timonel\ndarle bien a la priva\npara ser marinero hay que beber\no\nhay que beber, hay que beber\nBoga marinero, dale a tus remos ma-\n- rinero\ndale a tus remos marinero, dale a\ncompás\nbarán, barán, barán, ban\nBoga marinero, dale a tus remos ma-\nrinero =\ndale a tus remos marinero, dale a =\ncompas\nbarán, barán, barán, ban\nMirando esta tiérra desde la alta «\n- mar, del mar\nparece que se hunde y vuelve a flotar .\ny siento una inmensa alegría al mirar\nla Torre Tavira y la Catedral\nA beber, a beber y a olvidar-\npues se vive mejor\nolvidando vuelvo a recobrar\nde nuevo el buen humor\nA beber a beber y a brindar\npor un Cádiz mejor\n-a brindar por la prosperidad =\nde nuestra poblacion\nde nuestra población,\nde nuestra población,\nA y ee",
+          "chars": 656,
+          "words": 129
+        }
+      ]
+    },
+    "popurri05.jpg": {
+      "num_boxes": 1,
+      "duplicates": 0,
+      "det_ms": 34.0,
+      "ocr_ms": 2386.2,
+      "total_chars": 1492,
+      "total_words": 235,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "JUAN POCEBLANCO \"JUANITO POCE”\nAño de nacimiento: 1928.\nProfesión: Mecánico.\nAño de Fallecimiento: 1994.\nHISTORIAL CARNAVALESCO.\nJuan Poce, siguiendo la tradición de su padre y su tío, se inicia erel Carnaval\nen 1949 como componente de la orquesta del coro \"Estampas Gaditanas”.\nComo autor de música de coros, lo hace a partirdelaño 1950 con \"Los Saline-\nros”, mientras que como músico de chirigotas, se estrena con la agrupación\n\"El pelotón de los torpes” en el año 1952.\nPosteriormente hace su incursi6n como letrista. Así, en 1959 escribe para la\nchirigota \"Los guarda jardines\", conocida también como \"Los guardas de an=\ntaño\".\nDe su extensa obra destacaremos:\ne. 1957.- Coro \"El sombrero detres picos\".\ne 1960.- Chirigota \"Los cristaleros”.\ne 1962.- Chirigota \"Los curanderos de pueblos”.\ne 1965.- Chirigota \"Los hueveros’.\ne 1965.- Coro \"Los Rosales”.\ne 1971.- Chirigota \"Los ligones\".\ne 1977.- Coro \"Las figuras del ajedrez”.\n+ 1978.- Chirigota \"Los pornográficos\".\ne 1979.- Chirigota “Los bacalaos de Escocia”.\n© 1980.- Chirigota \"Los monos sinverguenzas”.\n+ 1981.- Coro “Entre pitos y flautas”.\ne 1985.- Chirigota “Los loros mocegones”.\ne 1986.- Chirigota \"Los monitores de auto=escuela”.\nJuanPoce, tenía grandes dotes musicales desde pequeño, quizás influenciado\npor su padre que fue profesor de guitarra del Conservatorio “Odero\" de Cádiz,\nasí como autor y director de agrupaciones carnavalescas.\nComo autor de chirigotas desmitificó la exclusividad del cuplé en esta modali=\ndad, haciendo magistrales pasodobles agudizados con el doble sentido y de\nuna gracia singular. Sirva como ejemplo el pasodoble de la masilla de la chi-\nrigota \"Los Cristaleros” (1960) de tan grato recuerdo para los aficionados.\nLe fue concedido el Antifaz de Oro en el año 1974.",
+          "chars": 1492,
+          "words": 235
+        }
+      ]
+    },
+    "popurri06.jpg": {
+      "num_boxes": 2,
+      "duplicates": 0,
+      "det_ms": 43.5,
+      "ocr_ms": 1702.1,
+      "total_chars": 1362,
+      "total_words": 280,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "x\npy\nFino Paquiro\nPASODOBLE\nQuiero que escuchen cuando canto esta letrilla\ny a mis paisanos se la voy a dedicar\nporque es mi “Caílo mejor del mundo entero.\ny poco a'foco me lo quieren destrozar\nque de rincones tan bonito se perdierón\nuno de ellos sin saber porque razón\nsin darnos cuenta de la noche a la mañana\nnos arrancarón el jardín del corralón\ntambien tenemos el balneario de a Caleta\nque da hasta pena que el gaditano o pueda entrar\npues si usted baja en el verano para bañarse\nle han puesto una taquilla arriba para pagar\nsi tocamos a los Colegios $\nno hay uno gratis en toda la Capital\nyo recuerdo cuando niño A\nque nuestros padres no pagaban ni un real\ny si alguno se accidenta .\ntambien le pasa la factura el hospital\ncuando Moreno de Mora\ncreó esa gran obra para.la Ciudad\npero existen señores x\nfaltos de conociencia con la humanidad.\n- Oloroso Marquesado.\ne\n$ 4\nae",
+          "chars": 713,
+          "words": 148
+        },
+        {
+          "region": 2,
+          "text": "ze Fo >\nPino Fag\nee\n3 . f COUPLET\nHoy las mozas de servicio\nvienen del Pueblo muv educa\ny tiene su reglamento\nque es-‘muy curioso como verán\n2 que en las casas no hayan niños\ntampoco el viejo gruñón\nla radio y su lavadora\ny en vez de escoba un asplrador\ncuatro pagas extraordinaria\nlas tardes pe pasear\ndos meses de vacaciones >\nbuenas comidas para engordar\ny la dejen solita\ncon su guayabo en el palomar\nCOUPLET\nDe yerbas medicinales\nllevar..os lleno éste maletin\ndesde la yerba Luisa\nla mejorana y el perejil\naquel que tenga colitis\nno tiene porque sufrir\nlo “jartamo de higos “chumbos**\ny ése se acuerda siempre de mi\nmuchas vienen a buscarme\ncon una doble intención\n_y se llevan de esas yerbas\npara esos meses de calor.\n== La mandamos reposo\ny que se refresque con un sitón\nOloroso Marquesado",
+          "chars": 649,
+          "words": 132
+        }
+      ]
+    },
+    "popurri07.jpg": {
+      "num_boxes": 3,
+      "duplicates": 0,
+      "det_ms": 43.0,
+      "ocr_ms": 2225.8,
+      "total_chars": 2050,
+      "total_words": 406,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "POOPURRIT\nLOS NINOS DEL PIREO\nHemos desde el campo llegados |\nE todos\nestos curanderos y nos encontramos\naquí\nsolo para cantarle a ustedes\nsies que nos permiten un cortito\n= poupurrit\nlo que se diga no son más que rutinas\ncompuesto de pamplinas propias de\nla Ciudad\nque con cariño a todos dedicamos >\ny si en algo molestamos, creemos nos\nperdonarán.\n“CRUZ DE GUERRA“\nCon tantos medicamentos-bis\nque se han descubierto nuevos\nya nadie quiere ocuparse\nde estos pobres curanderos\ncualquier dia nos veremos\nde adorno en un.macetero\nOLA - OLA\nYa la caleta ha dejado de ser\nla playita limpia y bonita\nque tanto añoré\ncon el rumor de las olas, mi prima -\nLola\nse encontró cierta mañana\nen el bañador\ncuatro suelas de alpargatas\ny una matraca\ny un tolete muy pegado al tirabuzón\nADELITA\nSi mis yerbas curaran al enfermo\nse perderia el Seguro de Enfermedad\ny tendrian que vender las pastillas\na dos reales lo menos el millar\nsi alguno se encuentra endeblito\ncon mi receta seguro engordará",
+          "chars": 805,
+          "words": 160
+        },
+        {
+          "region": 2,
+          "text": "pues yo les mando buenos bistek\nde cerdo y vino fino de Veiez en\n: cantidad\nYO QUISERA COMPRENDER\nYomo llego a comprender bis\nporgue se muestran\nhoy tan cursi las mul\ncon malena y pa\nsin tirante y cinturón -\nalgunas van como toneles\ny están furiosas, porque no tienen *\nlo que ellas quieren.\nAGUANTA CORAZON\nEl jamón, el lomo y salchichón\nse vé en explosióm en los biombos\nsensación nos causa sens. cién\nver tal exhibición, con tanto bombo\nno, no se A exhibir\nesos generos cosipsos\ndifícil de adquirir,\nno, porque cul además\nun insulto a la pobreza\nque sufre el malestar.\nYO VENDO UNOS OJOS NEGROS\nTenemos dos mil lagartos\nde lagartija un millón\npara preparar los ungentos\nque tanta fama nos dió\nyerbas del campolas traigo yó.\npara quitar los sinsabores\ny curar el mal de amor\nsolo cobramos la voluntad\ny muchas veces las yerbas\nme las tengo que pagar\nGALANA\n¿Galana, linda mujer gaditana\nlozana, como delicada flor\n“recoje este piropo sincero\nte lo brinda el curandero\nrendido de admiración",
+          "chars": 814,
+          "words": 165
+        },
+        {
+          "region": 3,
+          "text": "BALANCE\nYa tenemos el pasaporte\npara pirarnos a la luna\na ver sin en este planeta\nlogramos hacer ás fortuna\nsegún dicen los que han ido\naquello es maravilloso.\nabundan los comestibles\ny no existen sanatorios\ncon el coco lleno de ilusiones\ntodos vamos muy contentos\na ver si a nuestro regreso\nya han pintado el Ayuntamiento,\nMANOLETE\nYa señores terminamos\nfo que a todos con gusto le\n\"dedicamos\naltamennte agradecidos\na todos les deseamos\ngozen de un buen carnaval.\nIne. San Jo\nFrancisco Ureba Lobatón\nTeléfono 116 Conil",
+          "chars": 431,
+          "words": 81
+        }
+      ]
+    },
+    "popurri08.jpg": {
+      "num_boxes": 2,
+      "duplicates": 0,
+      "det_ms": 38.8,
+      "ocr_ms": 1135.5,
+      "total_chars": 809,
+      "total_words": 174,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "PASODOBERAFEENTRAL LECHERA\nLa leche La Merced es la más rica\npor la pureza de su crema\nla leche La Merced es la más fina\ny es una leche de primera.\nSi quiere usted un consejo de un amigo\nponga oído que ahora mismo le diré\nsi lleva usted leche\npara sus hijos que sea La Merced.\nLa más cremosa de todas\npor su rico paladar es predilecta\nla leche que reconiorta\ny la que aporta vigor y fuerza.\nTiene la Central Lechera\nun prestigio sin igual\nes la Merced la puntera\nla leche buena de calidad.\nLa Leche que tiene fama\nporque en toda España\nno tiene rival.\nAnguno... Ninguno de más Que\nCADIZ",
+          "chars": 473,
+          "words": 111
+        },
+        {
+          "region": 2,
+          "text": "won\nPF\nCUPLE\nDicen que los alpinistas\nexponen mucho y nada ganan\nvaya una afición más prima\nsubirse por las montañas.\nA pique de congelarse .\no de morirse por tanto trío\ncomo cierto personaje\nque es bastante conocido.\nEl gran Pérez de Tudela\na una montaña quiso subir\ny hasta la nieve sabía\nque le sobraba mucha nariz.\nCONFECCIONES\nINOMEDADES\nTejidos MARIN\ndl\nObispo Urquinaona, 9 - Teléfono, 213532\nCA ileZ",
+          "chars": 336,
+          "words": 63
+        }
+      ]
+    },
+    "popurri09.jpg": {
+      "num_boxes": 2,
+      "duplicates": 0,
+      "det_ms": 36.3,
+      "ocr_ms": 1150.1,
+      "total_chars": 623,
+      "total_words": 119,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "PASODOBLE\nPor día estamos viendo cómo aumenta\nun buen montón de melenudos\nalgunos creo yo no se dan cuenta\nque están para darle un buen repaso.\nSe ven unas melenas bien cuidadas\nmuy tizaditas y algunas ondulás\n* pero otros la llevan\ncomo las ratas cuando están pisoteas.\nUn consejo darles quiero\nsi lo quieren escuchar los de los pelos\nque se descarguen un poco\ny que se acuerden de los barberos.\nPorque estamos viendo el día\ncartelitos que dirán\nse vende ésta barbería\no se traspasa este local.\nY entonces algunos barberos\nya los estamos viendo en la patroná.\n¡Casa TOMAS\nUltramarinos - Bar\nEDS\nMagdalena, 2 - Teléfono, 221312\nCADIZ",
+          "chars": 522,
+          "words": 103
+        },
+        {
+          "region": 2,
+          "text": "| La Perla de la Viña\nUltramarinos y Bar\nServicio a domicilio\nCristo de la Misericordia, 12\nTeléfono, 212247 - CADIZ\nAAA A E",
+          "chars": 101,
+          "words": 16
+        }
+      ]
+    },
+    "popurri10.jpg": {
+      "num_boxes": 2,
+      "duplicates": 0,
+      "det_ms": 37.3,
+      "ocr_ms": 1019.8,
+      "total_chars": 398,
+      "total_words": 96,
+      "per_region": [
+        {
+          "region": 1,
+          "text": ") nta\n/ arta Blanca\n\\ FELIPE ll |\n| Una marca de garantía...\nqu. rune",
+          "chars": 54,
+          "words": 11
+        },
+        {
+          "region": 2,
+          "text": "AAA\nCANCION BARCAROLA\nDesde que nace el día\nsentimos la nostalgia\nde la Patria querida\nallá por tierra extraña.\nLejos de la familia\nque llevamos en el alma.\nPor muy lejos que esté\nyo no la olvido, no\npues me falta la vida\nlejos de mi rincón\nPor muy lejos que esté\nyo no te olvido, no\nmi tierra y mi familia\nllevo en el corazón\nCádiz del alma mía\nyo no te olvido, no\nme falta tu alegria\nme falta tu calor.\nAmontillado Carta Blanca",
+          "chars": 344,
+          "words": 85
+        }
+      ]
+    },
+    "popurri11.jpg": {
+      "num_boxes": 2,
+      "duplicates": 0,
+      "det_ms": 37.9,
+      "ocr_ms": 1449.7,
+      "total_chars": 1191,
+      "total_words": 260,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "PASODOBLE\nMe dijo una gaditana\ndedicame una letrilla\npues tus canciones me agradan\nsólo por ser tan sencillas\n“ Si tú tuvieras ventana\nte cantaría mi odisea\npero resulta serrana\nque vivés en la azotea\nAsí es que paisana\nni yo soy cantor ni tú tienes venta-\nni en Cádiz hay un rio Ina\nque son los que suelen las coplas\nllevar\nPero si los ríos al mar desembocan\nresulta que a Cádiz vienen a parar\nen ese caso vé a la playita”\ny elige tú a la más bonita\nComo quieres que te cante\nni te escriba versos lucerito mío\nsis que yo pierdo a tu vera\ntoas las tapaeras que tiene el\nsentío\nY además ya te lo he dicho\nque no te hace falta que te hagan\nque sin rios ni ventanas [canciones\nes la mujer gaditana\njel amor de mis amores!",
+          "chars": 574,
+          "words": 137
+        },
+        {
+          "region": 2,
+          "text": "j\n|\n4\nPASODOBLE\nYa tenemos puentecito\nya estamos todos contentos\npues dicen que muy prontito\nempezarán los cimientos\nAparte de las riquezas\nque suponga al Municipio\nserá un lugar de belleza es\nincluso para el turismo\nLas gentes del Dique\nya no temerdn que puedan irse a\nlos dias de neblina [pique\ntampoco tendrá que volver pora\n, atrás\nQue venga levante, que sople po-\nniente\nque yá con el puente no hay ná:\nque rascar\nEn autobuses irán mejores\nmás sentaditos comodones\nCuando admiren la grandeza\nde esta plateada y hermosa bahía\nrecordarán que el poeta ,\ncuando le cantaba su razón tenía\nY al echar un paseito\npor el puentecito cualquiera maña-\nverá Vd. que es deliciosa «Ina\nverá que es maravillosa É\njla ribera gaditana!\nAmontillado Carta Blanca",
+          "chars": 617,
+          "words": 123
+        }
+      ]
+    },
+    "popurri12.jpg": {
+      "num_boxes": 3,
+      "duplicates": 0,
+      "det_ms": 38.6,
+      "ocr_ms": 1795.4,
+      "total_chars": 1133,
+      "total_words": 233,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "Fino Pag\nPASODOBLE\nDando bandazos por esos pueblo de Espuña\ncon ilusiones hemos ado hasta aquí\ny aguí nos tienen y a ustedes nos\ncon mil amores “pa ' lo que p\ntodos nosotros estamos bién documentados\ny practicamos curaciones en general z\ndesde el ronguio al simple dolor de muelas\nunos por uno tienen su especialidad.\nTenemos fama en el tratamiento\nde la almorranas\ny en esos bultos que en el pescueso suelen salir\ntan solamente en el transcurso de una semana -\nhemos mandado para el viaje “más de dos mil\ncuramos el mal de amores\nlas diarreas y los juanetes de los pié\ny los callos lo sacamos 2\nla tenaza un martillo y un cincel\n“pas los meses deteniós\ntambién tenemos um tratamiento superior\ny al borracho mala lengua\nle damos masaje con este bastón\ny lo tenemos tres meses\ncomo im hacalao9colgao* enel balcón.\nOloroso Marquesado\nImprenta San Rafael-Cádiz",
+          "chars": 704,
+          "words": 139
+        },
+        {
+          "region": 2,
+          "text": "Imprenta Sa:\nCC\nBuenas tarde Don Antoni:\nSolo venímos con la intenció\nde ver como usted se encuen!\nde la pap=ra que le salió\n“en vista que está usted bueno\n“sí nos quiere convidar\nbeberemos de Chiclana\ntodas las botellas que quiera e\nlas yerbas que le mandemos\ndiez duros le voy a cobrar\nY Si no las paga pronto\n>. a Su mujer nos vamos a chiva\nque lo han visto de noche\ncon su criada en el corral\ne\n- Baba Vinos delas\nE Hermanos y\no\nDespachos: José del Toro,\nCA",
+          "chars": 368,
+          "words": 83
+        },
+        {
+          "region": 3,
+          "text": "Vias de SONDEMAN\nCompañia de pa\nLA Gil E\n16-Teléfonos, 23883 - 12686\nDIZ\nil",
+          "chars": 61,
+          "words": 11
+        }
+      ]
+    },
+    "popurri13.jpg": {
+      "num_boxes": 1,
+      "duplicates": 0,
+      "det_ms": 31.5,
+      "ocr_ms": 2362.9,
+      "total_chars": 1525,
+      "total_words": 236,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "GUSTAVO ROSALES MARQUEZ \"AGUILLO\"\n'Año de nacimiento: 1909.\nProfesión: Carpintero de Ribera en los Astilleros de Cádiz.\n'Año de Fallecimiento: 1985.\nHISTORIAL CARNAVALESCO.\nAgiillo, comenzó en el Carnaval siendo integrante de voces del coro \"Las\nMariposas” (1934) y así hasta 1936 en que se interrumpen las fiestas.\nEnel verano 1949 escribe y participa con el \"Conjunto Coral Gades’, pasando\nal año siguiente a escribir y dirigir el coro llamado de los Astilleros, por estar\ncompuesto en su mayoría por empleados de esta empresa, titulado “Los Gon-\ndoleros de Venecia\".\nDestacamos de su obra las siguientes agrupaciones:\ne 1953.- Coro \"Los Fundadores de Gadir”.\ne 1955.- Coro \"Los Mosqueteros de la Reyna\".\ne 1960.- Comparsa \"Los Cumplios”.\n+ 1962.- Coro \"El Pájaro Azul y sus matuteros”.\ne 1962.- Chirigota “Los Criticones”.\ne 1963.- Chirigota \"Los Nuevos Atacantes”.\ne 11964.- Chirigota \"Los Humoristas”.\ne 1965.- Chirigota \"Los Amargaos”.\ne. 1966.- Chirigota \"Los Sabihondos”\".\ne 1967.- Coro \"Los Mesoneros”.\ne 1968.- Chirigota \"Los Ceporros\"”.\ne 1968.- Chirigota “Los Guachisnays”.\n+ 1970.- Chirigota \"Los Cristobalitos\".\n© 1971.- Chirigota “Los Tacaños”.\nA Gustavo Rosales era un autor introvertido. Nadie lo vió jamás escribir una\nletra de Carnaval. Asiduo lector de prensa y revistas, iba cogiendo temas para\nluego hacer sus composiciones.\nFue el que impulsó de nuevo los relatos históricos en los popurrits. Como\nantológico quedó el popurrit de \"Los Amargaos”, (1965) que sirvió de ejemplo\npara otros autores.\nSu capacidad de adaptación hacia otras modalidades, fue constante; lo mismo\nescribía para coros, que para comparsas o chirigotas, aunque en estas últimas\nfueron donde cosechara los mayores éxitos a finales de los 60 y principios de\nlos 70.\nLe fue concedido el Antifaz de Oro enel año 1973.",
+          "chars": 1525,
+          "words": 236
+        }
+      ]
+    },
+    "popurri14.jpg": {
+      "num_boxes": 3,
+      "duplicates": 0,
+      "det_ms": 39.5,
+      "ocr_ms": 2283.3,
+      "total_chars": 2292,
+      "total_words": 459,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "POPURRIT\nLos. Ericeros,\nEstos cuantos hojalaleros\nnos queremos despedir\nAunque con muchas frtigas\nles cantamos el Popnerit\nComo es tan chiquitito\nlo aprendimos en un día\ntomándonos medio litro\nen nuestra hojalateria.\nMa-ma-maldita le\nsquillaos\nSegiesiuente i\nque el levante se ha <lesatao\nDos\nal auditorio\nil perdones vamos a pedir\n<a nos largamos y no terminamos\nel repertorio.\nTapiceros.\nSi quiero cobrar tengo que en-\nJ tengo q\neste cacharro mojoso (tregar\npero voy a pasar las ducas\npor... porque (bis)\nel marchante es un tartajoso.\nArrieros.\nAjú, ajú, ahora es cuando\nnos quedamos sin el Colilla.\neste tio tevelao\nes)\nlo hace papilla\n#1 asartén se lo pone de corbata\ncom OS al ae brecillo",
+          "chars": 577,
+          "words": 109
+        },
+        {
+          "region": 2,
+          "text": "en vez de estaño\nle han ehado en el boquete\npolvo ladrillo,\nRubita\nEste verano salí\na entregar una palangana\ny me encontré una gachí\nvestida a la americana.\nLlevaba un traje muy extraño,\npor delante colosal,\npero llevé un desengaño\ncuando yo la ví pasar.\nMala puñalá te den\nsólo le fale\npara parecerte bien\nal de la.carne membrillo.\nRubita, linda rubita,\nvístete con más postín\ny el trajecito de saco (b ,\nlo mandas a Puente Genil.\nArmuñeiras.\nSi ustédes nos vieran juntos\ncuando estamos conversando (bis\nes igual que si estuviera\ncala\nSólo se siente el ton, ton, ton.\ncuando se está remachando.\nYaque ne pul pedo\nde un fondo\nle juramos de verdad\ncuando acabo de decirlo\nel cubo está listo ya,\nCanastos.\nMa-maestro estamos",
+          "chars": 594,
+          "words": 122
+        },
+        {
+          "region": 3,
+          "text": "está en apuros y lleva\nlos cinco duros que hemos\nganado este mes.\nCa-canastos\ncógelo por favor como\nle han presto la chorla\nal darle con el sartén.\nSi se descantilla el fulano\nse los sacan por los pies.\nLos hijos del moro Juan.\nEl tabaco del estanco\nse ha puesto de una manera\nque el que fuma un cigarro\nle salen hasta paperas.\nLucas el que nos toca el bombo\nse encontró en nn paquetillo\ndos alfileres de palo\ny los bigotes de un grillo.\nEl director, el director\ntie-tiene la lengua\nllenita de esparadrapo\ny nos extraña que eso\nle ocurra con el tabaco.\nEn la consulta\nsupimos la realidad.\n_Eses son otros López\nque aquí el maestro\nquiere ocultar,\nCiavelitos.\nSe componen óllas y cafeteras,\narreglamos cazos y espumaderas,\nestañamos asartenes y peroles\ntambién.\nY hacemos filigranas\ncon las palanganas\npor poco parné.\nAnda, niña, se va el hojalatero\nque trabaja con gracia y esmero:\nque mañana es domingo\npara trabajar y la hojalateria\nté lo juro, Maria,\nque estard cerrd.\nAnda, chiquillo.\nYa nos largamos\nsi hemos molestado\ncon nuestras eanciones\nestos hojalateros\npider mil perdones.\nAnda, maestro, coge ya\nlos tiestos y vdmonos\npa casa antes que\nla lengua se ponga con\nguesa y no podemos\nseguiv y nos parían\na nariz.\nUna rosa y un clavel.\nMa lindo rincón\npor tu gracia y tu sal\nd,\nde ta emoción\nno podemos cantar.\nNo-s0-no-no\npodemos más.\nPapá-papá\nbella ciudad.",
+          "chars": 1121,
+          "words": 228
+        }
+      ]
+    },
+    "popurri15.jpg": {
+      "num_boxes": 2,
+      "duplicates": 0,
+      "det_ms": 41.4,
+      "ocr_ms": 1897.5,
+      "total_chars": 1806,
+      "total_words": 384,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "Los Muñecos\nEl que quiera comprobar\ny también desengañarse\nlo invitamos a escuchar\nsin llegar a molestarle\ntodo lo bueno y todo lo malo\nque tiene nuestro modesto balet\npues de virtudes escaseamos\ny Vds. mismos lo pondran ver\nAcuarela del Rio\nComo quiera que ha sido\na donde hemos ido\ntremendo desastre\npues la cosa ha salido\n-lo mismo que un lio\nsin deshilvanar\nyla gente aburrida con razones\nnos firaban ladrilllo y\nmuchas cosas mas\nA la carrera jay mi Dios!\ncasi siempre hemos salido\ny si nos coje jay mi Dios!\nestariamos perdidos\nporque dentro de una alberca\nnos querían tirar\nmenos mal que el Molondro Ile-\ngó en el momento y no pasó ná\nLa Viudita Naviera\nQue mañana en Cádiz\naquella mañana\nque nos dijo el director\nsí no sale bien la trama que\nnadie se preocupe que respondo",
+          "chars": 636,
+          "words": 134
+        },
+        {
+          "region": 2,
+          "text": "POOPURRIT\n(yo)\nbailamos un pasodoble\neste fué quien lo cantó\nde que forma cantaría\nque ahí nos perdimos tó\nque revolución\nCanción luna lunita clara\nOtra noche que estuvimos\nhaciendo gala en un teatro\nlo mismo que en todos sitios\naquello fué otro mamaracho\nnos metieron en la cárcel\npor orden municipal\ny quería el gran alcalde\nque nos echaran perpetuidad\ne\nMibiría Isabel\nYa vierof, todo lo malo\nque fiene nubstro balet\nahora verán virtudes\nsí es que asi pudiera ser\nhay entre nosotros un bailaor\nque es un terremoto que si señor\ntiene cualidades muy bien dotas\nbaila como nadie que ya vera\nChiviriviri po po pon (bis)\nChiviriviri po po pon (bis\nLa mano de Lios\nYa ustedes vieron\nque no es rutina\nque aquí hay madera de lo mejó\ny con esto ya se termina\nun acertijo propongo yo\nAdivi adivi adivinelo\nfuerce su imaginación\nadivi adivi adivinelo\nquien es el mas bailaor\nAdivi adivi adivinelo\nfuerce su imaginación\nAdivi adivi adivinelo\nporque esto se acabó\nEstoy cantando al viento\nHay la la la hay la la la (bis)\nle damos miles gracias\nporque podimos comprobar\ndicha es la verdad es la verdad.\nPues vimos con encanto\nla afención que nos prestaron\ny sabemos que esto ha sido\nun tostón : :\nAdiós mi Cádiz o bello Cadiz\nes un placer que llevaremos\npor doquier\nque en mucho tiempo olvidaré\npon adiós pon adiós pon adiós\npon adiós adiós, .\nTransportes\nJuan Ruiz\nEn el Muelle pesquero, en Po-\nblación y en Carretera\nTeléfono 212725 Cádiz",
+          "chars": 1170,
+          "words": 250
+        }
+      ]
+    },
+    "popurri16.jpg": {
+      "num_boxes": 3,
+      "duplicates": 0,
+      "det_ms": 35.8,
+      "ocr_ms": 1856.0,
+      "total_chars": 1682,
+      "total_words": 349,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "UN MECHON DE TU CABELLO\nCon profunda emoción\nte venimos a cantar\nCádiz vieja ciudad\nde belleza sin par.\nCruzando los grandes mares\nhemos llega (o hasta aquí\nBLANCO Y NEGRO americanos\nenamorados de tí\nNuestra ilusión\nse cumple al fín\nde corazón cantamos así\nGUENDOLINE\nComo brillan tus torres\npreñadas de cal\ncomo brilla tu faro\na lo ancho del mar\nes un bello poema\nque invita a soñar\n(Deo asi.\nTODO TIENE SU FIN\nQuiero decirte gaditana\nlos más bellos piropos\nque van dentro de mí.\nSon tus andares señoriales\nun janco cimbreante\ngracioso presumir.\nPienso que eres musa de un lienzo\nde belleza sin fín.\nQuiero prender en tus cabellos\nramitos de aiheli.",
+          "chars": 535,
+          "words": 111
+        },
+        {
+          "region": 2,
+          "text": "P OU PRU RR MT\nHISTORIA DE UN AMOR\nY la gracia detus gentes\nno se puede aguantar\nhay un embrujo én tus barrios\ncon un duende especial\neres lo mejor del mundo\nde aquí no nos vamos más\nen tu suelo morifemos\ncantando y miraado al mar.\nLUKY LUKY\nEres tn ROSARIO DE TORNASOL\nEn tus calles Marineras\nhay un yodo de solera\nembriagador.\nEres un CAPRINO DEL CREADOR\nUn perfume delicioso\npenetrante, armíaloso\ny seductor. Y\nEres una DIOSA NOVIA DEL SOL\nUn joyero\nun NAVIO MILENARIO IDEAL\nUn portento\nEres un Pañolito Blanco con Encajes\ndel Mar.\nTienes un clima ideal\ntus gentes señorial\neres de España\nsu pedestal. '\nTU NOMBRE ME SABE A HIERBA\nCuando Hegttios aqui\nal ver tu cielo",
+          "chars": 545,
+          "words": 119
+        },
+        {
+          "region": 3,
+          "text": "cerré mis ojos entusiasmado\ny lloré. rn\nCuando llegamos aqui\nal ver tus cosas\nabri mi pecho y de amor\nme saturé. y\nTus playas son deliciosas\nde arenas maravillosas\ntostadadas de sol.\nEN BANDOLERA\nCon ilusión\ntu historia conocí\nla releí y me fascinó\nfuiste un emporio de riqueza\n<una de las artes y del valor.\nEn Cádiz se amazó\nnuestra Constitución\ny, nos legaste tu nobleza.,\nLAMENTO NEGRO\nCon devoción\ntu nombre se venera\nel corazón\nentero se te entrega\nuna cracion\no diosa marinera\nhermosa flor.\nEL PECADOR\nY, si vas a seguir\nsiendo así, dandome amor\nNo... Yo no quiero Señor\nabandonar este rincón.\nDerrama buen Dios\nsobre Cádiz bendición\nde esta tierra, su grandeza,\nte pedimos Sefior,\ndale tu bendición,\na este hermoso rincón.",
+          "chars": 602,
+          "words": 119
+        }
+      ]
+    },
+    "popurri17.jpg": {
+      "num_boxes": 1,
+      "duplicates": 0,
+      "det_ms": 22.5,
+      "ocr_ms": 793.8,
+      "total_chars": 652,
+      "total_words": 122,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "Pasedobie dedicado a\nSOBERANO |\n¡es cosa de hombres! 4\nDesde los tiempos inmemoriales\nnuestra provincia tiene un primor,\nen la crianza de buenos vinos\ny de los brandys fipo español.\nLos ricos mostos seleccionados\nsufren un proceso de transición,\ny con los años se va formando\nese milagro de olor y sabor.\n> > A A\nEs Jerez de la Frontera 0)\nde gran fama mundial, “ff\npor sus vinos de solera\nque a ESPAÑA prestigio dá.\nEse famoso TIO PEPE\nque no se puede aguantar,\ncon su sabor inconiundible,\nelegante y señorial.\nEs el Brandy SOBERANO\nel que los hombres tomamos\n“exigente y distinguido\npor su sabor refinado,\nY en BIASS 96\ntoda la ciencia se echó,\nun BRANDY de antología,\n¡Marcas de GONZALEZ BiASS,\ngloria del pueblo espafiol!\nImip. Feros-Sacramento, 43 Depósito Legal: CA-324 2.000 ej. CADIZ",
+          "chars": 652,
+          "words": 122
+        }
+      ]
+    },
+    "popurri18.jpg": {
+      "num_boxes": 2,
+      "duplicates": 0,
+      "det_ms": 38.8,
+      "ocr_ms": 1689.0,
+      "total_chars": 1499,
+      "total_words": 299,
+      "per_region": [
+        {
+          "region": 1,
+          "text": "SANGRE Y 1\nTangos LOS VIEJOS |\nEste conjunto de viejos\nles saludamos\nque tengan benevolencia\nles suplicamos\ny si es que lo que cantamos\nno es de su agrado\nno nos den un nial rato\nporque seguramente espichamos.\nSalimos en este coro\ndespués de estar muchos años ausentes\nporque los carnavales\nlo estamos viendo muy dlrs\nPero el aficionado\nque tiene sangre de comparsista\nsi no gana dinero\nla indumentaria la paga a dita.\nAsí nosotros nos reunimos\ny con más años que siete loros\naún nos animan los carnavales\ny decidimos sacar un coro.\nHemos tenido pocos ensayos\ny hasta pensamos volvernos locos\npero estos detalles importan poco\nla cuestion es que en Cádiz\nno falte el tango que es de nosotros.\n2 es\nFanananaana nan nanannninananananaaanasó\nARTICULOS DE PIEL\n= OMNIA ==\nJosé del Toro, 13 - Teléf. 212553 CADIZ\nVV IV OU OV OV DOSIS\nFINO cu\npvw VV ewes\nHasaanncacoee",
+          "chars": 708,
+          "words": 141
+        },
+        {
+          "region": 2,
+          "text": "'RABAJADERO “i\nJEMOCRATAS. Año 1.935\nHoy las mujeres modernas\nvan muy coquetas\nporque a los hombres nos sacan\nbien las pesetas\nmuchas se cortan el pelo\nmás bien cortito\npara gastarse Juego\ndos mil pesetas por un postizo.\nPobre de aquél muchacho\nque se enamore de una mocita\nle cuesta más dinero\nque si fichara un gran futbolista.\nCuando van por la calle\nellas se creen que van muy monas\ny hay muchas que no saben\ncoger ni el palo de la fregona.\nYo le habio a una\nque en poco tiempo\nya le he comprado cuatro vestidos\ny ahora me ha dicho\nque quiere un coche\ncomo regalo de prometido\nme estoy quedando sin una gorda\ncon esa niña que es tan moderna’\ny si sigue la racha buena me espera\nme veréis por las calles »\ncojer cartones como “Marchena”.\nDspsesesaoparsesnororsasescocsesesraRseo\nE LA PRIMERA DE LA ISLA Al\ni Cerveceria COMI #\nE Dirección: JACINTO COLLADO i\nE Real, 65 y Gral. Garcia de la Herrán, 4 tt\nih SAN FERNANDO Al\nDesesesosesesosespoespsesesesesesesesesol",
+          "chars": 791,
+          "words": 158
+        }
+      ]
+    }
+  },
+  "ocr_engine": "tesseract",
+  "n_images": 18,
+  "total_chars": 24376,
+  "total_words": 4941,
+  "total_duplicates": 0,
+  "mean_boxes": 2.11,
+  "imgs_no_boxes": 0,
+  "mean_det_ms": 36.6,
+  "mean_ocr_ms": 1662.3,
+  "ocr_score": 49081.0
+}

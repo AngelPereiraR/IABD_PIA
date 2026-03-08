@@ -9,8 +9,8 @@
     "popurri01.jpg": {
       "num_boxes": 16,
       "duplicates": 0,
-      "det_ms": 2057.6,
-      "ocr_ms": 12802.4,
+      "det_ms": 5520.1,
+      "ocr_ms": 19922.2,
       "total_chars": 1792,
       "total_words": 422,
       "per_region": [
@@ -115,8 +115,8 @@
     "popurri02.jpg": {
       "num_boxes": 6,
       "duplicates": 0,
-      "det_ms": 2196.3,
-      "ocr_ms": 4961.7,
+      "det_ms": 3038.9,
+      "ocr_ms": 7718.7,
       "total_chars": 636,
       "total_words": 144,
       "per_region": [
@@ -161,8 +161,8 @@
     "popurri03.jpg": {
       "num_boxes": 11,
       "duplicates": 0,
-      "det_ms": 2099.4,
-      "ocr_ms": 8421.4,
+      "det_ms": 2745.9,
+      "ocr_ms": 10239.4,
       "total_chars": 1305,
       "total_words": 288,
       "per_region": [
@@ -237,8 +237,8 @@
     "popurri04.jpg": {
       "num_boxes": 19,
       "duplicates": 0,
-      "det_ms": 2044.8,
-      "ocr_ms": 16188.7,
+      "det_ms": 2947.8,
+      "ocr_ms": 25200.9,
       "total_chars": 2458,
       "total_words": 501,
       "per_region": [
@@ -361,8 +361,8 @@
     "popurri05.jpg": {
       "num_boxes": 10,
       "duplicates": 0,
-      "det_ms": 2027.8,
-      "ocr_ms": 9669.8,
+      "det_ms": 2585.0,
+      "ocr_ms": 11484.8,
       "total_chars": 1430,
       "total_words": 220,
       "per_region": [
@@ -431,8 +431,8 @@
     "popurri06.jpg": {
       "num_boxes": 8,
       "duplicates": 0,
-      "det_ms": 2004.7,
-      "ocr_ms": 9097.6,
+      "det_ms": 2594.1,
+      "ocr_ms": 10834.6,
       "total_chars": 1303,
       "total_words": 268,
       "per_region": [
@@ -489,8 +489,8 @@
     "popurri07.jpg": {
       "num_boxes": 24,
       "duplicates": 0,
-      "det_ms": 2023.7,
-      "ocr_ms": 14746.2,
+      "det_ms": 4009.2,
+      "ocr_ms": 18456.8,
       "total_chars": 2069,
       "total_words": 415,
       "per_region": [
@@ -643,8 +643,8 @@
     "popurri08.jpg": {
       "num_boxes": 12,
       "duplicates": 0,
-      "det_ms": 2041.8,
-      "ocr_ms": 8980.0,
+      "det_ms": 2908.0,
+      "ocr_ms": 10898.7,
       "total_chars": 1150,
       "total_words": 262,
       "per_region": [
@@ -725,8 +725,8 @@
     "popurri09.jpg": {
       "num_boxes": 12,
       "duplicates": 0,
-      "det_ms": 2010.0,
-      "ocr_ms": 5444.0,
+      "det_ms": 2770.8,
+      "ocr_ms": 6599.7,
       "total_chars": 609,
       "total_words": 116,
       "per_region": [
@@ -807,8 +807,8 @@
     "popurri10.jpg": {
       "num_boxes": 2,
       "duplicates": 0,
-      "det_ms": 1991.3,
-      "ocr_ms": 1082.5,
+      "det_ms": 3833.3,
+      "ocr_ms": 1272.8,
       "total_chars": 56,
       "total_words": 9,
       "per_region": [
@@ -829,8 +829,8 @@
     "popurri11.jpg": {
       "num_boxes": 13,
       "duplicates": 0,
-      "det_ms": 1949.7,
-      "ocr_ms": 6957.8,
+      "det_ms": 2760.0,
+      "ocr_ms": 8660.7,
       "total_chars": 1057,
       "total_words": 233,
       "per_region": [
@@ -917,8 +917,8 @@
     "popurri12.jpg": {
       "num_boxes": 10,
       "duplicates": 0,
-      "det_ms": 2034.8,
-      "ocr_ms": 8187.9,
+      "det_ms": 2923.2,
+      "ocr_ms": 9850.0,
       "total_chars": 1054,
       "total_words": 214,
       "per_region": [
@@ -987,8 +987,8 @@
     "popurri13.jpg": {
       "num_boxes": 9,
       "duplicates": 0,
-      "det_ms": 2033.8,
-      "ocr_ms": 9915.8,
+      "det_ms": 4346.2,
+      "ocr_ms": 12024.4,
       "total_chars": 1410,
       "total_words": 218,
       "per_region": [
@@ -1051,8 +1051,8 @@
     "popurri14.jpg": {
       "num_boxes": 23,
       "duplicates": 0,
-      "det_ms": 2061.5,
-      "ocr_ms": 18511.7,
+      "det_ms": 4358.1,
+      "ocr_ms": 22970.1,
       "total_chars": 2417,
       "total_words": 463,
       "per_region": [
@@ -1199,8 +1199,8 @@
     "popurri15.jpg": {
       "num_boxes": 16,
       "duplicates": 0,
-      "det_ms": 2043.1,
-      "ocr_ms": 14605.2,
+      "det_ms": 4330.7,
+      "ocr_ms": 18097.7,
       "total_chars": 1824,
       "total_words": 386,
       "per_region": [
@@ -1305,8 +1305,8 @@
     "popurri16.jpg": {
       "num_boxes": 18,
       "duplicates": 0,
-      "det_ms": 2616.3,
-      "ocr_ms": 12973.6,
+      "det_ms": 2636.9,
+      "ocr_ms": 13530.4,
       "total_chars": 1663,
       "total_words": 348,
       "per_region": [
@@ -1423,8 +1423,8 @@
     "popurri17.jpg": {
       "num_boxes": 7,
       "duplicates": 0,
-      "det_ms": 3571.4,
-      "ocr_ms": 5762.5,
+      "det_ms": 2534.9,
+      "ocr_ms": 4491.7,
       "total_chars": 554,
       "total_words": 110,
       "per_region": [
@@ -1475,8 +1475,8 @@
     "popurri18.jpg": {
       "num_boxes": 7,
       "duplicates": 0,
-      "det_ms": 2724.9,
-      "ocr_ms": 9185.1,
+      "det_ms": 2905.5,
+      "ocr_ms": 9553.2,
       "total_chars": 1191,
       "total_words": 256,
       "per_region": [
@@ -1532,7 +1532,7 @@
   "total_duplicates": 0,
   "mean_boxes": 12.39,
   "imgs_no_boxes": 0,
-  "mean_det_ms": 2196.3,
-  "mean_ocr_ms": 9860.8,
+  "mean_det_ms": 3319.4,
+  "mean_ocr_ms": 12322.6,
   "ocr_score": 48343.0
 }
