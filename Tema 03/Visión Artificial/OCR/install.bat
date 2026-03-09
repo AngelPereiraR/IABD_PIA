@@ -325,9 +325,7 @@ echo    py -3.11 detect_columns.py --image imgs/popurri01.jpg --method paddleocr
 echo    py -3.11 detect_columns.py --image imgs/popurri01.jpg --method docling --debug
 echo.
 echo 2. Consultar documentacion:
-echo    - plan_mejora_proyecto.md: Estado completo del proyecto (FASE 2.2 completada)
 echo    - README.md: Documentacion general
-echo    - QUICKSTART.md: Inicio rapido y comandos de instalacion/uso
 echo.
 echo ================================================================================
 pause

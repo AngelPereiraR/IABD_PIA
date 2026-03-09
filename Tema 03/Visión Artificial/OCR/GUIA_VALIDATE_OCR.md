@@ -1,95 +1,117 @@
 # Guia de uso de `validate_ocr.py`
 
-Esta guia cubre:
+Esta guia documenta solo el validador OCR multi-motor. Para instalacion general y flujo
+global del proyecto, consulta `README.md`.
 
-- Preparacion del entorno
-- Todas las opciones CLI disponibles
-- Todas las configuraciones de deteccion por metodo
-- Ejecucion por todos los motores OCR (EasyOCR, Tesseract, Paddle, DeepSeek)
-- Formato de resultados y troubleshooting
+## 1. Que hace `validate_ocr.py`
 
-## 1. Que hace el validador
+El validador ejecuta este pipeline:
 
-`validate_ocr.py` ejecuta validacion en este orden:
-
-1. Detecta VBoxes/columnas con una configuracion de layout (`method`, `conf`, `nms_iou`, `merge_distance`)
-2. Aplica OCR por cada region detectada
-3. Calcula metricas (chars, words, dups, tiempos, score)
-4. Repite para cada imagen y para cada motor OCR solicitado
+1. Carga una o varias configuraciones de layout.
+2. Detecta regiones de texto por imagen.
+3. Ejecuta uno o varios motores OCR sobre esas mismas regiones.
+4. Calcula metricas agregadas de contenido, duplicados y tiempos.
+5. Guarda resultados por configuracion y por motor.
 
 La unidad real de evaluacion es:
 
 - `configuracion_de_layout x motor_ocr x imagen`
 
-## 2. Requisitos y preparacion
+La ventaja principal del script es que desacopla la comparacion OCR del problema de layout:
+para una configuracion dada, todos los OCR procesan exactamente los mismos recortes.
 
-### 2.1 Requisitos comunes
+## 2. Requisitos del validador
 
-Desde la carpeta `Tema 03/Visión Artificial/OCR`:
+### Comunes
+
+Necesitas al menos:
+
+- `detect_columns.py`
+- una carpeta de imagenes, por defecto `imgs/`
+- `pandas`, `numpy`, `opencv-python`
+
+Preparacion minima:
 
 ```powershell
 py -3.11 -m pip install --upgrade pip
 py -3.11 -m pip install pandas numpy opencv-python
 ```
 
-Asegura que existan:
-
-- `detect_columns.py`
-- Carpeta de imagenes (por defecto `imgs/`)
-
-### 2.2 EasyOCR
+### EasyOCR
 
 ```powershell
 py -3.11 -m pip install easyocr
 ```
 
-### 2.3 Tesseract
-
-1. Instalar binario Tesseract (Windows):
-   - Ruta tipica: `C:\Program Files\Tesseract-OCR\tesseract.exe`
-2. Instalar wrapper Python:
+### Tesseract
 
 ```powershell
 py -3.11 -m pip install pytesseract
 ```
 
-Si no esta en PATH, pasar `--tesseract-cmd`.
+En Windows, si Tesseract no esta en PATH, usa:
 
-### 2.4 PaddleOCR
+```powershell
+--tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe"
+```
+
+### PaddleOCR
 
 ```powershell
 py -3.11 -m pip install paddlepaddle paddleocr
 ```
 
-Opcional para evitar chequeos de red de Paddle:
+Para evitar chequeos remotos de Paddle:
 
 ```powershell
 $env:PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK='True'
 ```
 
-### 2.5 DeepSeek OCR local
+### DeepSeek OCR local
 
-Requisitos minimos:
+Necesitas:
 
-- GPU CUDA disponible
-- `torch`, `transformers`
-- Modelo descargado localmente (ruta para `--deepseek-model-path`)
+- GPU CUDA recomendada
+- `torch` y `transformers`
+- modelo local en `models/DeepSeek-OCR/` o en la ruta que pases por CLI
 
-Instalacion base:
+Base recomendada en este proyecto:
 
 ```powershell
 py -3.11 -m pip install torch transformers
-```
-
-Version recomendada de `transformers` en este proyecto (compatibilidad DeepSeek):
-
-```powershell
 py -3.11 -m pip install --upgrade "transformers==4.53.3"
 ```
 
-Ejemplo de uso en este proyecto: ver `pruebas-deepseek.py`.
+## 3. Modos de entrada
 
-## 3. Opciones CLI de `validate_ocr.py`
+El script puede obtener configuraciones de layout de dos formas.
+
+### Modo ranking
+
+Lee las mejores configuraciones desde `experiment_ranking.csv`.
+
+Ejemplo:
+
+```powershell
+py -3.11 validate_ocr.py --top 3
+```
+
+### Modo manual
+
+Recibe las configuraciones por `--configs` en JSON, sin depender del ranking.
+
+Ejemplo:
+
+```powershell
+py -3.11 validate_ocr.py --configs '[
+  {"method":"doclayout","conf":0.2,"nms_iou":0.4,"merge_distance":10},
+  {"method":"opencv","merge_distance":10}
+]'
+```
+
+## 4. Opciones CLI reales
+
+Estas son las opciones expuestas actualmente por `validate_ocr.py`:
 
 ```text
 --top N
@@ -100,24 +122,63 @@ Ejemplo de uso en este proyecto: ver `pruebas-deepseek.py`.
 --output-dir PATH
 --no-ocr
 --resume
---report-only
 --langs es,en
 --ocr-engines easyocr,tesseract,paddle,deepseek
 --deepseek-model-path PATH
---deepseek-prompt "<image>\nExtract all readable text from this document region. Keep original reading order and line breaks. Output plain text only, without markdown, explanations, or extra symbols. Languages may include Spanish and English."
---tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe"
+--deepseek-prompt TEXT
+--deepseek-base-size INT
+--deepseek-image-size INT
+--deepseek-crop-mode
+--tesseract-cmd PATH
 ```
 
-## 4. Configuraciones de deteccion (layout) posibles
+Nota importante:
 
-Segun `experiment_models.py`:
+- `--report-only` no existe en la CLI actual
+
+## 5. Significado de cada opcion
+
+### Seleccion de configuraciones
+
+- `--top N`: numero de configuraciones a tomar desde el ranking
+- `--method`: filtra el ranking por un metodo concreto
+- `--configs JSON`: lista manual de configuraciones
+- `--ranking-csv PATH`: CSV generado por `analyze_experiments.py`
+
+### Datos de entrada y salida
+
+- `--images-dir PATH`: carpeta de imagenes a procesar
+- `--output-dir PATH`: carpeta raiz donde se guardan los resultados
+
+### Control de ejecucion
+
+- `--no-ocr`: ejecuta solo deteccion, sin OCR
+- `--resume`: salta imagenes ya procesadas dentro de resultados previos
+
+### Motores OCR
+
+- `--langs es,en`: idiomas de EasyOCR separados por coma
+- `--ocr-engines ...`: lista de motores separados por coma
+- `--tesseract-cmd PATH`: ruta a `tesseract.exe` si no esta en PATH
+
+### DeepSeek
+
+- `--deepseek-model-path PATH`: ruta local del modelo
+- `--deepseek-prompt TEXT`: prompt usado por region
+- `--deepseek-base-size INT`: tamaño base para `infer`
+- `--deepseek-image-size INT`: tamaño de imagen para `infer`
+- `--deepseek-crop-mode`: activa `crop_mode`
+
+## 6. Configuraciones de layout admitidas
+
+Segun `experiment_models.py`, el espacio de busqueda es:
 
 - `methods`: `doclayout`, `yolo11`, `paddleocr`, `docling`, `opencv`
 - `conf_thresholds`: `0.1, 0.2, 0.3, 0.4`
 - `nms_iou`: `0.3, 0.4, 0.5, 0.6`
 - `merge_distance`: `5, 10, 15, 20`
 
-### 4.1 Estructura por metodo
+### Estructura por metodo
 
 - `doclayout` y `yolo11`:
   - `{"method":"doclayout|yolo11","conf":X,"nms_iou":Y,"merge_distance":Z}`
@@ -126,17 +187,17 @@ Segun `experiment_models.py`:
 - `opencv`:
   - `{"method":"opencv","merge_distance":Z}`
 
-### 4.2 Conteo total de configuraciones
+Conteo total:
 
-- `doclayout`: `4 x 4 x 4 = 64`
-- `yolo11`: `4 x 4 x 4 = 64`
-- `paddleocr`: `4 x 4 = 16`
-- `docling`: `4 x 4 = 16`
-- `opencv`: `4 = 4`
+- `doclayout`: `64`
+- `yolo11`: `64`
+- `paddleocr`: `16`
+- `docling`: `16`
+- `opencv`: `4`
 
-Total: `164` configuraciones de layout.
+Total: `164` configuraciones.
 
-## 5. Motores OCR posibles
+## 7. Motores OCR soportados
 
 `--ocr-engines` acepta combinaciones de:
 
@@ -147,25 +208,25 @@ Total: `164` configuraciones de layout.
 
 Ejemplos:
 
-- Solo uno: `--ocr-engines easyocr`
-- Dos: `--ocr-engines easyocr,tesseract`
-- Todos: `--ocr-engines easyocr,tesseract,paddle,deepseek`
+- `--ocr-engines easyocr`
+- `--ocr-engines easyocr,tesseract`
+- `--ocr-engines easyocr,tesseract,paddle,deepseek`
 
-## 6. Ejemplos de uso
+## 8. Ejemplos de uso
 
-### 6.1 Top-3 del ranking con los 4 motores
+### Top-3 del ranking con los cuatro motores
 
 ```powershell
 py -3.11 validate_ocr.py --top 3 --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR" --tesseract-cmd "C:\Program Files\Tesseract-OCR\tesseract.exe"
 ```
 
-### 6.2 Solo metodo `opencv` con los 4 motores
+### Solo `opencv` con los cuatro motores
 
 ```powershell
 py -3.11 validate_ocr.py --method opencv --top 4 --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR"
 ```
 
-### 6.3 Configs manuales para todos los metodos de layout
+### Configuraciones manuales para varios metodos
 
 ```powershell
 py -3.11 validate_ocr.py --configs '[
@@ -177,46 +238,44 @@ py -3.11 validate_ocr.py --configs '[
 ]' --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR"
 ```
 
-### 6.4 Solo deteccion (sin OCR)
+### Solo deteccion, sin OCR
 
 ```powershell
 py -3.11 validate_ocr.py --top 5 --no-ocr
 ```
 
-### 6.5 Reanudar ejecucion
+### Reanudar ejecucion interrumpida
 
 ```powershell
 py -3.11 validate_ocr.py --top 5 --resume --ocr-engines easyocr,tesseract,paddle,deepseek --deepseek-model-path ".\models\DeepSeek-OCR"
 ```
 
-### 6.6 Solo regenerar informes
+### DeepSeek con prompt oficial y tamaños seguros
 
 ```powershell
-py -3.11 validate_ocr.py --report-only
+py -3.11 validate_ocr.py --ocr-engines deepseek --deepseek-model-path ".\models\DeepSeek-OCR" --deepseek-prompt "<image>
+<|grounding|>Convert the document to markdown." --deepseek-base-size 1024 --deepseek-image-size 1024
 ```
 
-## 7. Salidas generadas
+## 9. Salidas generadas
 
-### 7.1 Por configuracion y motor OCR
+Por cada configuracion de layout se crea un directorio dentro de `validation_results/`:
 
-En `validation_results/<label_config>/`:
+- `validation_results/<label_config>/results_easyocr.json`
+- `validation_results/<label_config>/results_tesseract.json`
+- `validation_results/<label_config>/results_paddle.json`
+- `validation_results/<label_config>/results_deepseek.json`
 
-- `results_easyocr.json`
-- `results_tesseract.json`
-- `results_paddle.json`
-- `results_deepseek.json`
+Cada archivo contiene, entre otros datos:
 
-(Se generan segun motores activos en `--ocr-engines`.)
+- metricas agregadas del motor
+- resultados por imagen
+- resultados por region
+- tiempos de deteccion y OCR
 
-### 7.2 Informes globales
+## 10. Score interno
 
-- `ocr_validation_report.json`
-- `ocr_validation_report.csv`
-- `ocr_validation_report.txt`
-
-Incluyen campo/columna `ocr_engine` para comparar motores.
-
-## 8. Formula de score
+La formula actual es:
 
 `score = chars*1.0 + words*5.0 - duplicados*50.0 - imgs_sin_deteccion*20.0`
 
@@ -224,10 +283,13 @@ Donde:
 
 - `chars`: total de caracteres OCR
 - `words`: total de palabras OCR
-- `duplicados`: cajas superpuestas detectadas
-- `imgs_sin_deteccion`: imagenes sin regiones
+- `duplicados`: pares de cajas superpuestas o redundantes
+- `imgs_sin_deteccion`: imagenes sin regiones detectadas
 
-## 9. Matriz de ejecucion esperada
+Este score es util para comparacion interna rapida, pero no sustituye a la comparacion
+contra ground truth.
+
+## 11. Dimension esperada de una ejecucion
 
 Si ejecutas:
 
@@ -239,37 +301,61 @@ El total de evaluaciones es:
 
 - `N x M x K`
 
-Ejemplo tipico:
+Ejemplo:
 
-- `N=5` (un representante por metodo)
-- `M=4` (easyocr,tesseract,paddle,deepseek)
+- `N=5`
+- `M=4`
 - `K=18`
 
-Total: `5 x 4 x 18 = 360` evaluaciones.
+Total: `360` evaluaciones.
 
-## 10. Troubleshooting rapido
+## 12. Recomendaciones practicas
 
-### 10.1 `--help` tarda o falla por imports pesados
+### Para iterar rapido
 
-`validate_ocr.py` importa `detect_columns.py`, que a su vez puede inicializar librerias pesadas.
-Acciones:
+- usa `--ocr-engines easyocr,paddle`
+- usa `--method opencv` o un `--top` pequeno
+- prueba primero con pocas imagenes en `imgs/`
 
-- usar entorno limpio de Python 3.11
-- verificar instalacion de dependencias de layout
-- exportar `PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK='True'`
+### Para comparativa final seria
 
-### 10.2 DeepSeek se omite
+- genera primero el ranking con `experiment_models.py` + `analyze_experiments.py`
+- ejecuta `validate_ocr.py` con varios motores
+- despues ejecuta `compare_validation_vs_ground_truth.py`
+
+### Para DeepSeek
+
+- mantente en `1024 x 1024` para recortes
+- usa el modelo local `models/DeepSeek-OCR`
+- no asumas que `flash-attn` estara disponible en Windows
+
+## 13. Troubleshooting
+
+### `--help` tarda mucho o falla por imports pesados
+
+`validate_ocr.py` importa `detect_columns.py`, que puede inicializar librerias de layout costosas.
+
+### DeepSeek se omite
 
 Causas comunes:
 
-- No hay CUDA
-- Falta `--deepseek-model-path`
-- Faltan paquetes `torch`/`transformers`
+- no hay CUDA
+- falta `--deepseek-model-path`
+- faltan `torch` o `transformers`
+- hay incompatibilidad en `transformers` por no respetar la version fijada
 
-### 10.3 Tesseract no encontrado
+### Tesseract no encontrado
 
 Pasa `--tesseract-cmd` con la ruta del ejecutable.
 
-### 10.4 Paddle no disponible
+### Paddle no disponible
 
-Instalar `paddlepaddle` + `paddleocr` y revisar conectividad inicial de modelos.
+Instala `paddlepaddle` y `paddleocr` y revisa la variable:
+
+```powershell
+$env:PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK='True'
+```
+
+### El validador no encuentra imagenes
+
+Revisa `--images-dir`. El script solo procesa extensiones de imagen soportadas.
