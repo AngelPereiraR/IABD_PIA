@@ -1,7 +1,6 @@
 # Core de LangChain y Google
 langchain
-langchain-google-community[gmail]
-langchain-google-genai
+langchain-openai
 langchain-community
 
 # Utilidades base

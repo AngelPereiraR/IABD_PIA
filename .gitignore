@@ -14,3 +14,5 @@ venv_tf_gpu/
 !**/build/*.pdf
 
 *models/
+
+Tema 04/Fast API/Persistencia Datos/venv

@@ -1,7 +1,7 @@
 import os
 import json
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
@@ -21,19 +21,20 @@ class RecruitmentDecision(BaseModel):
 
 class RecruitmentBrain:
     """
-    Clase que encapsula la lógica de decisión usando LLMs (Gemini 2.5 Flash).
+    Clase que encapsula la lógica de decisión usando LLMs (DeepSeek).
     """
     def __init__(self):
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("DEEPSEEK_API_KEY")
         if not api_key:
-            raise ValueError("Faltan credenciales de Google (GEMINI_API_KEY) en .env")
+            raise ValueError("Faltan credenciales de DeepSeek (DEEPSEEK_API_KEY) en .env")
 
-        # Configuración del modelo Gemini 2.5 Flash
+        # Configuración del modelo DeepSeek (API compatible con OpenAI)
         # Usamos temperature=0 para máxima precisión y determinismo
-        self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash-lite",
+        self.llm = ChatOpenAI(
+            model="deepseek-chat",
             temperature=0,
-            google_api_key=api_key
+            api_key=api_key,
+            base_url="https://api.deepseek.com"
         )
 
         # Configurar el parser de salida JSON
@@ -142,7 +143,7 @@ class RecruitmentBrain:
         Analiza una oferta frente al CV y devuelve una decisión estructurada.
         """
         try:
-            print("Gemini está analizando la oferta...")
+            print("DeepSeek está analizando la oferta...")
             
             # Ejecutar la cadena
             result = self.chain.invoke({
@@ -158,7 +159,7 @@ class RecruitmentBrain:
             return result
 
         except Exception as e:
-            print(f"Error en el análisis de Gemini: {e}")
+            print(f"Error en el análisis de DeepSeek: {e}")
             # Devolver un fallo seguro para no romper el bucle
             return {
                 "match": False, 
@@ -169,7 +170,7 @@ class RecruitmentBrain:
 
 if __name__ == "__main__":
     # --- PRUEBA UNITARIA ---
-    print("🧪 Iniciando prueba del Cerebro (Gemini 2.5 Flash)...")
+    print("🧪 Iniciando prueba del Cerebro (DeepSeek)...")
     
     # 1. Mock de CV (Simulando lo que vendría de loader.py)
     mock_cv = """
@@ -209,4 +210,4 @@ if __name__ == "__main__":
 
     except Exception as e:
         print(f"\nError: {e}")
-        print("PISTA: Verifica tu GOOGLE_API_KEY en el .env")
+        print("PISTA: Verifica tu DEEPSEEK_API_KEY en el .env")
