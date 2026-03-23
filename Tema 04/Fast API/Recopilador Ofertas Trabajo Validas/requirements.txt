@@ -1,0 +1,14 @@
+# Core de LangChain y Google
+langchain
+langchain-openai
+langchain-community
+
+# Utilidades base
+python-dotenv
+pydantic
+
+# Nuevas herramientas para el Workbench
+pypdf
+firecrawl-py
+fastapi
+uvicorn

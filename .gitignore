@@ -15,4 +15,5 @@ venv_tf_gpu/
 
 *models/
 
-Tema 04/Fast API/Persistencia Datos/venv
+*venv
+*.claude
