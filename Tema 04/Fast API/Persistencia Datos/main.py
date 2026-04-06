@@ -1,15 +1,119 @@
+import os
 from typing import List
-from datetime import date
-from fastapi import FastAPI, Depends, HTTPException
+from datetime import date, datetime, timedelta
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+import bcrypt
+from jose import jwt
+from dotenv import load_dotenv
 from database import engine, Base, get_db
 import models
 import schemas
 
+load_dotenv()
+
+SECRET_KEY = os.getenv('SECRET_KEY', 'clave-secreta-super-segura-para-jwt-2026')
+ALGORITHM = os.getenv('ALGORITHM', 'HS256')
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', '30'))
+
+def hash_contrasena(contrasena: str) -> str:
+    return bcrypt.hashpw(contrasena.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verificar_contrasena(contrasena: str, hash_guardado: str) -> bool:
+    return bcrypt.checkpw(contrasena.encode('utf-8'), hash_guardado.encode('utf-8'))
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+
+def get_usuario_actual(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get('sub')
+        if user_id is None:
+            raise ValueError()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Token inválido o expirado',
+            headers={'WWW-Authenticate': 'Bearer'},
+        )
+    usuario = db.query(models.Usuario).filter(models.Usuario.id == int(user_id)).first()
+    if usuario is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Usuario no encontrado')
+    return usuario
+
+def requiere_administrador(usuario: models.Usuario = Depends(get_usuario_actual)):
+    if usuario.rol != 'administrador':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Acceso restringido a administradores',
+        )
+    return usuario
+
+@app.post('/usuarios', response_model=schemas.UsuarioResponse, status_code=status.HTTP_201_CREATED)
+def create_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
+    existente = db.query(models.Usuario).filter(models.Usuario.id_usuario == usuario.id_usuario).first()
+    if existente:
+        raise HTTPException(status_code=400, detail='El nombre de usuario ya existe')
+    
+    nuevo = models.Usuario(
+        id_usuario=usuario.id_usuario,
+        contrasena_hash=hash_contrasena(usuario.contrasena),
+        rol=usuario.rol
+    )
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+    return nuevo
+
+@app.post('/login', response_model=schemas.Token)
+def login(credenciales: schemas.LoginRequest, db: Session = Depends(get_db)):
+    usuario = db.query(models.Usuario).filter(models.Usuario.id_usuario == credenciales.id_usuario).first()
+    if usuario is None or not verificar_contrasena(credenciales.contrasena, usuario.contrasena_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Credenciales incorrectas',
+            headers={'WWW-Authenticate': 'Bearer'},
+        )
+    expiracion = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    payload = {
+        'sub': str(usuario.id),
+        'rol': usuario.rol,
+        'exp': expiracion,
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return schemas.Token(access_token=token, token_type='bearer')
+
+
+@app.post('/token', response_model=schemas.Token, include_in_schema=False)
+def token_swagger(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Endpoint exclusivo para el flujo OAuth2 de Swagger UI."""
+    usuario = db.query(models.Usuario).filter(models.Usuario.id_usuario == form_data.username).first()
+    if usuario is None or not verificar_contrasena(form_data.password, usuario.contrasena_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Credenciales incorrectas',
+            headers={'WWW-Authenticate': 'Bearer'},
+        )
+    expiracion = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    payload = {
+        'sub': str(usuario.id),
+        'rol': usuario.rol,
+        'exp': expiracion,
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return schemas.Token(access_token=token, token_type='bearer')
+
+
+@app.get('/admin/usuarios', response_model=List[schemas.UsuarioResponse])
+def listar_usuarios(usuario: models.Usuario = Depends(requiere_administrador), db: Session = Depends(get_db)):
+    return db.query(models.Usuario).all()
+
 
 @app.get('/productos', response_model=List[schemas.Producto])
 def read_productos(db: Session = Depends(get_db)):

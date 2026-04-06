@@ -41,3 +41,11 @@ class LineaPedido(Base):
 
     pedido = relationship('Pedido', back_populates='lineas_pedido')
     producto = relationship('Producto', back_populates='lineas_pedido')
+
+class Usuario(Base):
+    __tablename__ = 'usuarios'
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_usuario = Column(String, unique=True, index=True, nullable=False)
+    contrasena_hash = Column(String, nullable=False)
+    rol = Column(String, nullable=False, default='no administrador')

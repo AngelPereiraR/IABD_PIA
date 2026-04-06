@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional, Literal
 
 class ProductoBase(BaseModel):
     nombre: str
@@ -77,6 +78,29 @@ class ProductoBasico(BaseModel):
 class LineaPedidoDetalle(BaseModel):
     cantidad: int
     producto: ProductoBasico
+
+# ── Autenticación ──────────────────────────────────────────────
+
+class LoginRequest(BaseModel):
+    id_usuario: str
+    contrasena: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class UsuarioCreate(BaseModel):
+    id_usuario: str
+    contrasena: str
+    rol: Literal['administrador', 'no administrador'] = 'no administrador'
+
+class UsuarioResponse(BaseModel):
+    id: int
+    id_usuario: str
+    rol: str
+
+    class Config:
+        from_attributes = True
 
     class Config:
         from_attributes = True
