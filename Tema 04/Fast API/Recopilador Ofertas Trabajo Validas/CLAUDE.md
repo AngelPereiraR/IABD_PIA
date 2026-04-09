@@ -51,6 +51,12 @@ pip install -r requirements.txt
 python main.py
 ```
 
+**Git Policy:**
+- ⛔ NO git commands in Claude Code conversations
+- Files are created/modified with Read/Edit/Write tools only
+- Commits are handled outside of Claude Code
+- Branch management is handled outside of Claude Code
+
 **Required Environment Variables** (see `.env.template`):
 - `DATABASE_URL`: PostgreSQL connection (Neon)
 - `CLOUDINARY_*`: Storage credentials (3 vars)
@@ -94,12 +100,34 @@ python main.py
 - **Anti-Alucinination**: Brain uses "grounding"—avoids making up details not in the original offer text
 - **Health Checks**: `/health` endpoint returns "OK" for Render uptime monitoring
 
-## Testing Checklist
+## Testing
 
-When making changes to core modules:
+**Framework:** unittest (NO pytest)
+
+**Test Execution:**
+```bash
+# Plan 01 Tests (10 tests)
+python tests/test_plan_01_simple.py
+
+# Plan 02 Tests (29 tests)
+python tests/test_plan_02_apis.py
+```
+
+**Test Location:** All tests in `tests/` directory with naming pattern `test_plan_XX_*.py`
+
+**Guidelines:**
+- ✅ Use unittest only (no pytest)
+- ✅ Create tests in `tests/` folder
+- ✅ No git commands in any conversation
+- ✅ Tests should validate: imports, endpoints, schemas, dependencies, file structure
+- ✅ Generate detailed markdown reports in `tests/TEST_RESULTS_*.md`
+
+**Testing Checklist** (for core module changes):
 1. Verify email filtering logic works (test with real/mock Gmail responses)
 2. Check scraper cascade strategy (Jina → FireCrawl → fallback)
 3. Validate DeepSeek analysis returns valid JSON and scoring logic
 4. Ensure Telegram formatting preserves emojis and newlines
 5. Confirm bot thread starts cleanly and doesn't duplicate on restart
 6. Test LaTeX compilation and PDF generation from engine.py
+7. Run appropriate test suite to validate changes
+8. Check test results in `tests/TEST_RESULTS_*.md` reports
