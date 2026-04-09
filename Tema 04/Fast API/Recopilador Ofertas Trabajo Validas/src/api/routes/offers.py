@@ -1,0 +1,48 @@
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy import select
+from src.api.schemas import OfferDetail
+from src.api.dependencies import get_user_id
+from src.database import AsyncSessionLocal, JobOffer
+
+router = APIRouter(prefix="/api", tags=["offers"])
+
+
+@router.get("/offers", response_model=list[OfferDetail])
+async def list_offers(skip: int = 0, limit: int = 20, user_id: str = Depends(get_user_id)):
+    """
+    Lists saved job offers with pagination.
+
+    Args:
+        skip: Number of offers to skip (default: 0)
+        limit: Maximum offers to return (default: 20, max: 100)
+        user_id: Inyectado desde .env via Depends()
+
+    Returns:
+        List of offers ordered by creation date (descending)
+    """
+    try:
+        async with AsyncSessionLocal() as session:
+            stmt = (
+                select(JobOffer)
+                .where(JobOffer.user_id == user_id)
+                .order_by(JobOffer.created_at.desc())
+                .offset(skip)
+                .limit(min(limit, 100))
+            )
+            result = await session.execute(stmt)
+            offers = result.scalars().all()
+
+        return [
+            OfferDetail(
+                id=o.id,
+                job_title=o.job_title,
+                company=o.company,
+                score=o.score,
+                status=o.status,
+                offer_url=o.offer_url,
+                created_at=o.created_at
+            )
+            for o in offers
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -2,16 +2,20 @@ import time
 import os
 import sys
 import threading
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 # Importamos nuestros modulos especialistas
 from src.loader import load_cv_context
-from src.mail_agent import GmailJobCollector
+from src.mail_agent import GmailJobCollector, save_offer_to_db
 from src.scraper import scrape_offer_content
 from src.brain import RecruitmentBrain
 from src.bot import TelegramNotifier
+from src.cv_generator import CVGenerator
+from src.api import cv_router, offers_router
+from telegram.ext import Application, CallbackQueryHandler
 
 # Configuracion
 POLLING_INTERVAL = 600  # 10 minutos
@@ -33,6 +37,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Incluir routers de API
+app.include_router(cv_router)
+app.include_router(offers_router)
+
 @app.get('/')
 def home():
     return "Reclutador IA esta vivo y vigilando. 🤖"
@@ -40,6 +48,30 @@ def home():
 @app.get('/health')
 def health():
     return "OK"
+
+# --- TELEGRAM POLLING SETUP ---
+async def setup_telegram_polling():
+    """
+    Configures and runs Telegram polling with callback handlers.
+    This should be executed in a separate thread from the main bot daemon.
+
+    Handles inline button callbacks with pattern "gen_cv:offer_id"
+    """
+    try:
+        app = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
+
+        # Register handler for "gen_cv:offer_id" callbacks
+        app.add_handler(
+            CallbackQueryHandler(
+                TelegramNotifier().handle_generate_cv_callback,
+                pattern="^gen_cv:"
+            )
+        )
+
+        print(" [TELEGRAM] Iniciando polling de Telegram...", flush=True)
+        await app.run_polling()
+    except Exception as e:
+        print(f" [TELEGRAM] Error en polling: {e}", flush=True)
 
 # --- LOGICA DEL BOT (Hilo Secundario) ---
 def run_bot_logic():
@@ -101,10 +133,29 @@ def run_bot_logic():
                         continue
                     
                     decision = brain.analyze_offer(user_cv_context, offer_markdown)
-                    
+
                     if decision.get("match"):
-                        print(f"       [MATCH] Enviando alerta.")
-                        bot.send_match_alert({"url": url}, decision)
+                        print(f"       [MATCH] Persistiendo y enviando alerta.")
+
+                        # Persist to database
+                        user_id = os.getenv("USER_ID")
+                        if not user_id:
+                            print(f"       [ERROR] USER_ID not set in .env")
+                            continue
+
+                        try:
+                            offer_id = asyncio.run(save_offer_to_db(
+                                analysis=decision,
+                                offer_url=url,
+                                raw_text=offer_markdown,
+                                user_id=user_id
+                            ))
+                            print(f"       [DB] Oferta persistida con ID: {offer_id}")
+
+                            # Send Telegram notification with offer_id embedded
+                            bot.send_match_alert({"url": url, "offer_id": offer_id}, decision)
+                        except Exception as e:
+                            print(f"       [ERROR] Error persisting offer: {e}")
                     else:
                         print(f"       [DESCARTADO] {decision.get('summary')[:50]}...")
             
@@ -118,11 +169,22 @@ def run_bot_logic():
 # Arrancamos el hilo aqui, FUERA del bloque main, para que Uvicorn lo ejecute al importar
 # Usamos una variable global para evitar arrancar hilos duplicados si Uvicorn reinicia workers
 _bot_started = False
+_telegram_polling_started = False
+
 if not _bot_started:
     _bot_started = True
     bot_thread = threading.Thread(target=run_bot_logic, daemon=True)
     bot_thread.start()
     print(" [SYSTEM] Hilo de Bot lanzado en segundo plano.", flush=True)
+
+if not _telegram_polling_started:
+    _telegram_polling_started = True
+    def run_telegram_polling():
+        asyncio.run(setup_telegram_polling())
+
+    telegram_thread = threading.Thread(target=run_telegram_polling, daemon=True)
+    telegram_thread.start()
+    print(" [SYSTEM] Hilo de Telegram Polling lanzado en segundo plano.", flush=True)
 
 if __name__ == "__main__":
     # Esto solo se ejecuta si lanzas 'python main.py' localmente

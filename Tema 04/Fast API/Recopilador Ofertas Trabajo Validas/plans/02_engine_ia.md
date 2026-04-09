@@ -1,13 +1,245 @@
-# Plan 02: Módulo de Procesamiento e IA (Engine)
+# Plan 02: Módulo de Procesamiento e IA + APIs Críticas
 
-## Objetivo
-Crear `src/engine.py`: dado un `job_offer_id`, descarga el CV Maestro de Cloudinary, analiza la oferta con DeepSeek, y genera un `.tex` con el CV adaptado listo para compilar.
+## Objetivo General
+Implementar 4 funcionalidades críticas (Prioridad 1 de PLAN_01_AUDIT.md):
+1. ✅ Endpoint POST `/api/upload-master-cv` - Subir CV maestro a Cloudinary
+2. ✅ Endpoint GET `/api/offers?skip=0&limit=20` - Listar ofertas con paginación
+3. ✅ Integración Telegram polling - Callbacks funcionales en bot daemon
+4. ✅ Engine IA avanzado - Adaptación de CV sections con DeepSeek
+
+**Dependencia:** Plan 01 completado
 
 ## Prerrequisitos
 - Plan 00 completado (Cloudinary SDK en `src/storage.py`)
 - Plan 01 completado (`src/brain.py` con `OfferAnalysis` disponible)
-- CV Maestro subido a Cloudinary (público_id: `cv/master`)
+- CV Maestro en archivo local o Cloudinary
 - Plantilla LaTeX base disponible en `data/cv_template.tex`
+
+---
+
+## Paso 0: APIs Críticas (Prioridad 1 de PLAN_01_AUDIT)
+
+**Status:** ✅ IMPLEMENTADO en main.py
+
+### 0.1 Endpoint POST `/api/upload-master-cv`
+
+**Ubicación:** `main.py` línea ~80
+
+**Implementación:**
+```python
+@app.post("/api/upload-master-cv")
+async def upload_master_cv(file: UploadFile = File(...)):
+    """
+    Sube CV maestro a Cloudinary y actualiza user.master_cv_url.
+    El usuario usa esto para actualizar su CV base.
+    
+    Request: multipart/form-data con file
+    Response: {"cv_url": "https://res.cloudinary.com/...", "status": "success"}
+    """
+    try:
+        # Leer contenido del archivo
+        content = await file.read()
+        
+        # Subir a Cloudinary usando upload_bytes (ya disponible en storage.py)
+        cv_url = upload_bytes(content, public_id="cv/master")
+        
+        # Actualizar usuario (usar USER_ID del .env)
+        user_id = os.getenv("USER_ID")
+        async with AsyncSessionLocal() as session:
+            await session.execute(
+                update(User).where(User.id == user_id).values(master_cv_url=cv_url)
+            )
+            await session.commit()
+        
+        return {"cv_url": cv_url, "status": "success"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+**Testing:**
+```bash
+curl -X POST http://localhost:7860/api/upload-master-cv \
+  -F "file=@data/cv_usuario.pdf"
+
+# Response:
+# {"cv_url": "https://res.cloudinary.com/...", "status": "success"}
+```
+
+**Verificación en BD:**
+```sql
+SELECT id, email, master_cv_url FROM users LIMIT 1;
+-- Resultado: master_cv_url debe estar poblado con URL de Cloudinary
+```
+
+### 0.2 Endpoint GET `/api/offers?skip=0&limit=20`
+
+**Ubicación:** `main.py` línea ~111
+
+**Pydantic Model:**
+```python
+class OfferDetail(BaseModel):
+    id: int
+    job_title: str
+    company: str
+    score: int
+    status: str
+    offer_url: str
+    created_at: datetime
+```
+
+**Implementación:**
+```python
+@app.get("/api/offers", response_model=list[OfferDetail])
+async def list_offers(skip: int = 0, limit: int = 20):
+    """
+    Lista ofertas guardadas con paginación.
+    
+    Query params:
+    - skip: número de ofertas a saltar (default: 0)
+    - limit: máximo de ofertas a retornar (default: 20, máx: 100)
+    
+    Response: lista de ofertas ordenadas por fecha descendente
+    """
+    user_id = os.getenv("USER_ID")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="USER_ID not configured")
+    
+    async with AsyncSessionLocal() as session:
+        stmt = (
+            select(JobOffer)
+            .where(JobOffer.user_id == user_id)
+            .order_by(JobOffer.created_at.desc())
+            .offset(skip)
+            .limit(min(limit, 100))
+        )
+        result = await session.execute(stmt)
+        offers = result.scalars().all()
+    
+    return [
+        OfferDetail(
+            id=o.id,
+            job_title=o.job_title,
+            company=o.company,
+            score=o.score,
+            status=o.status,
+            offer_url=o.offer_url,
+            created_at=o.created_at
+        )
+        for o in offers
+    ]
+```
+
+**Testing:**
+```bash
+# Listar primeras 20 ofertas
+curl http://localhost:7860/api/offers
+
+# Listar con paginación (skip 10, limit 5)
+curl "http://localhost:7860/api/offers?skip=10&limit=5"
+
+# Response:
+# [
+#   {
+#     "id": 1,
+#     "job_title": "Senior Python Developer",
+#     "company": "TechCorp",
+#     "score": 85,
+#     "status": "done",
+#     "offer_url": "https://...",
+#     "created_at": "2026-04-09T12:30:00"
+#   },
+#   ...
+# ]
+```
+
+### 0.3 Integración Telegram Polling Completa
+
+**Ubicación:** `main.py` línea ~67 (setup_telegram_polling) + línea ~197 (thread setup)
+
+**Nota:** `handle_generate_cv_callback()` ya existe en `src/bot.py` desde Plan 01
+
+**Implementación - Función de Setup:**
+```python
+async def setup_telegram_polling():
+    """
+    Configura y ejecuta polling de Telegram con manejo de callbacks.
+    Debe ejecutarse en thread separado del bot daemon.
+
+    Handles inline button callbacks with pattern "gen_cv:offer_id"
+    """
+    try:
+        app = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
+
+        # Registrar handler para callbacks "gen_cv:offer_id"
+        app.add_handler(
+            CallbackQueryHandler(
+                TelegramNotifier().handle_generate_cv_callback,
+                pattern="^gen_cv:"
+            )
+        )
+
+        print(" [TELEGRAM] Iniciando polling de Telegram...", flush=True)
+        await app.run_polling()
+    except Exception as e:
+        print(f" [TELEGRAM] Error en polling: {e}", flush=True)
+```
+
+**Implementación - Thread Setup en main.py:**
+```python
+# En el bloque de inicialización de threads (después de bot_thread)
+if not _telegram_polling_started:
+    _telegram_polling_started = True
+    def run_telegram_polling():
+        asyncio.run(setup_telegram_polling())
+
+    telegram_thread = threading.Thread(target=run_telegram_polling, daemon=True)
+    telegram_thread.start()
+    print(" [SYSTEM] Hilo de Telegram Polling lanzado en segundo plano.", flush=True)
+```
+
+**Flujo de Callbacks:**
+1. Usuario presiona botón "📄 Generar CV Optimizado" en Telegram
+2. Bot recibe callback_query con data="gen_cv:{offer_id}"
+3. `handle_generate_cv_callback()` extrae offer_id y llama a POST `/api/generate/{offer_id}`
+4. Se genera y sube CV a Cloudinary
+5. Bot actualiza mensaje con link de descarga
+
+### 0.4 Verificación de `optimized_cv_url`
+
+**Status:** ✅ IMPLEMENTADO en src/cv_generator.py (Plan 01)
+
+**Ubicación:** `src/cv_generator.py` línea ~65-75
+
+**Código Existente:**
+```python
+# En CVGenerator.generate_for_offer():
+offer.optimized_cv_url = cv_url
+offer.status = "done"
+await session.commit()
+```
+
+**Verificación Manual en BD:**
+```sql
+-- Ver CVs generados (status='done')
+SELECT id, job_title, company, status, optimized_cv_url 
+FROM job_offers 
+WHERE status = 'done' 
+LIMIT 5;
+
+-- Resultado esperado:
+-- id | job_title           | company   | status | optimized_cv_url
+-- 1  | Senior Python Dev   | TechCorp  | done   | https://res.cloudinary.com/.../offer_1_cv.pdf
+-- 2  | Data Engineer       | DataFirm  | done   | https://res.cloudinary.com/.../offer_2_cv.pdf
+```
+
+**Verificación vía API:**
+```bash
+# Listar ofertas con CVs generados
+curl "http://localhost:7860/api/offers" | jq '.[] | select(.status=="done")'
+
+# Filtre por status='done' en la respuesta
+```
 
 ---
 

@@ -15,6 +15,7 @@ cloudinary
 langchain
 langchain-openai
 langchain-community
+langchain-google-community
 
 # Utilidades base
 python-dotenv
@@ -27,7 +28,7 @@ beautifulsoup4
 firecrawl-py
 pypdf
 
-# Google & Telegram (existentes)
+# Google & Telegram
 google-auth
 google-auth-oauthlib
 google-auth-httplib2

@@ -2,10 +2,12 @@ import os
 import re
 import base64
 import requests # Necesario para resolver redirecciones
+import asyncio
 from typing import List
 from dotenv import load_dotenv
 
 from langchain_google_community import GmailToolkit
+from src.database import JobOffer, AsyncSessionLocal
 
 load_dotenv()
 
@@ -218,6 +220,36 @@ class GmailJobCollector:
         except Exception:
             return ""
         return ""
+
+
+async def save_offer_to_db(analysis: dict, offer_url: str, raw_text: str, user_id: str) -> int:
+    """
+    Persists an analyzed offer to Neon PostgreSQL.
+
+    Args:
+        analysis: Dict from brain.analyze_offer() with keys: match, match_score, job_title, company, etc.
+        offer_url: URL of the job offer
+        raw_text: Raw scraped offer text (markdown)
+        user_id: UUID of the user (from .env or user table)
+
+    Returns:
+        ID of inserted JobOffer record
+    """
+    async with AsyncSessionLocal() as session:
+        offer = JobOffer(
+            user_id=user_id,
+            job_title=analysis.get('job_title', 'Unknown'),
+            company=analysis.get('company', 'Unknown'),
+            raw_text=raw_text,
+            offer_url=offer_url,
+            score=analysis.get('match_score', 0),
+            status="pending"  # Will be updated to "processing" when CV generation starts
+        )
+        session.add(offer)
+        await session.commit()
+        await session.refresh(offer)
+        return offer.id
+
 
 if __name__ == "__main__":
     print("[TEST] Iniciando prueba del Agente Multi-Plataforma...")
