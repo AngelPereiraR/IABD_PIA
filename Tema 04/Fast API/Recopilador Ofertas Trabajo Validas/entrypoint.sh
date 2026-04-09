@@ -16,8 +16,12 @@ if [ -n "$MY_ENV_FILE" ]; then
     echo "$MY_ENV_FILE" > .env
 fi
 
+# Usar puerto de env o default 7860
+PORT=${PORT:-7860}
+echo "Iniciando servidor en puerto $PORT..."
+
 # Arrancamos con Uvicorn para produccion
 # --host 0.0.0.0: Escucha en todas las interfaces
-# --port $PORT: Usa el puerto que asigne Render
+# --port $PORT: Usa el puerto asignado (HF Spaces: 7860, Render: variable)
 # main:app : Archivo main.py, objeto app (FastAPI)
 exec uvicorn main:app --host 0.0.0.0 --port $PORT

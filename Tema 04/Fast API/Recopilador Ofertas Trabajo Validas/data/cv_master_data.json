@@ -1,0 +1,73 @@
+{
+  "nombre": "Nombre Apellido",
+  "email": "correo@ejemplo.com",
+  "linkedin": "tu-perfil-linkedin",
+  "github": "tu-usuario-github",
+  "resumen_base": "Desarrollador Full Stack con experiencia en Python, FastAPI y PostgreSQL. Especializado en sistemas de inteligencia artificial y automatización. Apasionado por resolver problemas complejos con código limpio y escalable.",
+  "formacion": [
+    {
+      "titulo": "CFGS Inteligencia Artificial y Big Data",
+      "centro": "Centro Educativo",
+      "anio": "2024-2026"
+    },
+    {
+      "titulo": "Título anterior",
+      "centro": "Centro anterior",
+      "anio": "2020-2022"
+    }
+  ],
+  "experiencia_base": [
+    {
+      "puesto": "Desarrollador Python",
+      "empresa": "Empresa ejemplo",
+      "duracion": "2023-2024",
+      "logros": [
+        "Desarrollo de API REST con FastAPI",
+        "Implementación de bases de datos PostgreSQL",
+        "Automatización de procesos con Python"
+      ]
+    }
+  ],
+  "proyectos": [
+    {
+      "nombre": "OptiCV Engine",
+      "descripcion": "Sistema de monitorización y generación inteligente de CVs con análisis de ofertas usando IA",
+      "tecnologias": ["FastAPI", "LangChain", "PostgreSQL", "Cloudinary", "LaTeX"]
+    },
+    {
+      "nombre": "Reclutador IA",
+      "descripcion": "Bot de Telegram que filtra ofertas de trabajo según criterios de relevancia",
+      "tecnologias": ["Python", "Telegram Bot API", "Gemini API", "Web Scraping"]
+    }
+  ],
+  "habilidades_base": {
+    "lenguajes": [
+      "Python",
+      "SQL",
+      "JavaScript",
+      "HTML",
+      "CSS",
+      "Bash"
+    ],
+    "frameworks": [
+      "FastAPI",
+      "LangChain",
+      "React",
+      "SQLAlchemy"
+    ],
+    "herramientas": [
+      "Docker",
+      "Git",
+      "PostgreSQL",
+      "Cloudinary",
+      "VS Code",
+      "Linux"
+    ],
+    "metodologias": [
+      "Async/await",
+      "REST APIs",
+      "Bases de datos relacionales",
+      "Control de versiones"
+    ]
+  }
+}

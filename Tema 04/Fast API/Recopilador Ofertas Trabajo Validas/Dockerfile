@@ -1,4 +1,4 @@
-# Usamos una imagen base ligera de Python 3.11
+# Usamos una imagen base de Python 3.11
 FROM python:3.11-slim
 
 # Evita que Python genere archivos .pyc y permite ver logs en tiempo real
@@ -8,9 +8,12 @@ ENV PYTHONUNBUFFERED=1
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Instalamos dependencias del sistema necesarias para compilar algunas librerias
+# Instalamos dependencias del sistema necesarias
+# build-essential: compilar librerias
+# texlive-full: LaTeX para compilar CVs a PDF (~5GB, pero cacheado en HF)
 RUN apt-get update && apt-get install -y \
     build-essential \
+    texlive-full \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiamos primero el requirements.txt para aprovechar la cache de Docker

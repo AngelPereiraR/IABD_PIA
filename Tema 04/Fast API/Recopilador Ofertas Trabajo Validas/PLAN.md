@@ -3,7 +3,7 @@
 ## Contexto
 
 El proyecto actual ("Recopilador Inteligente de Ofertas de Trabajo") es un bot funcional que
-monitoriza Gmail, analiza ofertas con Gemini y notifica por Telegram. Este plan describe su
+monitoriza Gmail, analiza ofertas con DeepSeek vía LangChain y notifica por Telegram. Este plan describe su
 evolución hacia **OptiCV Engine**: una plataforma completa que añade generación automática
 de CVs optimizados en PDF (vía LaTeX), base de datos persistente, almacenamiento en
 Cloudinary y un dashboard web.
@@ -36,7 +36,7 @@ El cambio está motivado por la necesidad de:
 Evolución del bot actual (`src/mail_agent.py`, `src/bot.py`).
 
 - **Gmail OAuth2**: mantener integración existente en `src/mail_agent.py`
-- **Filtrado inteligente**: reemplazar `src/brain.py` (Gemini) por agente LangChain + DeepSeek que pre-analiza el cuerpo del correo para descartar ofertas no relevantes
+- **Filtrado inteligente**: `src/brain.py` utiliza LangChain + DeepSeek que pre-analiza el cuerpo del correo para descartar ofertas no relevantes
 - **Persistencia**: al detectar una oferta válida, guardar registro en tabla `job_offers` de Neon (en lugar de solo notificar)
 - **Telegram**: mantener `src/bot.py`, añadir botón inline "Generar CV Optimizado" que dispara el Engine vía API
 
@@ -149,7 +149,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
 | Archivo | Acción | Descripción |
 |---------|--------|-------------|
 | `main.py` | Modificar | Añadir endpoints API |
-| `src/brain.py` | Modificar | Reemplazar Gemini por LangChain + DeepSeek |
+| `src/brain.py` | Modificar | Implementar análisis con LangChain + DeepSeek |
 | `src/bot.py` | Modificar | Añadir botón inline "Generar CV" |
 | `src/mail_agent.py` | Modificar | Persistir ofertas en Neon |
 | `src/engine.py` | Crear | Análisis JD + adaptación de perfil |

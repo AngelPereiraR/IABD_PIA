@@ -1,0 +1,72 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{margin=1.5cm}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+
+% ---- Colores ----
+\definecolor{darkblue}{RGB}{0, 51, 102}
+\definecolor{lightgray}{RGB}{240, 240, 240}
+
+% ---- Datos personales (placeholders) ----
+\newcommand{\nombre}{{{NOMBRE}}}
+\newcommand{\email}{{{EMAIL}}}
+\newcommand{\linkedin}{{{LINKEDIN}}}
+\newcommand{\github}{{{GITHUB}}}
+
+% ---- Estilos de sección ----
+\titleformat{\section}
+  {\color{darkblue}\large\bfseries}
+  {}
+  {0em}
+  {}[\color{black}\titlerule]
+
+\pagestyle{empty}
+
+\begin{document}
+
+% ---- CABECERA ----
+\begin{center}
+  {\fontsize{16}{20}\selectfont \textbf{\nombre}} \\[3pt]
+  {\small \email\ $|$ \href{https://linkedin.com/in/\linkedin}{linkedin.com/in/\linkedin}\ $|$ \href{https://github.com/\github}{github.com/\github}}
+\end{center}
+
+\vspace{6pt}
+\hrule
+\vspace{6pt}
+
+% ---- RESUMEN ----
+\section*{Resumen Profesional}
+{{RESUMEN}}
+
+\vspace{6pt}
+
+% ---- HABILIDADES TÉCNICAS ----
+\section*{Habilidades Técnicas}
+{{HABILIDADES}}
+
+\vspace{6pt}
+
+% ---- EXPERIENCIA ----
+\section*{Experiencia Profesional}
+{{EXPERIENCIA}}
+
+\vspace{6pt}
+
+% ---- FORMACIÓN ----
+\section*{Formación Académica}
+\begin{itemize}[nosep]
+{{FORMACION}}
+\end{itemize}
+
+\vspace{6pt}
+
+% ---- PROYECTOS DESTACADOS ----
+\section*{Proyectos Destacados}
+{{PROYECTOS}}
+
+\end{document}

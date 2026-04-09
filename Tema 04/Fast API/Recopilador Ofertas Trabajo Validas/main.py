@@ -3,6 +3,7 @@ import os
 import sys
 import threading
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 # Importamos nuestros modulos especialistas
@@ -18,6 +19,19 @@ CV_PATH = os.path.join("data", "cv_usuario.pdf")
 
 # --- SERVIDOR WEB FAKE (Para engañar a Render) ---
 app = FastAPI()
+
+# CORS para dashboard (Vercel frontend)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",           # Vite dev
+        "https://opticv.vercel.app",       # Producción Vercel
+        "https://opticv-engine.hf.space",  # HF Spaces
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get('/')
 def home():
@@ -35,7 +49,7 @@ def run_bot_logic():
 
     # --- FASE 1: CARGA DE CONTEXTO (ESTÁTICO) ---
     # El CV y el Brain (Modelo) no necesitan reiniciarse constantemente
-    # porque el CV no cambia y el cliente de Gemini gestiona bien su propia sesión.
+    # porque el CV no cambia y el cliente de DeepSeek gestiona bien su propia sesión.
     try:
         user_cv_context = load_cv_context(CV_PATH)
         if not user_cv_context:
@@ -113,5 +127,5 @@ if not _bot_started:
 if __name__ == "__main__":
     # Esto solo se ejecuta si lanzas 'python main.py' localmente
     import uvicorn
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 7860))
     uvicorn.run(app, host="0.0.0.0", port=port)

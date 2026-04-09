@@ -24,11 +24,14 @@ def scrape_offer_content(url: str) -> str:
     """
     # 0. LIMPIEZA PREVIA DE URL (Vital para evitar 422 en Jina)
     url = _clean_url(url)
-    
+
     # --- 1. INTENTO CON JINA AI ---
-    encoded_url = quote(url, safe='') 
+    encoded_url = quote(url, safe='')
     timestamp = int(time.time())
+    jina_api_key = os.getenv("JINA_API_KEY")
     jina_url = f"https://r.jina.ai/{encoded_url}?t={timestamp}"
+    if jina_api_key:
+        jina_url += f"&api_key={jina_api_key}"
     
     common_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     
@@ -52,13 +55,17 @@ def scrape_offer_content(url: str) -> str:
         "X-Target-Selector": target_selector,
         "X-Remove-Selector": remove_selector
     }
+    # Añadir autenticación de Jina si existe API Key
+    if jina_api_key:
+        headers_jina["Authorization"] = f"Bearer {jina_api_key}"
 
     session = requests.Session()
     retry = Retry(total=2, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
     session.mount("https://", HTTPAdapter(max_retries=retry))
 
     try:
-        print(f"Scrapeando via Jina AI: {url[:60]}...")
+        auth_status = "con API Key" if jina_api_key else "sin API Key"
+        print(f"Scrapeando via Jina AI {auth_status}: {url[:60]}...")
         response = session.get(jina_url, headers=headers_jina, timeout=(10, 40))
         
         if response.status_code == 200:

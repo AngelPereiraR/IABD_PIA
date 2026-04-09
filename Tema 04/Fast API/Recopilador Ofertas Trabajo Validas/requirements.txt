@@ -1,4 +1,17 @@
-# Core de LangChain y Google
+# FastAPI y servidor web
+fastapi
+uvicorn[standard]
+python-multipart
+aiofiles
+
+# Base de datos
+sqlalchemy[asyncio]
+asyncpg
+
+# Storage
+cloudinary
+
+# IA y LLMs
 langchain
 langchain-openai
 langchain-community
@@ -7,8 +20,16 @@ langchain-community
 python-dotenv
 pydantic
 
-# Nuevas herramientas para el Workbench
-pypdf
+# Scraping y APIs
+httpx
+requests
+beautifulsoup4
 firecrawl-py
-fastapi
-uvicorn
+pypdf
+
+# Google & Telegram (existentes)
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+python-telegram-bot
