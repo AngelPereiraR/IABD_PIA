@@ -17,8 +17,8 @@ GET  /                           → "OptiCV Engine running"                ✅
 GET  /health                     → {"status": "ok"} (keep-alive Render/HF) ✅
 POST /api/generate/{job_offer_id}→ Dispara engine + LaTeX, retorna CV URL ✅
 GET  /api/offers                 → Lista ofertas paginada (para dashboard) ✅
-GET  /api/offers/{id}            → Detalle de una oferta                   ⏳ PENDIENTE
-GET  /api/offers/{id}/cv         → Redirect a URL del PDF                  ⏳ PENDIENTE
+GET  /api/offers/{id}            → Detalle de una oferta                   ✅
+GET  /api/offers/{id}/cv         → Redirect a URL del PDF                  ✅
 POST /api/upload-master-cv       → Sube CV maestro a Cloudinary + actualiza user ✅
 ```
 
@@ -98,13 +98,9 @@ async def list_offers(skip: int = 0, limit: int = 20, user_id: str = Depends(get
     """Lista ofertas del usuario ordenadas por fecha desc, con paginación."""
 ```
 
-### 3.4 Endpoint `/api/offers/{id}` — ⏳ PENDIENTE
+### 3.4 Endpoint `/api/offers/{id}` — ✅
 
-Ver sección **## Pendiente** al final de este plan.
-
-### 3.5 Endpoint `/api/offers/{id}/cv` — ⏳ PENDIENTE
-
-Ver sección **## Pendiente** al final de este plan.
+### 3.5 Endpoint `/api/offers/{id}/cv` — ✅
 
 ### 3.6 Endpoint `/api/upload-master-cv` — `src/api/routes/cv.py` ✅
 
@@ -174,18 +170,6 @@ curl -X POST http://localhost:7860/api/upload-master-cv \
 
 ---
 
-## Pendiente
+## Estado
 
-Los siguientes endpoints están especificados en el plan pero aún no implementados:
-
-### GET `/api/offers/{offer_id}`
-Implementar en `src/api/routes/offers.py`:
-- Retorna detalle completo de una oferta por ID
-- Response model: `OfferDetail`
-- 404 si la oferta no existe
-
-### GET `/api/offers/{offer_id}/cv`
-Implementar en `src/api/routes/offers.py`:
-- Redirige (`RedirectResponse`) a `offer.optimized_cv_url`
-- 404 si la oferta no existe
-- 404 si `optimized_cv_url` es null (CV aún no generado)
+Plan completamente implementado. Todos los endpoints están operativos.

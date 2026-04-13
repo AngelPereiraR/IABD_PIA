@@ -41,7 +41,7 @@ def upload_pdf(file_path: str, public_id: str) -> str:
         result = cloudinary.uploader.upload(
             file_path,
             public_id=public_id,
-            resource_type="raw",  # Tratarlo como archivo binario, no imagen
+            resource_type="image",  # PDFs se gestionan como imagen en Cloudinary
             overwrite=True,
             folder="opticv"  # Organizar en carpeta
         )
@@ -71,7 +71,7 @@ def upload_bytes(data: bytes, public_id: str) -> str:
         result = cloudinary.uploader.upload(
             data,
             public_id=public_id,
-            resource_type="raw",
+            resource_type="image",  # PDFs se gestionan como imagen en Cloudinary
             overwrite=True,
             folder="opticv"
         )
@@ -94,7 +94,7 @@ def get_url(public_id: str) -> str:
         URL del asset
     """
     try:
-        url = cloudinary.CloudinaryImage(public_id).build_url(resource_type="raw")
+        url = cloudinary.CloudinaryImage(public_id).build_url(resource_type="image")
         return url
     except Exception as e:
         logger.error(f"[Storage] Error building URL for {public_id}: {e}")
@@ -112,7 +112,7 @@ def delete_file(public_id: str) -> bool:
         True si se eliminó, False si no existe
     """
     try:
-        result = cloudinary.uploader.destroy(public_id, resource_type="raw")
+        result = cloudinary.uploader.destroy(public_id, resource_type="image")
         if result.get("result") == "ok":
             logger.info(f"[Storage] Eliminado: {public_id}")
             return True

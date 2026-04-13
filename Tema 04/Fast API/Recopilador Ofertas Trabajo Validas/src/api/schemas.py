@@ -10,6 +10,7 @@ class OfferDetail(BaseModel):
     score: Optional[int] = None
     status: str
     offer_url: Optional[str] = None
+    optimized_cv_url: Optional[str] = None
     created_at: datetime
 
     class Config:
