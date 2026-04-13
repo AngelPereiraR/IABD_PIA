@@ -7,6 +7,7 @@ aiofiles
 # Base de datos
 sqlalchemy[asyncio]
 asyncpg
+pyscopg
 
 # Storage
 cloudinary

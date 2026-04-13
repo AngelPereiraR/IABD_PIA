@@ -50,18 +50,19 @@ def health():
     return "OK"
 
 # --- TELEGRAM POLLING SETUP ---
-async def setup_telegram_polling():
+def setup_telegram_polling():
     """
     Configures and runs Telegram polling with callback handlers.
-    This should be executed in a separate thread from the main bot daemon.
+    Runs synchronously in its own thread — Application.run_polling() manages
+    its own event loop internally (python-telegram-bot v20+).
 
     Handles inline button callbacks with pattern "gen_cv:offer_id"
     """
     try:
-        app = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
+        telegram_app = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
 
         # Register handler for "gen_cv:offer_id" callbacks
-        app.add_handler(
+        telegram_app.add_handler(
             CallbackQueryHandler(
                 TelegramNotifier().handle_generate_cv_callback,
                 pattern="^gen_cv:"
@@ -69,7 +70,7 @@ async def setup_telegram_polling():
         )
 
         print(" [TELEGRAM] Iniciando polling de Telegram...", flush=True)
-        await app.run_polling()
+        telegram_app.run_polling()
     except Exception as e:
         print(f" [TELEGRAM] Error en polling: {e}", flush=True)
 
@@ -134,7 +135,7 @@ def run_bot_logic():
                     
                     decision = brain.analyze_offer(user_cv_context, offer_markdown)
 
-                    if decision.get("match"):
+                    if decision.get("is_relevant"):
                         print(f"       [MATCH] Persistiendo y enviando alerta.")
 
                         # Persist to database
@@ -179,10 +180,7 @@ if not _bot_started:
 
 if not _telegram_polling_started:
     _telegram_polling_started = True
-    def run_telegram_polling():
-        asyncio.run(setup_telegram_polling())
-
-    telegram_thread = threading.Thread(target=run_telegram_polling, daemon=True)
+    telegram_thread = threading.Thread(target=setup_telegram_polling, daemon=True)
     telegram_thread.start()
     print(" [SYSTEM] Hilo de Telegram Polling lanzado en segundo plano.", flush=True)
 

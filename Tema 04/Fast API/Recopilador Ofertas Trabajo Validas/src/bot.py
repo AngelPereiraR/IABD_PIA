@@ -58,6 +58,15 @@ class TelegramNotifier:
             f"🏢 <b>Empresa:</b> {analysis.get('company', 'Empresa confidencial')}\n\n"
             f"💰 <b>Salario:</b> {salary}\n"
             f"🎁 <b>Beneficios:</b> {benefits}\n\n"
+        )
+
+        # Agregar skills si están disponibles
+        key_skills = analysis.get('key_skills', [])
+        if key_skills:
+            skills_text = ", ".join(key_skills[:5])
+            message += f"🔑 <b>Skills Clave:</b> {skills_text}\n\n"
+
+        message += (
             f"📅 <b>Publicado:</b> {posted}\n\n"
             f"💡 <b>Análisis:</b>\n<i>{analysis.get('summary', 'Sin análisis detallado.')}</i>\n\n"
             f"🔗 <a href='{job_data.get('url')}'>Ver Oferta</a>"

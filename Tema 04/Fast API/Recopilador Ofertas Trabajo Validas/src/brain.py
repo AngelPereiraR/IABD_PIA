@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Optional
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
@@ -10,13 +11,15 @@ load_dotenv()
 
 # Definimos la estructura exacta que queremos que devuelva la IA
 class RecruitmentDecision(BaseModel):
-    match: bool = Field(description="True si supera AMBAS fases (ATS + Humano), False si cae en alguna.")
-    match_score: int = Field(description="0-59 (Fallo ATS), 60-69 (Fallo Humano), 70-89 (Apto), 90+ (Top).")
+    is_relevant: bool = Field(description="True si supera AMBAS fases (ATS + Humano), False si cae en alguna.")
+    score: int = Field(description="0-59 (Fallo ATS), 60-69 (Fallo Humano), 70-89 (Apto), 90+ (Top).")
     job_title: str = Field(description="El título del puesto normalizado extraído de la oferta.")
     company: str = Field(description="Nombre de la empresa.")
     salary: str = Field(description="Rango salarial detectado o 'No especificado'.")
     posted_date: str = Field(description="Fecha de publicación o antigüedad extraída LITERALMENTE del texto (ej. 'Hace 2 días', 'Posted 3 hours ago').")
     benefits: str = Field(description="Beneficios clave detectados.")
+    key_skills: list[str] = Field(description="Lista de habilidades clave requeridas por la oferta (máx 10).")
+    rejection_reason: Optional[str] = Field(default=None, description="Motivo de rechazo si match=False, null si match=True.")
     summary: str = Field(description="Justificación. Si falla en Fase 1: Tono ROBOTICO/ERROR. Si llega a Fase 2: Tono PROFESIONAL/RRHH.")
 
 class RecruitmentBrain:
@@ -127,6 +130,10 @@ class RecruitmentBrain:
 
             EXTRACCION DE DATOS:
             - Salary, Benefits y Posted Date.
+            - key_skills: Extrae lista de 5-10 habilidades técnicas clave mencionadas como requisitos en la oferta.
+            - rejection_reason:
+              * Si match=False -> Especifica el motivo EXACTO del rechazo (ej. "Experiencia Insuficiente", "Hard Skills Faltantes").
+              * Si match=True -> Debe ser null.
 
             FORMATO DE SALIDA JSON:
             {format_instructions}

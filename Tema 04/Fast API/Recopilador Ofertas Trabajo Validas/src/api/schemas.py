@@ -1,14 +1,15 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 class OfferDetail(BaseModel):
     """Modelo de respuesta para ofertas listadas"""
     id: int
-    job_title: str
-    company: str
-    score: int
+    job_title: Optional[str] = None
+    company: Optional[str] = None
+    score: Optional[int] = None
     status: str
-    offer_url: str
+    offer_url: Optional[str] = None
     created_at: datetime
 
     class Config:

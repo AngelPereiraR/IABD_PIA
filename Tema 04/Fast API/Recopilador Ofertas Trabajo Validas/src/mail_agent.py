@@ -227,7 +227,7 @@ async def save_offer_to_db(analysis: dict, offer_url: str, raw_text: str, user_i
     Persists an analyzed offer to Neon PostgreSQL.
 
     Args:
-        analysis: Dict from brain.analyze_offer() with keys: match, match_score, job_title, company, etc.
+        analysis: Dict from brain.analyze_offer() with keys: is_relevant, score, job_title, company, etc.
         offer_url: URL of the job offer
         raw_text: Raw scraped offer text (markdown)
         user_id: UUID of the user (from .env or user table)
@@ -242,7 +242,7 @@ async def save_offer_to_db(analysis: dict, offer_url: str, raw_text: str, user_i
             company=analysis.get('company', 'Unknown'),
             raw_text=raw_text,
             offer_url=offer_url,
-            score=analysis.get('match_score', 0),
+            score=analysis.get('score', 0),
             status="pending"  # Will be updated to "processing" when CV generation starts
         )
         session.add(offer)
