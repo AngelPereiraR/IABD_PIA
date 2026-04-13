@@ -1,5 +1,7 @@
 # Plan 05: Panel de Control (Dashboard React + Vite)
 
+> **Estado:** ⏳ Pendiente de implementar. Prerrequisito: Plan 04 completado al 100% (faltan `GET /api/offers/{id}` y `GET /api/offers/{id}/cv`).
+
 ## Objetivo
 Crear proyecto React + Vite en `frontend/` con tres vistas: historial de ofertas, gestión de CV maestro, y configuración. Desplegar en Vercel conectado a la API FastAPI en HF.
 

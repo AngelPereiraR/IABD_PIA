@@ -15,12 +15,12 @@ Planificaciones detalladas por módulo. Ejecutar en orden.
 
 ## Checklist global
 
-- [ ] **00** — Docker build OK + BD conectada + Cloudinary OK
-- [ ] **01** — Brain con DeepSeek OK + oferta guardada en BD + botón Telegram funcional
-- [ ] **02** — Engine genera `.tex` adaptado sin errores
-- [ ] **03** — `pdflatex` compila PDF correctamente + sube a Cloudinary
-- [ ] **04** — Todos los endpoints responden (verificar en `/docs`)
-- [ ] **05** — Dashboard muestra ofertas + botón Generar CV funciona end-to-end
+- [x] **00** — Docker build OK + BD conectada + Cloudinary OK
+- [x] **01** — Brain con DeepSeek OK + oferta guardada en BD + botón Telegram funcional
+- [x] **02** — Engine genera `.tex` adaptado sin errores
+- [x] **03** — `pdflatex` compila PDF correctamente + sube a Cloudinary
+- [ ] **04** — Faltan 2 endpoints: `GET /api/offers/{id}` y `GET /api/offers/{id}/cv`
+- [ ] **05** — Dashboard sin iniciar
 
 ## Flujo completo (verificación final)
 

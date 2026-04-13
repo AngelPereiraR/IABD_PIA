@@ -2,12 +2,10 @@
 fastapi
 uvicorn[standard]
 python-multipart
-aiofiles
 
 # Base de datos
 sqlalchemy[asyncio]
-asyncpg
-pyscopg
+psycopg
 
 # Storage
 cloudinary
@@ -25,7 +23,6 @@ pydantic
 # Scraping y APIs
 httpx
 requests
-beautifulsoup4
 firecrawl-py
 pypdf
 

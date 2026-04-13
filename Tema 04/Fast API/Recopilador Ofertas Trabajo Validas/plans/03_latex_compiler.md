@@ -9,7 +9,7 @@ Crear `src/latex_compiler.py`: recibe contenido `.tex` como string, lo escribe e
 
 ---
 
-## Paso 1: Verificar disponibilidad de pdflatex
+## Paso 1 ✅: Verificar disponibilidad de pdflatex
 
 ```bash
 # Dentro del contenedor Docker:
@@ -24,7 +24,7 @@ docker run --rm -v $(pwd)/data:/data texlive/texlive pdflatex /data/test.tex
 
 ---
 
-## Paso 2: Crear `src/latex_compiler.py`
+## Paso 2 ✅: Crear `src/latex_compiler.py`
 
 ```python
 import asyncio
@@ -123,13 +123,13 @@ def _read_log(log_path: Path) -> str:
 
 ---
 
-## Paso 3: Manejo de errores LaTeX comunes
+## Paso 3 ✅: Manejo de errores LaTeX comunes
 
 ### Caracteres especiales en LaTeX
-El engine debe escapar estos caracteres en el contenido generado por DeepSeek:
+El engine escapa estos caracteres en el contenido generado por DeepSeek:
 
 ```python
-# Añadir a src/engine.py, aplicar antes de _render_template()
+# Implementado como @staticmethod en src/cv_generator.py → CVGenerator.escape_latex()
 LATEX_SPECIAL = {
     "&": r"\&",
     "%": r"\%",
@@ -143,18 +143,18 @@ LATEX_SPECIAL = {
     "\\": r"\textbackslash{}",
 }
 
-def escape_latex(text: str) -> str:
-    """Escapa caracteres especiales para LaTeX."""
-    for char, escaped in LATEX_SPECIAL.items():
-        text = text.replace(char, escaped)
-    return text
+# Llamar como:
+CVGenerator.escape_latex(texto)
 ```
 
-> **Importante**: Aplicar `escape_latex()` SOLO a los campos de texto libre (resumen, descripciones), NO al código LaTeX generado (itemize, etc.) que ya incluye comandos LaTeX.
+> **Nota**: `escape_latex()` está implementado como `@staticmethod` de la clase `CVGenerator`
+> en `src/cv_generator.py`. No es una función independiente.
+>
+> **Importante**: Aplicar SOLO a los campos de texto libre (resumen, descripciones), NO al código LaTeX generado (itemize, etc.) que ya incluye comandos LaTeX.
 
 ---
 
-## Paso 4: Compilación de prueba
+## Paso 4 ✅: Compilación de prueba
 
 ### 4.1 Plantilla mínima de test
 
@@ -204,7 +204,7 @@ asyncio.run(test())
 
 ---
 
-## Paso 5: Consideraciones de rendimiento
+## Paso 5 ✅: Consideraciones de rendimiento
 
 | Aspecto | Detalle |
 |---------|---------|
@@ -234,7 +234,7 @@ async def compile_latex_safe(tex_content: str, offer_id: int) -> str:
 | Archivo | Acción |
 |---------|--------|
 | `src/latex_compiler.py` | Crear - compilación async con pdflatex |
-| `src/engine.py` | Añadir `escape_latex()`, integrar compiler |
+| `src/cv_generator.py` | `CVGenerator.escape_latex()` como `@staticmethod`, integra `compile_latex` |
 | `data/generated/` | Directorio para PDFs generados (gitignore) |
 | `Dockerfile` | Ya incluye `texlive-full` (ver Plan 00) |
 

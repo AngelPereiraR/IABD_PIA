@@ -10,29 +10,30 @@ Evolucionar `main.py` añadiendo los endpoints reales para el dashboard y la gen
 
 ---
 
-## Paso 1: Estructura de endpoints
+## Paso 1 ✅: Estructura de endpoints
 
 ```
-GET  /                           → "OptiCV Engine running"
-GET  /health                     → {"status": "ok"} (keep-alive Render/HF)
-POST /api/generate/{job_offer_id}→ Dispara engine + LaTeX, retorna CV URL
-GET  /api/offers                 → Lista ofertas paginada (para dashboard)
-GET  /api/offers/{id}            → Detalle de una oferta
-GET  /api/offers/{id}/cv         → Redirect a URL del PDF
-POST /api/upload-master-cv       → Sube CV maestro a Cloudinary + actualiza user
+GET  /                           → "OptiCV Engine running"                ✅
+GET  /health                     → {"status": "ok"} (keep-alive Render/HF) ✅
+POST /api/generate/{job_offer_id}→ Dispara engine + LaTeX, retorna CV URL ✅
+GET  /api/offers                 → Lista ofertas paginada (para dashboard) ✅
+GET  /api/offers/{id}            → Detalle de una oferta                   ⏳ PENDIENTE
+GET  /api/offers/{id}/cv         → Redirect a URL del PDF                  ⏳ PENDIENTE
+POST /api/upload-master-cv       → Sube CV maestro a Cloudinary + actualiza user ✅
 ```
 
 ---
 
-## Paso 2: Modelos Pydantic de respuesta
+## Paso 2 ✅: Modelos Pydantic de respuesta
+
+Ubicación: `src/api/schemas.py`
 
 ```python
-# Añadir a main.py o crear src/schemas.py
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-class OfferResponse(BaseModel):
+class OfferDetail(BaseModel):
     id: int
     job_title: Optional[str]
     company: Optional[str]
@@ -45,19 +46,18 @@ class OfferResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class GenerateResponse(BaseModel):
-    offer_id: int
+class CVGenerationResponse(BaseModel):
     cv_url: str
     status: str = "done"
 
-class UploadCVResponse(BaseModel):
-    master_cv_url: str
-    message: str
+class CVUploadResponse(BaseModel):
+    cv_url: str
+    status: str
 ```
 
 ---
 
-## Paso 3: Implementar endpoints en `main.py`
+## Paso 3 ✅: Implementar endpoints en `main.py` + `src/api/routes/`
 
 ### 3.1 Imports adicionales
 
@@ -72,123 +72,53 @@ from src.storage import upload_bytes
 import io
 ```
 
-### 3.2 Endpoint `/api/generate/{job_offer_id}`
+### 3.2 Endpoint `/api/generate/{job_offer_id}` — `src/api/routes/cv.py` ✅
 
 ```python
-@app.post("/api/generate/{job_offer_id}", response_model=GenerateResponse)
-async def generate_optimized_cv(job_offer_id: int, db: AsyncSession = Depends(get_db)):
+@router.post("/generate/{offer_id}", response_model=CVGenerationResponse)
+async def generate_optimized_cv(offer_id: int):
     """
     Genera CV optimizado para una oferta específica.
+    Llama a CVGenerator.generate_for_offer(offer_id).
     Operación síncrona (espera resultado) - timeout recomendado: 5 min en cliente.
     """
-    # Verificar que la oferta existe
-    result = await db.execute(select(JobOffer).where(JobOffer.id == job_offer_id))
-    offer = result.scalar_one_or_none()
-    
-    if not offer:
-        raise HTTPException(status_code=404, detail=f"Oferta {job_offer_id} no encontrada")
-    
     if offer.status == "processing":
         raise HTTPException(status_code=409, detail="CV ya está siendo generado")
-    
     if offer.status == "done" and offer.optimized_cv_url:
-        # Ya generado, retornar directamente
-        return GenerateResponse(offer_id=job_offer_id, cv_url=offer.optimized_cv_url)
-    
-    try:
-        cv_url = await generate_cv(job_offer_id)
-        return GenerateResponse(offer_id=job_offer_id, cv_url=cv_url)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return CVGenerationResponse(cv_url=offer.optimized_cv_url)
+    cv_url = await CVGenerator.generate_for_offer(offer_id)
+    return CVGenerationResponse(cv_url=cv_url)
 ```
 
-### 3.3 Endpoint `/api/offers`
+### 3.3 Endpoint `/api/offers` — `src/api/routes/offers.py` ✅
 
 ```python
-@app.get("/api/offers", response_model=list[OfferResponse])
-async def list_offers(
-    skip: int = 0,
-    limit: int = 20,
-    status: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
-):
-    """Lista ofertas detectadas, ordenadas por fecha desc. Soporta filtro por status."""
-    query = select(JobOffer).order_by(desc(JobOffer.created_at))
-    
-    if status:
-        query = query.where(JobOffer.status == status)
-    
-    query = query.offset(skip).limit(limit)
-    result = await db.execute(query)
-    return result.scalars().all()
+@router.get("/offers", response_model=list[OfferDetail])
+async def list_offers(skip: int = 0, limit: int = 20, user_id: str = Depends(get_user_id)):
+    """Lista ofertas del usuario ordenadas por fecha desc, con paginación."""
 ```
 
-### 3.4 Endpoint `/api/offers/{id}`
+### 3.4 Endpoint `/api/offers/{id}` — ⏳ PENDIENTE
+
+Ver sección **## Pendiente** al final de este plan.
+
+### 3.5 Endpoint `/api/offers/{id}/cv` — ⏳ PENDIENTE
+
+Ver sección **## Pendiente** al final de este plan.
+
+### 3.6 Endpoint `/api/upload-master-cv` — `src/api/routes/cv.py` ✅
 
 ```python
-@app.get("/api/offers/{offer_id}", response_model=OfferResponse)
-async def get_offer(offer_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(JobOffer).where(JobOffer.id == offer_id))
-    offer = result.scalar_one_or_none()
-    if not offer:
-        raise HTTPException(status_code=404, detail="Oferta no encontrada")
-    return offer
-```
-
-### 3.5 Endpoint `/api/offers/{id}/cv`
-
-```python
-@app.get("/api/offers/{offer_id}/cv")
-async def get_offer_cv(offer_id: int, db: AsyncSession = Depends(get_db)):
-    """Redirige a la URL del PDF en Cloudinary."""
-    result = await db.execute(select(JobOffer).where(JobOffer.id == offer_id))
-    offer = result.scalar_one_or_none()
-    
-    if not offer:
-        raise HTTPException(status_code=404, detail="Oferta no encontrada")
-    if not offer.optimized_cv_url:
-        raise HTTPException(status_code=404, detail="CV no generado aún para esta oferta")
-    
-    return RedirectResponse(url=offer.optimized_cv_url)
-```
-
-### 3.6 Endpoint `/api/upload-master-cv`
-
-```python
-@app.post("/api/upload-master-cv", response_model=UploadCVResponse)
-async def upload_master_cv(
-    file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db)
-):
-    """Sube el CV maestro a Cloudinary y actualiza la URL en la BD del usuario."""
-    if not file.filename.endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Solo se aceptan archivos PDF")
-    
-    contents = await file.read()
-    
-    if len(contents) > 10 * 1024 * 1024:  # 10MB límite
-        raise HTTPException(status_code=400, detail="Archivo demasiado grande (máx 10MB)")
-    
-    cv_url = upload_bytes(contents, "cv/master")
-    
-    # Actualizar URL en BD del usuario único
-    user_id = os.environ.get("USER_ID")
-    if user_id:
-        from sqlalchemy import update
-        await db.execute(
-            update(User).where(User.id == user_id).values(master_cv_url=cv_url)
-        )
-        await db.commit()
-    
-    return UploadCVResponse(
-        master_cv_url=cv_url,
-        message="CV maestro actualizado correctamente"
-    )
+@router.post("/upload-master-cv", response_model=CVUploadResponse)
+async def upload_master_cv(file: UploadFile = File(...)):
+    """Sube CV maestro a Cloudinary. Solo acepta PDF, máx 10MB."""
+    # upload_bytes(contents, "cv/master") → cv_url
+    # Actualiza user.master_cv_url en BD
 ```
 
 ---
 
-## Paso 4: CORS para el dashboard
+## Paso 4 ✅: CORS para el dashboard
 
 ```python
 from fastapi.middleware.cors import CORSMiddleware
@@ -207,7 +137,7 @@ app.add_middleware(
 
 ---
 
-## Paso 5: Verificación de endpoints
+## Paso 5 ✅: Verificación de endpoints implementados
 
 ```bash
 # Servidor levantado
@@ -236,5 +166,26 @@ curl -X POST http://localhost:7860/api/upload-master-cv \
 
 | Archivo | Cambios |
 |---------|---------|
-| `main.py` | Añadir 5 endpoints + CORS + schemas Pydantic |
-| `src/schemas.py` | Crear (opcional, mover schemas si main.py crece) |
+| `main.py` | Registrar routers + CORS middleware |
+| `src/api/schemas.py` | `OfferDetail`, `CVGenerationResponse`, `CVUploadResponse` |
+| `src/api/routes/offers.py` | `GET /api/offers` ✅ |
+| `src/api/routes/cv.py` | `POST /api/generate/{id}` ✅, `POST /api/upload-master-cv` ✅ |
+| `src/api/dependencies.py` | `get_user_id()`, `get_async_session()` |
+
+---
+
+## Pendiente
+
+Los siguientes endpoints están especificados en el plan pero aún no implementados:
+
+### GET `/api/offers/{offer_id}`
+Implementar en `src/api/routes/offers.py`:
+- Retorna detalle completo de una oferta por ID
+- Response model: `OfferDetail`
+- 404 si la oferta no existe
+
+### GET `/api/offers/{offer_id}/cv`
+Implementar en `src/api/routes/offers.py`:
+- Redirige (`RedirectResponse`) a `offer.optimized_cv_url`
+- 404 si la oferta no existe
+- 404 si `optimized_cv_url` es null (CV aún no generado)

@@ -10,7 +10,7 @@ Evolucionar el bot actual para persistir ofertas válidas en Neon y añadir bot�
 
 ---
 
-## Paso 1: Implementar LangChain + DeepSeek en `src/brain.py`
+## Paso 1 ✅: Implementar LangChain + DeepSeek en `src/brain.py`
 
 ### 1.1 Stack de análisis
 
@@ -28,11 +28,11 @@ import os
 import json
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
-from langchain.output_parsers import PydanticOutputParser
+from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
 from typing import Optional
 
-class OfferAnalysis(BaseModel):
+class RecruitmentDecision(BaseModel):
     is_relevant: bool = Field(description="True si la oferta encaja con el perfil del CV")
     score: int = Field(description="Puntuación 0-100 de adecuación al perfil")
     job_title: str = Field(description="Título del puesto extraído")
@@ -41,39 +41,42 @@ class OfferAnalysis(BaseModel):
     key_skills: list[str] = Field(description="Lista de habilidades clave requeridas")
     rejection_reason: Optional[str] = Field(description="Motivo de rechazo si is_relevant=False")
     summary: str = Field(description="Resumen breve de la oferta en 2-3 frases")
+    posted_date: Optional[str] = Field(description="Fecha de publicación de la oferta, o null si no aparece")
+    benefits: Optional[list[str]] = Field(description="Lista de beneficios mencionados, o null si no aparecen")
 
-def build_chain():
-    llm = ChatOpenAI(
-        api_key=os.environ["DEEPSEEK_API_KEY"],
-        base_url="https://api.deepseek.com/v1",
-        model="deepseek-chat",
-        temperature=0.1
-    )
-    parser = PydanticOutputParser(pydantic_object=OfferAnalysis)
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """Eres un evaluador experto en selección de personal técnica (IA/Data).
+class RecruitmentBrain:
+    """Clase principal de análisis de ofertas con DeepSeek vía LangChain."""
+
+    def __init__(self):
+        self.llm = ChatOpenAI(
+            api_key=os.environ["DEEPSEEK_API_KEY"],
+            base_url="https://api.deepseek.com/v1",
+            model="deepseek-chat",
+            temperature=0.1
+        )
+        self.parser = JsonOutputParser(pydantic_object=RecruitmentDecision)
+        self.prompt = ChatPromptTemplate.from_messages([
+            ("system", """Eres un evaluador experto en selección de personal técnica (IA/Data).
 Analiza la oferta de trabajo y el CV del candidato.
 Evalúa en dos fases:
 1. ATS: ¿Contiene las palabras clave mínimas del CV?
 2. Recruiter: ¿Es genuinamente adecuada para el perfil?
 
 {format_instructions}"""),
-        ("human", "CV del candidato:\n{cv}\n\nOferta de trabajo:\n{offer_text}")
-    ])
-    return prompt | llm | parser, parser
+            ("human", "CV del candidato:\n{cv}\n\nOferta de trabajo:\n{offer_text}")
+        ])
 
-_chain, _parser = build_chain()
-
-def analyze_offer(offer_text: str, cv_text: str) -> OfferAnalysis:
-    """Analiza una oferta contra el CV. Retorna OfferAnalysis."""
-    return _chain.invoke({
-        "cv": cv_text,
-        "offer_text": offer_text,
-        "format_instructions": _parser.get_format_instructions()
-    })
+    def analyze(self, offer_text: str, cv_text: str) -> RecruitmentDecision:
+        """Analiza una oferta contra el CV. Retorna RecruitmentDecision."""
+        chain = self.prompt | self.llm | self.parser
+        return chain.invoke({
+            "cv": cv_text,
+            "offer_text": offer_text,
+            "format_instructions": self.parser.get_format_instructions()
+        })
 ```
 
-### 1.3 Actualizar `loader.py` para retornar texto plano
+### 1.3 ✅ Actualizar `loader.py` para retornar texto plano
 ```python
 # Asegurar que cv_text() retorna str, no bytes
 def load_cv_text() -> str:
@@ -84,7 +87,7 @@ def load_cv_text() -> str:
 
 ---
 
-## Paso 2: Persistir ofertas en Neon desde `src/mail_agent.py`
+## Paso 2 ✅: Persistir ofertas en Neon desde `src/mail_agent.py`
 
 ### 2.1 Añadir función `save_offer_to_db`
 
@@ -130,7 +133,7 @@ if analysis.is_relevant:
 
 ---
 
-## Paso 3: Añadir botón inline "Generar CV" en `src/bot.py`
+## Paso 3 ✅: Añadir botón inline "Generar CV" en `src/bot.py`
 
 ### 3.1 Actualizar `send_offer` para incluir InlineKeyboardMarkup
 
@@ -203,7 +206,7 @@ app.add_handler(CallbackQueryHandler(handle_generate_cv, pattern="^gen_cv:"))
 
 ---
 
-## Paso 4: Gestión del USER_ID único
+## Paso 4 ✅: Gestión del USER_ID único
 
 Para uso personal (un solo usuario), añadir a `.env`:
 ```env
@@ -223,7 +226,7 @@ VALUES ('<uuid>', 'tu@email.com', '<telegram_chat_id>');
 
 ---
 
-## Verificación del Módulo
+## Verificación del Módulo ✅
 
 ```bash
 # 1. Brain con DeepSeek retorna análisis válido
@@ -257,7 +260,7 @@ asyncio.run(test())
 
 | Archivo | Cambios |
 |---------|---------|
-| `src/brain.py` | Implementar LangChain + DeepSeek, modelo Pydantic |
+| `src/brain.py` | Implementar LangChain + DeepSeek, clase `RecruitmentBrain`, modelo `RecruitmentDecision` |
 | `src/mail_agent.py` | Añadir `save_offer_to_db`, integrar en flujo |
 | `src/bot.py` | Añadir botón inline, handler callback, httpx call |
 | `src/loader.py` | Verificar retorno como str plano |

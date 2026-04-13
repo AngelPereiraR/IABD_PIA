@@ -17,7 +17,7 @@ Implementar 4 funcionalidades críticas (Prioridad 1 de PLAN_01_AUDIT.md):
 
 ---
 
-## Paso 0: APIs Críticas (Prioridad 1 de PLAN_01_AUDIT)
+## Paso 0 ✅: APIs Críticas (Prioridad 1 de PLAN_01_AUDIT)
 
 **Status:** ✅ IMPLEMENTADO en main.py
 
@@ -243,7 +243,7 @@ curl "http://localhost:7860/api/offers" | jq '.[] | select(.status=="done")'
 
 ---
 
-## Paso 1: Plantilla LaTeX base
+## Paso 1 ✅: Plantilla LaTeX base
 
 ### 1.1 Crear `data/cv_template.tex`
 
@@ -334,22 +334,20 @@ Datos estructurados del CV Maestro (fuente de verdad para el engine):
 
 ---
 
-## Paso 2: Crear `src/engine.py`
+## Paso 2 ✅: `src/cv_generator.py` — clase `CVGenerator`
 
 ### 2.1 Dependencias del módulo
 
 ```python
 import os
 import json
-import asyncio
-import tempfile
-import httpx
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
-from typing import Optional
 from src.storage import upload_pdf
-from src.database import AsyncSessionLocal, JobOffer
+from src.database import AsyncSessionLocal, JobOffer, User
+from src.latex_compiler import compile_latex
 from sqlalchemy import select
 ```
 
@@ -357,185 +355,124 @@ from sqlalchemy import select
 
 ```python
 class AdaptedCVSections(BaseModel):
-    resumen: str = Field(description="Párrafo resumen adaptado a esta oferta específica (3-5 frases)")
+    resumen: str = Field(description="Párrafo resumen adaptado a la oferta (3-5 frases, verbos de acción)")
     habilidades: str = Field(
-        description="Sección de habilidades en formato LaTeX itemize, priorizando las requeridas por la oferta"
+        description="Sección habilidades en formato LaTeX itemize, priorizando skills de la oferta"
     )
     experiencia: str = Field(
-        description="Sección experiencia en formato LaTeX. Destacar logros relevantes para esta oferta."
-    )
-    keywords_destacados: list[str] = Field(
-        description="Top 5 keywords de la oferta que se han integrado en el CV"
+        description="Sección experiencia en formato LaTeX, destacando logros relevantes para esta oferta"
     )
 ```
 
-### 2.3 Función principal `generate_cv`
+### 2.3 Clase principal `CVGenerator`
 
 ```python
-async def generate_cv(offer_id: int) -> str:
-    """
-    Genera CV optimizado para una oferta.
-    Retorna URL de Cloudinary del PDF generado.
-    """
-    # 1. Cargar oferta desde BD
-    offer = await _get_offer(offer_id)
-    if not offer:
-        raise ValueError(f"Oferta {offer_id} no encontrada")
-    
-    # 2. Actualizar estado
-    await _update_status(offer_id, "processing")
-    
-    try:
-        # 3. Cargar datos del CV Maestro
-        master_data = _load_master_data()
-        
-        # 4. Adaptar secciones con DeepSeek
-        adapted = await _adapt_cv_sections(offer.raw_text, master_data)
-        
-        # 5. Generar .tex con datos adaptados
-        tex_content = _render_template(master_data, adapted)
-        
-        # 6. Compilar PDF (delegar a latex_compiler)
-        from src.latex_compiler import compile_latex
-        pdf_path = await compile_latex(tex_content, offer_id)
-        
-        # 7. Subir a Cloudinary
-        cv_url = upload_pdf(pdf_path, f"cv/optimized/offer_{offer_id}")
-        
-        # 8. Guardar URL en BD
-        await _update_cv_url(offer_id, cv_url)
-        
-        return cv_url
-        
-    except Exception as e:
-        await _update_status(offer_id, "error")
-        raise
+class CVGenerator:
 
-async def _get_offer(offer_id: int) -> Optional[JobOffer]:
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            select(JobOffer).where(JobOffer.id == offer_id)
+    @staticmethod
+    async def generate_for_offer(offer_id: int) -> str:
+        """
+        Flujo completo de generación de CV optimizado para una oferta.
+        Retorna URL de Cloudinary del PDF generado.
+        """
+        # 1. Fetch JobOffer desde BD
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(select(JobOffer).where(JobOffer.id == offer_id))
+            offer = result.scalar_one_or_none()
+            if not offer:
+                raise ValueError(f"Oferta {offer_id} no encontrada")
+            # 2. Set status = "processing"
+            offer.status = "processing"
+            await session.commit()
+
+            # 3. Fetch User
+            result = await session.execute(select(User).where(User.id == offer.user_id))
+            user = result.scalar_one_or_none()
+            if not user:
+                raise ValueError(f"Usuario no encontrado para oferta {offer_id}")
+
+        try:
+            # 4. Compilar LaTeX → PDF
+            pdf_path = await CVGenerator._compile_latex(offer, user)
+
+            # 5. Subir a Cloudinary
+            cv_url = upload_pdf(pdf_path, f"cv_optimizados/offer_{offer_id}_cv")
+
+            # 6. Guardar URL en BD y marcar como done
+            async with AsyncSessionLocal() as session:
+                result = await session.execute(select(JobOffer).where(JobOffer.id == offer_id))
+                offer = result.scalar_one_or_none()
+                offer.optimized_cv_url = cv_url
+                offer.status = "done"
+                await session.commit()
+
+            return cv_url
+
+        except Exception:
+            async with AsyncSessionLocal() as session:
+                result = await session.execute(select(JobOffer).where(JobOffer.id == offer_id))
+                offer_err = result.scalar_one_or_none()
+                offer_err.status = "error"
+                await session.commit()
+            raise
+
+    @staticmethod
+    async def _adapt_with_deepseek(offer_text: str, master_data: dict) -> AdaptedCVSections:
+        """Usa DeepSeek con JsonOutputParser para adaptar las secciones del CV a la oferta."""
+        llm = ChatOpenAI(
+            api_key=os.environ["DEEPSEEK_API_KEY"],
+            base_url="https://api.deepseek.com/v1",
+            model="deepseek-chat",
+            temperature=0.3
         )
-        return result.scalar_one_or_none()
+        parser = JsonOutputParser(pydantic_object=AdaptedCVSections)
+        prompt = ChatPromptTemplate.from_messages([...])
+        chain = prompt | llm | parser
+        return await chain.ainvoke({...})
 
-async def _update_status(offer_id: int, status: str):
-    from sqlalchemy import update
-    async with AsyncSessionLocal() as session:
-        await session.execute(
-            update(JobOffer).where(JobOffer.id == offer_id).values(status=status)
-        )
-        await session.commit()
+    @staticmethod
+    async def _compile_latex(offer: JobOffer, user: User) -> str:
+        """Orquesta: cargar master_data.json → _adapt_with_deepseek → _build_latex_template → compile_latex"""
+        with open("data/cv_master_data.json", encoding="utf-8") as f:
+            master_data = json.load(f)
+        adapted = await CVGenerator._adapt_with_deepseek(offer.raw_text, master_data)
+        tex_content = CVGenerator._build_latex_template(offer, user, master_data, adapted)
+        return await compile_latex(tex_content, offer.id)
 
-async def _update_cv_url(offer_id: int, url: str):
-    from sqlalchemy import update
-    async with AsyncSessionLocal() as session:
-        await session.execute(
-            update(JobOffer).where(JobOffer.id == offer_id).values(
-                optimized_cv_url=url, status="done"
-            )
-        )
-        await session.commit()
+    @staticmethod
+    def _build_latex_template(offer: JobOffer, user: User, master_data: dict = None, adapted: AdaptedCVSections = None) -> str:
+        """Sustituye placeholders {{VARIABLE}} en data/cv_template.tex con datos reales y adaptados."""
 
-def _load_master_data() -> dict:
-    with open("data/cv_master_data.json", encoding="utf-8") as f:
-        return json.load(f)
-```
+    @staticmethod
+    def escape_latex(text: str) -> str:
+        """Escapa caracteres especiales LaTeX: &, %, $, #, _, {, }, ~, ^, \\"""
 
-### 2.4 Función de adaptación con LangChain
-
-```python
-async def _adapt_cv_sections(offer_text: str, master_data: dict) -> AdaptedCVSections:
-    """Usa DeepSeek para adaptar las secciones del CV a la oferta."""
-    from langchain.output_parsers import PydanticOutputParser
-    
-    llm = ChatOpenAI(
-        api_key=os.environ["DEEPSEEK_API_KEY"],
-        base_url="https://api.deepseek.com/v1",
-        model="deepseek-chat",
-        temperature=0.3
-    )
-    parser = PydanticOutputParser(pydantic_object=AdaptedCVSections)
-    
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """Eres experto en optimización de CVs para ATS y reclutadores técnicos.
-Dado el perfil base del candidato y una oferta de trabajo, adapta las secciones del CV.
-
-REGLAS:
-- No inventes experiencia que no existe en el perfil base
-- Reordena y enfatiza habilidades relevantes para la oferta
-- Usa verbos de acción en el resumen
-- Integra keywords de la oferta de forma natural
-- Formato LaTeX válido en las secciones habilidades y experiencia
-- Idioma: español
-
-{format_instructions}"""),
-        ("human", """PERFIL BASE:
-{master_data}
-
-OFERTA:
-{offer_text}""")
-    ])
-    
-    chain = prompt | llm | parser
-    
-    return await chain.ainvoke({
-        "master_data": json.dumps(master_data, ensure_ascii=False, indent=2),
-        "offer_text": offer_text,
-        "format_instructions": parser.get_format_instructions()
-    })
-```
-
-### 2.5 Función de renderizado de plantilla
-
-```python
-def _render_template(master_data: dict, adapted: AdaptedCVSections) -> str:
-    """Sustituye placeholders en la plantilla LaTeX."""
-    with open("data/cv_template.tex", encoding="utf-8") as f:
-        template = f.read()
-    
-    # Formatear formación
-    formacion_tex = ""
-    for edu in master_data["formacion"]:
-        formacion_tex += f"\\textbf{{{edu['titulo']}}} — {edu['centro']} ({edu['anio']})\\\\\n"
-    
-    # Formatear proyectos
-    proyectos_tex = "\\begin{itemize}[nosep]\n"
-    for p in master_data["proyectos"]:
-        techs = ", ".join(p["tecnologias"])
-        proyectos_tex += f"  \\item \\textbf{{{p['nombre']}}}: {p['descripcion']} ({techs})\n"
-    proyectos_tex += "\\end{itemize}"
-    
-    replacements = {
-        "{{NOMBRE}}": master_data["nombre"],
-        "{{EMAIL}}": master_data["email"],
-        "{{LINKEDIN}}": master_data["linkedin"],
-        "{{GITHUB}}": master_data["github"],
-        "{{RESUMEN}}": adapted.resumen,
-        "{{HABILIDADES}}": adapted.habilidades,
-        "{{EXPERIENCIA}}": adapted.experiencia,
-        "{{FORMACION}}": formacion_tex,
-        "{{PROYECTOS}}": proyectos_tex,
-    }
-    
-    for placeholder, value in replacements.items():
-        template = template.replace(placeholder, value)
-    
-    return template
+    # Helpers de formato LaTeX para secciones del CV:
+    @staticmethod
+    def _format_skills_latex(habilidades_base: dict) -> str: ...
+    @staticmethod
+    def _format_experience_latex(experiencia_base: list) -> str: ...
+    @staticmethod
+    def _format_education_latex(formacion: list) -> str: ...
+    @staticmethod
+    def _format_projects_latex(proyectos: list) -> str: ...
+    @staticmethod
+    def _get_fallback_template() -> str: ...
 ```
 
 ---
 
-## Paso 3: Verificación del módulo
+## Paso 3 ✅: Verificación del módulo
 
 ```bash
 # Test completo del engine (requiere oferta en BD y CV maestro configurado)
 python -c "
 import asyncio
-from src.engine import generate_cv
+from src.cv_generator import CVGenerator
 
 async def test():
     # Usar ID de una oferta real en BD
-    url = await generate_cv(1)
+    url = await CVGenerator.generate_for_offer(1)
     print(f'CV generado: {url}')
 
 asyncio.run(test())
@@ -548,6 +485,6 @@ asyncio.run(test())
 
 | Archivo | Acción |
 |---------|--------|
-| `src/engine.py` | Crear - lógica principal de adaptación |
+| `src/cv_generator.py` | Crear - clase `CVGenerator` con lógica de adaptación y compilación |
 | `data/cv_template.tex` | Crear - plantilla LaTeX con placeholders |
 | `data/cv_master_data.json` | Crear - datos estructurados del CV maestro |

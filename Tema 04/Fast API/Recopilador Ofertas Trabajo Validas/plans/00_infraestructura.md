@@ -12,7 +12,7 @@ Preparar el entorno de despliegue en Hugging Face Spaces, configurar variables d
 
 ---
 
-## Paso 1: Migración Render → Hugging Face Spaces
+## Paso 1 ✅: Migración Render → Hugging Face Spaces
 
 ### 1.1 Crear Space en HF
 - Ir a huggingface.co → New Space
@@ -52,7 +52,7 @@ uvicorn main:app --host 0.0.0.0 --port 7860
 
 ---
 
-## Paso 2: Dockerfile con texlive-full
+## Paso 2 ✅: Dockerfile con texlive-full
 
 ### 2.1 Modificar `Dockerfile`
 ```dockerfile
@@ -86,7 +86,7 @@ curl http://localhost:7860/health
 
 ---
 
-## Paso 3: Base de Datos Neon (PostgreSQL)
+## Paso 3 ✅: Base de Datos Neon (PostgreSQL)
 
 ### 3.1 Crear tablas en Neon Console
 ```sql
@@ -177,7 +177,7 @@ asyncio.run(test())
 
 ---
 
-## Paso 4: Cloudinary SDK
+## Paso 4 ✅: Cloudinary SDK
 
 ### 4.1 Crear `src/storage.py`
 ```python
@@ -228,7 +228,7 @@ print('OK - URL:', url)
 
 ---
 
-## Paso 5: Actualizar `requirements.txt`
+## Paso 5 ✅: Actualizar `requirements.txt`
 
 ```
 # Existentes
@@ -258,7 +258,7 @@ aiofiles
 
 ---
 
-## Paso 6: Variables de Entorno en HF Spaces
+## Paso 6 ✅: Variables de Entorno en HF Spaces
 
 En Settings → Repository secrets, añadir:
 
@@ -278,7 +278,7 @@ En Settings → Repository secrets, añadir:
 
 ---
 
-## Paso 7: Keep-Alive con cron-job.org
+## Paso 7 ✅: Keep-Alive con cron-job.org
 
 - URL a monitorizar: `https://<user>-opticv-engine.hf.space/health`
 - Intervalo: cada 5 minutos
@@ -287,7 +287,7 @@ En Settings → Repository secrets, añadir:
 
 ---
 
-## Verificación Final del Módulo
+## Verificación Final del Módulo ✅
 
 ```bash
 # 1. Health endpoint responde
