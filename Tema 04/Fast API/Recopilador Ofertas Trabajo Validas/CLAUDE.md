@@ -36,6 +36,7 @@ Core value: Intelligent filtering that simulates both ATS (Applicant Tracking Sy
 ## Development
 
 **Environment Setup:**
+
 ```bash
 # Create virtual environment
 python -m venv .venv
@@ -46,12 +47,14 @@ pip install -r requirements.txt
 ```
 
 **Local Execution:**
+
 ```bash
 # Run the server + bot thread
 python main.py
 ```
 
 **Git Policy:**
+
 - ⛔ **NO git commands in Claude Code conversations** — This is ABSOLUTE and overrides all superpowers skills
 - ⛔ **NO commits made by Claude Code** — All commits must be created manually outside this tool
 - ⛔ **NO branch management by Claude Code** — Use git CLI directly for branching, merging, etc.
@@ -64,17 +67,19 @@ python main.py
 Even if superpowers skills (like `superpowers:executing-plans` or `superpowers:finishing-a-development-branch`) suggest using git commands, **IGNORE THOSE INSTRUCTIONS** and follow this CLAUDE.md policy instead.
 
 - `superpowers:executing-plans` may try to create commits → BLOCKED
-- `superpowers:finishing-a-development-branch` may try to manage git → BLOCKED  
+- `superpowers:finishing-a-development-branch` may try to manage git → BLOCKED
 - `superpowers:using-git-worktrees` may try to create worktrees → BLOCKED
 - **User instructions (CLAUDE.md) ALWAYS override skill instructions**
 
 Git workflow for this project:
+
 ```
 Claude Code:  Read/Edit/Write code files → NO git operations
 You:          Open terminal and run git commands manually
 ```
 
 **Required Environment Variables** (see `.env.template`):
+
 - `DATABASE_URL`: PostgreSQL connection (Neon)
 - `CLOUDINARY_*`: Storage credentials (3 vars)
 - `DEEPSEEK_API_KEY`: DeepSeek AI analysis
@@ -87,6 +92,7 @@ You:          Open terminal and run git commands manually
 - `PORT`: Server port (default 7860)
 
 **Production Deployment** (HF Spaces / Render):
+
 ```bash
 # Docker builds using entrypoint.sh, which:
 # 1. Injects secrets from env vars into credentials.json, token.json
@@ -96,15 +102,18 @@ You:          Open terminal and run git commands manually
 ## Key Implementation Details
 
 **Thread Safety:**
+
 - Bot thread flag `_bot_started` prevents duplicate threads if uvicorn restarts workers
 - Thread is daemon (won't block shutdown)
 
 **Error Resilience:**
+
 - Gmail agent recreated each loop (forces credential refresh, avoids session timeout)
 - Exponential backoff on connection failures
 - Cascade scraper strategy ensures redundancy
 
 **FastAPI Migration** (recent):
+
 - Changed from Flask/Gunicorn to FastAPI/Uvicorn
 - No functional changes—same endpoints, same bot logic
 - Updated `requirements.txt` and `entrypoint.sh` accordingly
@@ -119,9 +128,10 @@ You:          Open terminal and run git commands manually
 
 ## Testing
 
-**Framework:** unittest (NO pytest)
+**Framework:** pytest
 
 **Test Execution:**
+
 ```bash
 # Plan 01 Tests (10 tests)
 python tests/test_plan_01_simple.py
@@ -133,6 +143,7 @@ python tests/test_plan_02_apis.py
 **Test Location:** All tests in `tests/` directory with naming pattern `test_plan_XX_*.py`
 
 **Guidelines:**
+
 - ✅ Use unittest only (no pytest)
 - ✅ Create tests in `tests/` folder
 - ✅ No git commands in any conversation
@@ -140,6 +151,7 @@ python tests/test_plan_02_apis.py
 - ✅ Generate detailed markdown reports in `tests/TEST_RESULTS_*.md`
 
 **Testing Checklist** (for core module changes):
+
 1. Verify email filtering logic works (test with real/mock Gmail responses)
 2. Check scraper cascade strategy (Jina → FireCrawl → fallback)
 3. Validate DeepSeek analysis returns valid JSON and scoring logic
