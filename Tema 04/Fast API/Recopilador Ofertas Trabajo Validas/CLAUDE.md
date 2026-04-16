@@ -144,7 +144,7 @@ python tests/test_plan_02_apis.py
 
 **Guidelines:**
 
-- ✅ Use unittest only (no pytest)
+- ✅ Use pytest for all tests
 - ✅ Create tests in `tests/` folder
 - ✅ No git commands in any conversation
 - ✅ Tests should validate: imports, endpoints, schemas, dependencies, file structure
