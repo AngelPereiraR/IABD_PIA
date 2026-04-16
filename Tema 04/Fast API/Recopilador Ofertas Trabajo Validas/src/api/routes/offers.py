@@ -1,15 +1,18 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from src.api.schemas import OfferDetail
 from src.api.dependencies import get_user_id
+from src.api.limiter import get_limiter
 from src.database import AsyncSessionLocal, JobOffer
 
 router = APIRouter(prefix="/api", tags=["offers"])
+limiter = get_limiter()
 
 
 @router.get("/offers", response_model=list[OfferDetail])
-async def list_offers(skip: int = 0, limit: int = 20, user_id: str = Depends(get_user_id)):
+@limiter.limit("60/minute")
+async def list_offers(request: Request, skip: int = 0, limit: int = 20, user_id: str = Depends(get_user_id)):
     """
     Lists saved job offers with pagination.
 
@@ -50,7 +53,8 @@ async def list_offers(skip: int = 0, limit: int = 20, user_id: str = Depends(get
 
 
 @router.get("/offers/{offer_id}", response_model=OfferDetail)
-async def get_offer(offer_id: int, user_id: str = Depends(get_user_id)):
+@limiter.limit("60/minute")
+async def get_offer(request: Request, offer_id: int, user_id: str = Depends(get_user_id)):
     """Retorna el detalle completo de una oferta por ID."""
     async with AsyncSessionLocal() as session:
         result = await session.execute(
@@ -72,7 +76,8 @@ async def get_offer(offer_id: int, user_id: str = Depends(get_user_id)):
 
 
 @router.get("/offers/{offer_id}/cv")
-async def get_offer_cv(offer_id: int, user_id: str = Depends(get_user_id)):
+@limiter.limit("60/minute")
+async def get_offer_cv(request: Request, offer_id: int, user_id: str = Depends(get_user_id)):
     """Redirige a la URL del CV optimizado para una oferta."""
     async with AsyncSessionLocal() as session:
         result = await session.execute(

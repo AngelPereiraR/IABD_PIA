@@ -1,16 +1,20 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request
 from sqlalchemy import update
 from src.api.schemas import CVUploadResponse, CVGenerationResponse
 from src.api.dependencies import get_user_id
+from src.api.limiter import get_limiter
 from src.storage import upload_bytes
 from src.database import AsyncSessionLocal, User
 from src.cv_generator import CVGenerator
 
 router = APIRouter(prefix="/api", tags=["cv"])
+limiter = get_limiter()
 
 
 @router.post("/upload-master-cv", response_model=CVUploadResponse)
+@limiter.limit("5/minute")
 async def upload_master_cv(
+    request: Request,
     file: UploadFile = File(...),
     user_id: str = Depends(get_user_id)
 ):
@@ -45,7 +49,8 @@ async def upload_master_cv(
 
 
 @router.post("/generate/{offer_id}", response_model=CVGenerationResponse)
-async def generate_optimized_cv(offer_id: int):
+@limiter.limit("5/minute")
+async def generate_optimized_cv(request: Request, offer_id: int):
     """
     Generates and uploads optimized CV for a job offer.
 

@@ -10,14 +10,14 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-# Importamos nuestros modulos especialistas
+# Importamos nuestros modulos especialistas (except routers, which are imported after limiter setup)
 from src.loader import load_cv_context
 from src.mail_agent import GmailJobCollector, save_offer_to_db
 from src.scraper import scrape_offer_content
 from src.brain import RecruitmentBrain
 from src.bot import TelegramNotifier
 from src.cv_generator import CVGenerator
-from src.api import cv_router, offers_router
+from src.api.limiter import set_limiter
 from telegram.ext import Application, CallbackQueryHandler
 
 # Configuracion
@@ -30,7 +30,11 @@ app = FastAPI()
 # Configure rate limiter
 limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
 app.state.limiter = limiter
+set_limiter(limiter)  # Make limiter available to route modules
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Import routers AFTER limiter is set (to avoid circular import issues)
+from src.api import cv_router, offers_router
 
 # CORS para dashboard (Vercel frontend)
 app.add_middleware(

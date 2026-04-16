@@ -21,5 +21,35 @@ class TestRateLimiterConfig(unittest.TestCase):
         from slowapi.errors import RateLimitExceeded
         self.assertIn(RateLimitExceeded, app.exception_handlers)
 
+class TestOffersRateLimit(unittest.TestCase):
+    def setUp(self):
+        self.client = TestClient(app, raise_server_exceptions=False)
+
+    def test_get_offers_accepts_normal_traffic(self):
+        """Single request to /api/offers should return 200 or 400 (not 429)."""
+        r = self.client.get("/api/offers")
+        self.assertNotEqual(r.status_code, 429)
+
+    def test_get_offer_detail_accepts_normal_traffic(self):
+        """Single request to /api/offers/1 should return 200, 404, or 400 (not 429)."""
+        r = self.client.get("/api/offers/1")
+        self.assertNotEqual(r.status_code, 429)
+
+
+class TestCVRateLimit(unittest.TestCase):
+    def setUp(self):
+        self.client = TestClient(app, raise_server_exceptions=False)
+
+    def test_generate_endpoint_accepts_normal_traffic(self):
+        """Single request to /api/generate/1 should return 200, 404, or 422 (not 429)."""
+        r = self.client.post("/api/generate/1")
+        self.assertNotEqual(r.status_code, 429)
+
+    def test_upload_endpoint_accepts_normal_traffic(self):
+        """Single request to /api/upload-master-cv should return 200, 422, or 500 (not 429)."""
+        r = self.client.post("/api/upload-master-cv")
+        self.assertNotEqual(r.status_code, 429)
+
+
 if __name__ == "__main__":
     unittest.main()
