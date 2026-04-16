@@ -18,15 +18,15 @@ class GmailJobCollector:
     Soporta: LinkedIn e InfoJobs (con resolución de tracking links).
     """
     def __init__(self):
-        # Verificar que el token sea válido (o renovarlo si es posible)
+        # Verificar que el token sea válido (o renovarlo automáticamente)
         if not TokenManager.ensure_valid_token():
             raise RuntimeError(
                 "Token de Gmail no disponible. "
                 "Ejecuta 'python src/setup_auth.py' para generar uno nuevo."
             )
 
-        toolkit = TokenManager.get_credentials()
-        self.toolkit = toolkit
+        # Obtener GmailToolkit con credenciales válidas
+        self.toolkit = TokenManager.get_credentials()
         self.service = self.toolkit.api_resource
 
     def get_offers(self, limit: int = 5) -> List[str]:

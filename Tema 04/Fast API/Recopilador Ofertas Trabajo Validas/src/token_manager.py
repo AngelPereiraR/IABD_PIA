@@ -1,44 +1,26 @@
 import json
 import os
 from datetime import datetime, timedelta
-from pathlib import Path
-from google.oauth2.service_account import Credentials
 from langchain_google_community.gmail.utils import get_gmail_credentials
 
 class TokenManager:
     """
-    Gestiona credenciales de Gmail (OAuth 2.0 o Service Account).
+    Gestiona tokens OAuth 2.0 de Gmail con renovación automática.
     Detecta expiración y regenera tokens cuando es necesario.
     """
 
     TOKEN_FILE = "token.json"
     CREDENTIALS_FILE = "credentials.json"
-    SERVICE_ACCOUNT_FILE = "service-account.json"
     EXPIRY_BUFFER = 300  # Considerar expirado 5 min antes de la hora real
-
-    # Detectar si usamos Service Account o OAuth
-    USE_SERVICE_ACCOUNT = os.path.exists(SERVICE_ACCOUNT_FILE)
 
     @staticmethod
     def is_token_valid() -> bool:
         """
-        Verifica si las credenciales están disponibles y son válidas.
-
-        - Si usa Service Account: siempre válido (no expira)
-        - Si usa OAuth: verifica que token.json no haya expirado
+        Verifica si el token.json existe y no ha expirado.
 
         Returns:
-            bool: True si las credenciales son válidas y usables
+            bool: True si el token es válido y usable
         """
-        if TokenManager.USE_SERVICE_ACCOUNT:
-            if os.path.exists(TokenManager.SERVICE_ACCOUNT_FILE):
-                print(f"[TOKEN] Service Account encontrado. Credenciales válidas.")
-                return True
-            else:
-                print(f"[TOKEN] Service Account no encontrado.")
-                return False
-
-        # Si no, usar OAuth 2.0
         if not os.path.exists(TokenManager.TOKEN_FILE):
             return False
 
@@ -161,40 +143,20 @@ class TokenManager:
         """
         Obtiene GmailToolkit con credenciales válidas.
 
-        - Si service-account.json existe: usa Service Account (automático)
-        - Si no: usa OAuth 2.0 (requiere token.json)
-
         Returns:
-            GmailToolkit configurado con credenciales válidas
+            GmailToolkit configurado con token.json
 
         Raises:
-            RuntimeError: Si no hay credenciales disponibles
+            RuntimeError: Si el token ha expirado y no puede renovarse
         """
         if not TokenManager.ensure_valid_token():
             raise RuntimeError(
-                "Credenciales de Gmail no disponibles. "
-                "Coloca service-account.json o ejecuta 'python src/setup_auth.py'."
+                "Token de Gmail expirado. "
+                "Ejecuta 'python src/setup_auth.py' para generar uno nuevo."
             )
 
         try:
             from langchain_google_community import GmailToolkit
-            from google.auth.transport.requests import Request
-
-            if TokenManager.USE_SERVICE_ACCOUNT:
-                # Usar Service Account
-                print(f"[TOKEN] Usando Service Account...")
-                creds = Credentials.from_service_account_file(
-                    TokenManager.SERVICE_ACCOUNT_FILE,
-                    scopes=["https://www.googleapis.com/auth/gmail.readonly",
-                            "https://www.googleapis.com/auth/gmail.modify"]
-                )
-                # Si usas delegación de dominios, descomenta:
-                # creds = creds.with_subject("tu-email@tu-dominio.com")
-                return GmailToolkit(credentials=creds)
-            else:
-                # Usar OAuth 2.0
-                print(f"[TOKEN] Usando OAuth 2.0...")
-                return GmailToolkit()
-
+            return GmailToolkit()
         except Exception as e:
             raise RuntimeError(f"Error al obtener credenciales de Gmail: {e}")
