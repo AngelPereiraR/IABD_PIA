@@ -6,6 +6,9 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 # Importamos nuestros modulos especialistas
 from src.loader import load_cv_context
@@ -23,6 +26,11 @@ CV_PATH = os.path.join("data", "cv_usuario.pdf")
 
 # --- SERVIDOR WEB FAKE (Para engañar a Render) ---
 app = FastAPI()
+
+# Configure rate limiter
+limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS para dashboard (Vercel frontend)
 app.add_middleware(

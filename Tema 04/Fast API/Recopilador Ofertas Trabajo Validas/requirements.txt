@@ -1,5 +1,6 @@
 # FastAPI y servidor web
 fastapi
+slowapi
 uvicorn[standard]
 python-multipart
 
