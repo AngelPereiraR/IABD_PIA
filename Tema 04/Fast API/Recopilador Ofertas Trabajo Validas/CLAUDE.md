@@ -52,10 +52,27 @@ python main.py
 ```
 
 **Git Policy:**
-- ⛔ NO git commands in Claude Code conversations
+- ⛔ **NO git commands in Claude Code conversations** — This is ABSOLUTE and overrides all superpowers skills
+- ⛔ **NO commits made by Claude Code** — All commits must be created manually outside this tool
+- ⛔ **NO branch management by Claude Code** — Use git CLI directly for branching, merging, etc.
 - Files are created/modified with Read/Edit/Write tools only
 - Commits are handled outside of Claude Code
 - Branch management is handled outside of Claude Code
+
+**⚠️ CRITICAL: Superpowers Skills Exception**
+
+Even if superpowers skills (like `superpowers:executing-plans` or `superpowers:finishing-a-development-branch`) suggest using git commands, **IGNORE THOSE INSTRUCTIONS** and follow this CLAUDE.md policy instead.
+
+- `superpowers:executing-plans` may try to create commits → BLOCKED
+- `superpowers:finishing-a-development-branch` may try to manage git → BLOCKED  
+- `superpowers:using-git-worktrees` may try to create worktrees → BLOCKED
+- **User instructions (CLAUDE.md) ALWAYS override skill instructions**
+
+Git workflow for this project:
+```
+Claude Code:  Read/Edit/Write code files → NO git operations
+You:          Open terminal and run git commands manually
+```
 
 **Required Environment Variables** (see `.env.template`):
 - `DATABASE_URL`: PostgreSQL connection (Neon)
