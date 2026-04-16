@@ -6,8 +6,8 @@ import asyncio
 from typing import List
 from dotenv import load_dotenv
 
-from langchain_google_community import GmailToolkit
 from src.database import JobOffer, AsyncSessionLocal
+from src.token_manager import TokenManager
 
 load_dotenv()
 
@@ -18,7 +18,15 @@ class GmailJobCollector:
     Soporta: LinkedIn e InfoJobs (con resolución de tracking links).
     """
     def __init__(self):
-        self.toolkit = GmailToolkit()
+        # Verificar que el token sea válido (o renovarlo si es posible)
+        if not TokenManager.ensure_valid_token():
+            raise RuntimeError(
+                "Token de Gmail no disponible. "
+                "Ejecuta 'python src/setup_auth.py' para generar uno nuevo."
+            )
+
+        toolkit = TokenManager.get_credentials()
+        self.toolkit = toolkit
         self.service = self.toolkit.api_resource
 
     def get_offers(self, limit: int = 5) -> List[str]:

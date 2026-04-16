@@ -1,8 +1,14 @@
+# --- FIX WINDOWS ASYNCIO COMPATIBILITY (MUST BE FIRST) ---
+# On Windows, force SelectorEventLoop before any async operations
+import sys
+import asyncio
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 import time
 import os
-import sys
 import threading
-import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -200,4 +206,12 @@ if __name__ == "__main__":
     # Esto solo se ejecuta si lanzas 'python main.py' localmente
     import uvicorn
     port = int(os.environ.get("PORT", 7860))
+
+    # On Windows, create a SelectorEventLoop explicitly BEFORE uvicorn touches it
+    if sys.platform == "win32":
+        # This ensures uvicorn uses SelectorEventLoop instead of ProactorEventLoop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        print("[SYSTEM] Using SelectorEventLoop on Windows for psycopg compatibility")
+
     uvicorn.run(app, host="0.0.0.0", port=port)

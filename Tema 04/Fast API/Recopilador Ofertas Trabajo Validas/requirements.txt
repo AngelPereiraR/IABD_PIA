@@ -6,7 +6,7 @@ python-multipart
 
 # Base de datos
 sqlalchemy[asyncio]
-psycopg
+asyncpg
 
 # Storage
 cloudinary

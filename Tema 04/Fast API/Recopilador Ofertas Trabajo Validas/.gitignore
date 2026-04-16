@@ -6,6 +6,7 @@ venv/
 .env
 credentials.json
 token.json
+service-account.json
 
 # Python
 __pycache__/
@@ -32,3 +33,5 @@ data/*.pdf
 
 # Claude Code
 .claude/
+
+node_modules/

@@ -18,13 +18,14 @@ load_dotenv()  # Cargar variables de entorno desde .env
 # --- CONFIGURACION ---
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://localhost/opticv")
 
-# Quitar channel_binding en Windows (causa problemas con asyncpg)
-if "channel_binding=require" in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace("&channel_binding=require", "")
-
 # Convertir postgresql:// a postgresql+asyncpg://
 if DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+
+# Remove query parameters that asyncpg doesn't support
+# asyncpg handles SSL automatically for secure connections
+if "?" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.split("?")[0]
 
 # Engine asincrono
 engine = create_async_engine(
