@@ -7,10 +7,11 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, select
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, select, Boolean, Enum as SQLEnum
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, relationship
+import enum
 from dotenv import load_dotenv
 
 load_dotenv()  # Cargar variables de entorno desde .env
@@ -43,6 +44,12 @@ AsyncSessionLocal = sessionmaker(
 )
 
 
+# --- ENUMS ---
+class AuthProvider(str, enum.Enum):
+    GOOGLE = "google"
+    EMAIL = "email"
+
+
 # --- MODELOS ---
 class Base(DeclarativeBase):
     """Base para todos los modelos ORM."""
@@ -50,23 +57,29 @@ class Base(DeclarativeBase):
 
 
 class User(Base):
-    """Usuario único del sistema."""
+    """Usuario único del sistema con autenticación."""
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(255), unique=True, nullable=False, index=True)
+    auth_provider = Column(SQLEnum(AuthProvider), nullable=False, default=AuthProvider.EMAIL)
+    password_hash = Column(String(255), nullable=True)  # NULL si OAuth
     master_cv_url = Column(Text, nullable=True)  # URL Cloudinary del CV maestro
     telegram_id = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # Relationships
+    job_offers = relationship("JobOffer", back_populates="user", cascade="all, delete-orphan")
+    cv_adaptations = relationship("CVAdaptation", back_populates="user", cascade="all, delete-orphan")
+
 
 class JobOffer(Base):
-    """Oferta de trabajo detectada."""
+    """Oferta de trabajo analizada."""
     __tablename__ = "job_offers"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
 
     job_title = Column(String(255), nullable=True)
     company = Column(String(255), nullable=True)
@@ -74,6 +87,9 @@ class JobOffer(Base):
     offer_url = Column(Text, nullable=True)
 
     score = Column(Integer, nullable=True)  # 0-100 del análisis DeepSeek
+    is_valid = Column(Boolean, default=None, nullable=True)  # TRUE if score >= 60
+    scoring_details = Column(JSONB, nullable=True)  # Breakdown: ats_score, recruiter_score, reasoning
+    analysis_result = Column(JSONB, nullable=True)  # Full DeepSeek response
     optimized_cv_url = Column(Text, nullable=True)  # URL Cloudinary del CV generado
 
     status = Column(
@@ -84,6 +100,28 @@ class JobOffer(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User", back_populates="job_offers")
+    cv_adaptations = relationship("CVAdaptation", back_populates="job_offer", cascade="all, delete-orphan")
+
+
+class CVAdaptation(Base):
+    """CV adaptado para una oferta específica."""
+    __tablename__ = "cv_adaptations"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    job_offer_id = Column(Integer, ForeignKey("job_offers.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    adapted_cv_html = Column(Text, nullable=True)  # HTML preview
+    adapted_cv_url = Column(Text, nullable=True)  # Cloudinary PDF URL
+
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Relationships
+    user = relationship("User", back_populates="cv_adaptations")
+    job_offer = relationship("JobOffer", back_populates="cv_adaptations")
 
 
 # --- FUNCIONES DE UTILIDAD ---

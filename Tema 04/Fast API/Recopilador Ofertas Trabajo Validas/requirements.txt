@@ -1,35 +1,48 @@
-# FastAPI y servidor web
+# ===== WEB FRAMEWORK =====
 fastapi
-slowapi
 uvicorn[standard]
+slowapi
 python-multipart
+python-cors
 
-# Base de datos
+# ===== DATABASE & MIGRATIONS =====
 sqlalchemy[asyncio]
 asyncpg
+psycopg2-binary
+alembic
 
-# Storage
+# ===== AUTHENTICATION & SECURITY =====
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+email-validator
+pydantic-settings
+
+# ===== CLOUD STORAGE =====
 cloudinary
 
-# IA y LLMs
+# ===== AI & LLMs =====
 langchain
 langchain-openai
 langchain-community
 langchain-google-community
 
-# Utilidades base
-python-dotenv
-pydantic
-
-# Scraping y APIs
-httpx
+# ===== WEB SCRAPING =====
 requests
+httpx
 firecrawl-py
-pypdf
 
-# Google & Telegram
+# ===== PDF & DOCUMENT PROCESSING =====
+pypdf
+reportlab
+
+# ===== GOOGLE & MESSAGING =====
 google-auth
 google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
 python-telegram-bot
+
+# ===== UTILITIES =====
+python-dotenv
+pydantic

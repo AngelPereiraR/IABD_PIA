@@ -40,7 +40,7 @@ set_limiter(limiter)  # Make limiter available to route modules
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Import routers AFTER limiter is set (to avoid circular import issues)
-from src.api import cv_router, offers_router
+from src.api import auth_router, cv_router, offers_router, adaptations_router
 
 # CORS para dashboard (Vercel frontend)
 app.add_middleware(
@@ -56,8 +56,10 @@ app.add_middleware(
 )
 
 # Incluir routers de API
+app.include_router(auth_router)
 app.include_router(cv_router)
 app.include_router(offers_router)
+app.include_router(adaptations_router)
 
 @app.get('/')
 def home():

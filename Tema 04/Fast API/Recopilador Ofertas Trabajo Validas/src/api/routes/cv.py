@@ -1,70 +1,80 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request
 from sqlalchemy import update
-from src.api.schemas import CVUploadResponse, CVGenerationResponse
-from src.api.dependencies import get_user_id
+from src.api.schemas import CVUploadResponse, CVGenerationResponse, CVCurrentResponse
+from src.api.dependencies import get_user_id, get_current_user
 from src.api.limiter import get_limiter
+from src.api.cv_service import CVService
 from src.storage import upload_bytes
-from src.database import AsyncSessionLocal, User
+from src.database import AsyncSessionLocal, User, get_db
 from src.cv_generator import CVGenerator
+import tempfile
+import os
 
-router = APIRouter(prefix="/api", tags=["cv"])
+router = APIRouter(prefix="/cv", tags=["cv"])
 limiter = get_limiter()
 
 
-@router.post("/upload-master-cv", response_model=CVUploadResponse)
+@router.post("/upload", response_model=CVUploadResponse)
 @limiter.limit("5/minute")
-async def upload_master_cv(
+async def upload_cv(
     request: Request,
     file: UploadFile = File(...),
-    user_id: str = Depends(get_user_id)
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_db),
 ):
-    """
-    Uploads master CV to Cloudinary and updates user.master_cv_url.
-
-    Args:
-        file: PDF file from multipart/form-data
-        user_id: Inyectado desde .env via Depends()
-
-    Returns:
-        JSON con cv_url (enlace Cloudinary) y status
-    """
+    """Upload CV to Cloudinary (requires Bearer token)"""
     try:
-        # Read file content
+        # Validate PDF
+        if file.content_type != "application/pdf":
+            raise HTTPException(status_code=400, detail="Only PDF files allowed")
+
+        # Save to temp file
         content = await file.read()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            tmp.write(content)
+            tmp_path = tmp.name
 
-        # Upload to Cloudinary
-        cv_url = upload_bytes(content, public_id="cv/master")
-
-        # Update user
-        async with AsyncSessionLocal() as session:
-            await session.execute(
-                update(User).where(User.id == user_id).values(master_cv_url=cv_url)
+        try:
+            # Upload to Cloudinary
+            result = await CVService.upload_cv(db, current_user.id, tmp_path)
+            return CVUploadResponse(
+                cv_url=result["cv_url"],
+                user_id=current_user.id,
+                status="success"
             )
-            await session.commit()
+        finally:
+            # Clean temp file
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
 
-        return CVUploadResponse(cv_url=cv_url, status="success")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
+
+@router.get("/current", response_model=CVCurrentResponse)
+async def get_current_cv(
+    current_user: User = Depends(get_current_user),
+):
+    """Get current user's CV URL"""
+    return CVCurrentResponse(
+        cv_url=current_user.master_cv_url,
+        user_id=current_user.id
+    )
+
+
+@router.delete("/current")
+async def delete_cv(
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_db),
+):
+    """Delete current user's CV"""
+    try:
+        result = await CVService.delete_cv(db, current_user.id)
+        if result:
+            return {"status": "success", "message": "CV deleted"}
+        else:
+            raise HTTPException(status_code=404, detail="CV not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/generate/{offer_id}", response_model=CVGenerationResponse)
-@limiter.limit("5/minute")
-async def generate_optimized_cv(request: Request, offer_id: int):
-    """
-    Generates and uploads optimized CV for a job offer.
-
-    Args:
-        offer_id: ID from job_offers table
-
-    Returns:
-        JSON con cv_url (enlace Cloudinary)
-    """
-    try:
-        cv_url = await CVGenerator.generate_for_offer(offer_id)
-        return CVGenerationResponse(cv_url=cv_url, status="success")
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        print(f"[ERROR] CV generation failed: {e}")
-        raise HTTPException(status_code=500, detail="CV generation failed")

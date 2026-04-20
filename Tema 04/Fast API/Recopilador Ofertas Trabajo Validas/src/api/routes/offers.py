@@ -1,10 +1,16 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Request, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
-from src.api.schemas import OfferDetail
-from src.api.dependencies import get_user_id
+from src.api.schemas import (
+    OfferDetail,
+    AnalysisCreate,
+    AnalysisResponse,
+    AnalysisListResponse,
+)
+from src.api.dependencies import get_user_id, get_current_user
 from src.api.limiter import get_limiter
-from src.database import AsyncSessionLocal, JobOffer
+from src.api.analysis_service import AnalysisService
+from src.database import AsyncSessionLocal, JobOffer, User, get_db
 
 router = APIRouter(prefix="/api", tags=["offers"])
 limiter = get_limiter()
@@ -89,3 +95,74 @@ async def get_offer_cv(request: Request, offer_id: int, user_id: str = Depends(g
     if not offer.optimized_cv_url:
         raise HTTPException(status_code=404, detail="CV aún no generado para esta oferta")
     return RedirectResponse(url=offer.optimized_cv_url)
+
+
+# --- NEW ANALYSIS ENDPOINTS (JWT AUTH) ---
+@router.post("/analysis/create", response_model=AnalysisResponse)
+@limiter.limit("10/minute")
+async def create_analysis(
+    request: Request,
+    analysis: AnalysisCreate,
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_db),
+):
+    """
+    Analyze a job offer (text or URL) against user's CV.
+    Returns score 0-100 and determines if valid (≥60).
+    Requires Bearer token authentication.
+    """
+    try:
+        if not analysis.offer_text and not analysis.offer_url:
+            raise HTTPException(
+                status_code=400,
+                detail="Either offer_text or offer_url required"
+            )
+
+        result = await AnalysisService.analyze_offer(
+            db=db,
+            user_id=current_user.id,
+            offer_text=analysis.offer_text,
+            offer_url=analysis.offer_url,
+        )
+
+        return AnalysisResponse(**result)
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+
+@router.get("/analysis/{analysis_id}", response_model=AnalysisResponse)
+@limiter.limit("60/minute")
+async def get_analysis(
+    request: Request,
+    analysis_id: int,
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_db),
+):
+    """Get details of a specific analysis"""
+    try:
+        result = await AnalysisService.get_analysis(db, current_user.id, analysis_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="Analysis not found")
+        return AnalysisResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/analysis/list", response_model=AnalysisListResponse)
+@limiter.limit("60/minute")
+async def list_analyses(
+    request: Request,
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_db),
+):
+    """List all analyses for current user with pagination"""
+    try:
+        result = await AnalysisService.list_analyses(db, current_user.id, limit, offset)
+        return AnalysisListResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
