@@ -1,5 +1,5 @@
 import os
-import httpx
+import asyncio
 import requests
 from dotenv import load_dotenv
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -26,7 +26,7 @@ class TelegramNotifier:
         Formatea y envía una alerta de trabajo encontrado con botón inline para generar CV.
         """
         # Extraemos datos
-        score = analysis.get('match_score', 0)
+        score = analysis.get('score', 0)
         salary = analysis.get('salary', 'No especificado')
         posted = analysis.get('posted_date', 'Fecha no detectada')
         benefits = analysis.get('benefits', 'No especificados')
@@ -115,63 +115,75 @@ class TelegramNotifier:
         """
         Handles the 'gen_cv:offer_id' callback query from inline button.
 
-        This handler processes button clicks from Telegram messages.
-        Requires integration with python-telegram-bot Application + polling/webhook.
+        Sends a NEW message for generation status instead of editing the original.
+        This keeps the offer information intact regardless of success or error.
         """
         query = update.callback_query
         await query.answer()  # Remove loading spinner on button
+
+        sent_message = None
 
         try:
             # Extract offer_id from callback_data (format: "gen_cv:123")
             offer_id = query.data.split(":")[1]
 
-            # Update message to show processing
-            await query.edit_message_text(
+            # Send NEW message for processing status (don't edit original)
+            sent_message = await query.message.reply_text(
                 f"⏳ Generando CV optimizado para oferta #{offer_id}...",
                 parse_mode="HTML"
             )
 
-            # Call FastAPI endpoint
+            # Call FastAPI endpoint to generate adapted CV
             base_url = os.getenv("API_BASE_URL", "http://localhost:7860")
 
-            async with httpx.AsyncClient(timeout=300) as client:
-                response = await client.post(
-                    f"{base_url}/api/generate/{offer_id}"
+            def make_cv_request():
+                return requests.post(
+                    f"{base_url}/api/generate/{offer_id}",
+                    timeout=300
                 )
+
+            response = await asyncio.to_thread(make_cv_request)
 
             if response.status_code == 200:
                 data = response.json()
-                cv_url = data.get("cv_url")
+                cv_url = data.get("adapted_cv_url")
 
-                # Update message with success and link
-                await query.edit_message_text(
+                # Edit the status message with success and link
+                await sent_message.edit_text(
                     f"✅ CV Optimizado Generado\n\n"
                     f"📎 <a href='{cv_url}'>Descargar PDF</a>",
                     parse_mode="HTML"
                 )
             else:
                 error_msg = response.json().get("detail", "Unknown error")
-                await query.edit_message_text(
-                    f"❌ Error generando CV: {error_msg}",
+                # Escape error message to prevent HTML parsing issues
+                error_msg_escaped = error_msg.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                await sent_message.edit_text(
+                    f"❌ Error generando CV: {error_msg_escaped}",
                     parse_mode="HTML"
                 )
 
         except IndexError:
-            await query.edit_message_text(
-                "❌ Datos inválidos en botón.",
-                parse_mode="HTML"
-            )
+            if sent_message:
+                await sent_message.edit_text("❌ Datos inválidos en botón.", parse_mode="HTML")
+            else:
+                await query.message.reply_text("❌ Datos inválidos en botón.")
         except httpx.TimeoutException:
-            await query.edit_message_text(
-                "⏱️ Timeout: La compilación LaTeX tardó demasiado.",
-                parse_mode="HTML"
-            )
+            if sent_message:
+                await sent_message.edit_text("⏱️ Timeout: La compilación LaTeX tardó demasiado.", parse_mode="HTML")
+            else:
+                await query.message.reply_text("⏱️ Timeout: La compilación LaTeX tardó demasiado.")
         except Exception as e:
             print(f"[ERROR] Callback handler failed: {e}")
-            await query.edit_message_text(
-                f"❌ Error inesperado: {str(e)[:100]}",
-                parse_mode="HTML"
-            )
+            error_text = str(e)[:100].replace("<", "&lt;").replace(">", "&gt;")
+            if sent_message:
+                try:
+                    await sent_message.edit_text(f"❌ Error inesperado: {error_text}", parse_mode="HTML")
+                except Exception as edit_err:
+                    print(f"[WARN] Could not edit status message: {edit_err}")
+                    await query.message.reply_text(f"❌ Error inesperado: {error_text}")
+            else:
+                await query.message.reply_text(f"❌ Error inesperado: {error_text}")
 
 if __name__ == "__main__":
     # --- PRUEBA UNITARIA ---

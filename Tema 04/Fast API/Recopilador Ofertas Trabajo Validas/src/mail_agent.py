@@ -244,13 +244,20 @@ async def save_offer_to_db(analysis: dict, offer_url: str, raw_text: str, user_i
         ID of inserted JobOffer record
     """
     async with AsyncSessionLocal() as session:
+        # Calculate is_valid based on score threshold
+        score = analysis.get('score', 0)
+        is_valid = score >= 60
+
         offer = JobOffer(
             user_id=user_id,
             job_title=analysis.get('job_title', 'Unknown'),
             company=analysis.get('company', 'Unknown'),
             raw_text=raw_text,
             offer_url=offer_url,
-            score=analysis.get('score', 0),
+            score=score,
+            is_valid=is_valid,
+            # Store complete analysis for future retrieval (salary, benefits, skills, etc)
+            analysis_result=analysis,
             status="pending"  # Will be updated to "processing" when CV generation starts
         )
         session.add(offer)

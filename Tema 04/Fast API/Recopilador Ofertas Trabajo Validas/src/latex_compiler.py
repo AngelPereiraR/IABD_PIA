@@ -3,6 +3,8 @@ LaTeX Compiler Module - Compiles .tex content to PDF asynchronously.
 
 Receives LaTeX content as string, writes to isolated temp directory,
 executes pdflatex (2 passes), and returns the path to the generated PDF.
+
+All file I/O operations are wrapped in asyncio.to_thread() to avoid blocking the event loop.
 """
 import asyncio
 import logging
@@ -16,9 +18,40 @@ logger = logging.getLogger(__name__)
 OUTPUT_DIR = Path("data/generated")
 
 
+def _prepare_work_dir(offer_id: int, tex_content: str) -> tuple:
+    """Prepara directorio de trabajo y escribe archivo LaTeX (sincrónico)."""
+    work_dir = Path(tempfile.mkdtemp(prefix=f"cv_{offer_id}_"))
+    tex_path = work_dir / "cv.tex"
+    tex_path.write_text(tex_content, encoding="utf-8")
+    logger.info(f"[LaTeX] .tex escrito en {tex_path}")
+    return work_dir, tex_path
+
+
+def _finalize_pdf(offer_id: int, pdf_path: Path, work_dir: Path) -> str:
+    """Verifica PDF, copia a directorio persistente y limpia (sincrónico)."""
+    # Verificar que el PDF fue generado
+    if not pdf_path.exists():
+        log_content = _read_log(work_dir / "cv.log")
+        raise RuntimeError(f"PDF no generado. Log:\n{log_content}")
+
+    logger.info(f"[LaTeX] PDF generado: {pdf_path} ({pdf_path.stat().st_size} bytes)")
+
+    # Copiar a directorio persistente
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    final_path = OUTPUT_DIR / f"cv_offer_{offer_id}.pdf"
+    shutil.copy2(pdf_path, final_path)
+
+    return str(final_path)
+
+
+def _cleanup_work_dir(work_dir: Path) -> None:
+    """Limpia directorio temporal (sincrónico)."""
+    shutil.rmtree(work_dir, ignore_errors=True)
+
+
 async def compile_latex(tex_content: str, offer_id: int) -> str:
     """
-    Compila contenido LaTeX a PDF.
+    Compila contenido LaTeX a PDF sin bloquear el event loop.
 
     Args:
         tex_content: Contenido del archivo .tex como string
@@ -30,38 +63,24 @@ async def compile_latex(tex_content: str, offer_id: int) -> str:
     Raises:
         RuntimeError: Si pdflatex falla en cualquiera de las dos pasadas
     """
-    work_dir = Path(tempfile.mkdtemp(prefix=f"cv_{offer_id}_"))
-    tex_path = work_dir / "cv.tex"
+    # 1. Preparar directorio y escribir .tex (I/O sincrónico en thread pool)
+    work_dir, tex_path = await asyncio.to_thread(_prepare_work_dir, offer_id, tex_content)
     pdf_path = work_dir / "cv.pdf"
 
     try:
-        # 1. Escribir .tex en directorio de trabajo aislado
-        tex_path.write_text(tex_content, encoding="utf-8")
-        logger.info(f"[LaTeX] .tex escrito en {tex_path}")
-
         # 2. Primera pasada (genera .aux, .toc, referencias)
         await _run_pdflatex(tex_path, work_dir)
 
         # 3. Segunda pasada (resuelve referencias cruzadas)
         await _run_pdflatex(tex_path, work_dir)
 
-        # 4. Verificar que el PDF fue generado
-        if not pdf_path.exists():
-            log_content = _read_log(work_dir / "cv.log")
-            raise RuntimeError(f"PDF no generado. Log:\n{log_content}")
-
-        logger.info(f"[LaTeX] PDF generado: {pdf_path} ({pdf_path.stat().st_size} bytes)")
-
-        # 5. Copiar a directorio persistente antes de borrar tmpdir
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        final_path = OUTPUT_DIR / f"cv_offer_{offer_id}.pdf"
-        shutil.copy2(pdf_path, final_path)
-
-        return str(final_path)
+        # 4. Verificar PDF y copiar (I/O sincrónico en thread pool)
+        final_path = await asyncio.to_thread(_finalize_pdf, offer_id, pdf_path, work_dir)
+        return final_path
 
     finally:
-        # Limpiar siempre el directorio temporal
-        shutil.rmtree(work_dir, ignore_errors=True)
+        # Limpiar directorio temporal (I/O sincrónico en thread pool)
+        await asyncio.to_thread(_cleanup_work_dir, work_dir)
 
 
 async def _run_pdflatex(tex_path: Path, work_dir: Path) -> None:

@@ -1,9 +1,12 @@
 """
 Cloudinary SDK wrapper para subir y gestionar archivos en la nube.
 Usado para: CV maestro, CVs optimizados, otros assets.
+
+Proporciona funciones sincrónicas y asincrónicas para evitar bloqueos en contextos async.
 """
 import os
 import logging
+import asyncio
 
 import cloudinary
 import cloudinary.uploader
@@ -41,9 +44,9 @@ def upload_pdf(file_path: str, public_id: str) -> str:
         result = cloudinary.uploader.upload(
             file_path,
             public_id=public_id,
-            resource_type="image",  # PDFs se gestionan como imagen en Cloudinary
+            resource_type="auto",
             overwrite=True,
-            folder="opticv"  # Organizar en carpeta
+            folder="opticv"
         )
         url = result.get("secure_url")
         logger.info(f"[Storage] PDF subido: {url}")
@@ -71,7 +74,7 @@ def upload_bytes(data: bytes, public_id: str) -> str:
         result = cloudinary.uploader.upload(
             data,
             public_id=public_id,
-            resource_type="image",  # PDFs se gestionan como imagen en Cloudinary
+            resource_type="raw",
             overwrite=True,
             folder="opticv"
         )
@@ -121,3 +124,48 @@ def delete_file(public_id: str) -> bool:
     except Exception as e:
         logger.error(f"[Storage] Error deleting {public_id}: {e}")
         return False
+
+
+# --- FUNCIONES ASINCRONICAS (para uso en contextos async/await) ---
+async def upload_pdf_async(file_path: str, public_id: str) -> str:
+    """
+    Versión async de upload_pdf.
+    Sube un PDF a Cloudinary sin bloquear el event loop.
+
+    Args:
+        file_path: Ruta absoluta al archivo PDF
+        public_id: ID único en Cloudinary
+
+    Returns:
+        URL segura del PDF en Cloudinary
+    """
+    return await asyncio.to_thread(upload_pdf, file_path, public_id)
+
+
+async def upload_bytes_async(data: bytes, public_id: str) -> str:
+    """
+    Versión async de upload_bytes.
+    Sube bytes directamente sin bloquear el event loop.
+
+    Args:
+        data: Contenido en bytes
+        public_id: ID único en Cloudinary
+
+    Returns:
+        URL segura del archivo
+    """
+    return await asyncio.to_thread(upload_bytes, data, public_id)
+
+
+async def delete_file_async(public_id: str) -> bool:
+    """
+    Versión async de delete_file.
+    Elimina un archivo de Cloudinary sin bloquear el event loop.
+
+    Args:
+        public_id: ID del asset a eliminar
+
+    Returns:
+        True si se eliminó, False si no existe
+    """
+    return await asyncio.to_thread(delete_file, public_id)

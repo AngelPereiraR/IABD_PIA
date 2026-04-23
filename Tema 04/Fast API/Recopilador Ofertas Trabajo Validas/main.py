@@ -40,7 +40,7 @@ set_limiter(limiter)  # Make limiter available to route modules
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Import routers AFTER limiter is set (to avoid circular import issues)
-from src.api import auth_router, cv_router, offers_router, adaptations_router
+from src.api import auth_router, cv_router, offers_router, adaptations_router, profile_router
 
 # CORS para dashboard (Vercel frontend)
 app.add_middleware(
@@ -60,6 +60,7 @@ app.include_router(auth_router)
 app.include_router(cv_router)
 app.include_router(offers_router)
 app.include_router(adaptations_router)
+app.include_router(profile_router)
 
 @app.get('/')
 def home():
@@ -100,6 +101,12 @@ def run_bot_logic():
     load_dotenv()
     print(" [INIT] Iniciando hilo del bot...", flush=True)
 
+    # CRÍTICO: Crear event loop PERSISTENTE en este thread (no reutilizar el de FastAPI)
+    # Esto evita el error "Task got Future attached to a different loop"
+    bot_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(bot_loop)
+    print(" [LOOP] Event loop creado para bot thread", flush=True)
+
     # --- FASE 1: CARGA DE CONTEXTO (ESTÁTICO) ---
     # El CV y el Brain (Modelo) no necesitan reiniciarse constantemente
     # porque el CV no cambia y el cliente de DeepSeek gestiona bien su propia sesión.
@@ -108,12 +115,12 @@ def run_bot_logic():
         if not user_cv_context:
             print(" [ERROR] Error Critico: El CV esta vacio.", flush=True)
             return
-        
+
         # Inicializamos componentes estáticos una vez
         brain = RecruitmentBrain()
         bot = TelegramNotifier()
         print(" [OK] Contexto y Cerebro listos.", flush=True)
-        
+
     except Exception as e:
         print(f" [ERROR] Error de inicializacion: {e}", flush=True)
         return
@@ -122,7 +129,7 @@ def run_bot_logic():
 
     # --- FASE 2: BUCLE ---
     loop_count = 0
-    
+
     while True:
         try:
             loop_count += 1
@@ -148,11 +155,11 @@ def run_bot_logic():
                 print(f"    + Se encontraron {len(urls)} ofertas.")
                 for i, url in enumerate(urls, 1):
                     print(f"\n    [{i}/{len(urls)}] Procesando: {url}")
-                    
+
                     offer_markdown = scrape_offer_content(url)
                     if not offer_markdown:
                         continue
-                    
+
                     decision = brain.analyze_offer(user_cv_context, offer_markdown)
 
                     if decision.get("is_relevant"):
@@ -165,7 +172,8 @@ def run_bot_logic():
                             continue
 
                         try:
-                            offer_id = asyncio.run(save_offer_to_db(
+                            # Use bot_loop to run async operations (avoids "different loop" error)
+                            offer_id = bot_loop.run_until_complete(save_offer_to_db(
                                 analysis=decision,
                                 offer_url=url,
                                 raw_text=offer_markdown,
@@ -179,7 +187,7 @@ def run_bot_logic():
                             print(f"       [ERROR] Error persisting offer: {e}")
                     else:
                         print(f"       [DESCARTADO] {decision.get('summary')[:50]}...")
-            
+
             time.sleep(POLLING_INTERVAL)
 
         except Exception as e:

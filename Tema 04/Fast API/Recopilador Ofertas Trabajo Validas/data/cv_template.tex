@@ -2,21 +2,19 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{geometry}
-\geometry{margin=1.5cm}
+\geometry{margin=1.2cm}
 \usepackage{hyperref}
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{multicol}
 
 % ---- Colores ----
 \definecolor{darkblue}{RGB}{0, 51, 102}
 \definecolor{lightgray}{RGB}{240, 240, 240}
-
-% ---- Datos personales (placeholders) ----
-\newcommand{\nombre}{{{NOMBRE}}}
-\newcommand{\email}{{{EMAIL}}}
-\newcommand{\linkedin}{{{LINKEDIN}}}
-\newcommand{\github}{{{GITHUB}}}
+\definecolor{accentcolor}{RGB}{70, 130, 180}
 
 % ---- Estilos de sección ----
 \titleformat{\section}
@@ -29,44 +27,55 @@
 
 \begin{document}
 
-% ---- CABECERA ----
-\begin{center}
-  {\fontsize{16}{20}\selectfont \textbf{\nombre}} \\[3pt]
-  {\small \email\ $|$ \href{https://linkedin.com/in/\linkedin}{linkedin.com/in/\linkedin}\ $|$ \href{https://github.com/\github}{github.com/\github}}
-\end{center}
+% ---- CABECERA CON FOTO ----
+\begin{minipage}[t]{0.75\textwidth}
+  {\fontsize{18}{22}\selectfont \textbf{{{NOMBRE}}}} \\[2pt]
+  {\small {{CONTACTO}}}
+  {{CONTACTO_EXTRA}}
+\end{minipage}%
+\begin{minipage}[t]{0.25\textwidth}
+  \raggedleft
+  {{FOTO}}
+\end{minipage}
 
-\vspace{6pt}
+\vspace{5pt}
 \hrule
-\vspace{6pt}
+\vspace{5pt}
 
-% ---- RESUMEN ----
-\section*{Resumen Profesional}
-{{RESUMEN}}
-
-\vspace{6pt}
+% ---- RESUMEN PROFESIONAL ----
+{{RESUMEN_SECCION}}
 
 % ---- HABILIDADES TÉCNICAS ----
 \section*{Habilidades Técnicas}
 {{HABILIDADES}}
 
-\vspace{6pt}
+\vspace{3pt}
 
-% ---- EXPERIENCIA ----
+% ---- EXPERIENCIA PROFESIONAL ----
 \section*{Experiencia Profesional}
 {{EXPERIENCIA}}
 
-\vspace{6pt}
+\vspace{3pt}
 
-% ---- FORMACIÓN ----
+% ---- FORMACIÓN ACADÉMICA ----
 \section*{Formación Académica}
-\begin{itemize}[nosep]
 {{FORMACION}}
-\end{itemize}
 
-\vspace{6pt}
+\vspace{2pt}
 
-% ---- PROYECTOS DESTACADOS ----
-\section*{Proyectos Destacados}
-{{PROYECTOS}}
+% ---- CERTIFICACIONES (condicional) ----
+{{CERTIFICACIONES_SECCION}}
+
+% ---- IDIOMAS (condicional) ----
+{{IDIOMAS_SECCION}}
+
+% ---- CURSOS (condicional) ----
+{{CURSOS_SECCION}}
+
+% ---- PROYECTOS DESTACADOS (condicional) ----
+{{PROYECTOS_SECCION}}
+
+% ---- VOLUNTARIADO (condicional) ----
+{{VOLUNTARIADO_SECCION}}
 
 \end{document}

@@ -2,6 +2,7 @@ from typing import Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import uuid
+import asyncio
 
 from src.database import JobOffer, User
 from src.scraper import scrape_offer_content
@@ -34,9 +35,9 @@ class AnalysisService:
             }
         """
 
-        # 1. Get offer text (from param or scrape URL)
+        # 1. Get offer text (from param or scrape URL) - run sync scraper in thread pool
         if offer_url:
-            offer_markdown = scrape_offer_content(offer_url)
+            offer_markdown = await asyncio.to_thread(scrape_offer_content, offer_url)
             if not offer_markdown:
                 raise ValueError(f"Could not scrape offer from {offer_url}")
         elif offer_text:
@@ -44,14 +45,14 @@ class AnalysisService:
         else:
             raise ValueError("Either offer_text or offer_url required")
 
-        # 2. Load user's CV
-        cv_text = load_cv_context(cv_path)
+        # 2. Load user's CV - run sync loader in thread pool
+        cv_text = await asyncio.to_thread(load_cv_context, cv_path)
         if not cv_text:
             raise ValueError("Could not load CV")
 
-        # 3. Analyze with DeepSeek brain
+        # 3. Analyze with DeepSeek brain - run sync analysis in thread pool
         brain = RecruitmentBrain()
-        decision = brain.analyze_offer(cv_text, offer_markdown)
+        decision = await asyncio.to_thread(brain.analyze_offer, cv_text, offer_markdown)
 
         # 4. Extract structured data
         score = decision.get("score", 0)

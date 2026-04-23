@@ -6,10 +6,12 @@ from src.api.schemas import (
     AnalysisCreate,
     AnalysisResponse,
     AnalysisListResponse,
+    AdaptationResponse,
 )
 from src.api.dependencies import get_user_id, get_current_user
 from src.api.limiter import get_limiter
 from src.api.analysis_service import AnalysisService
+from src.api.adaptation_service import AdaptationService
 from src.database import AsyncSessionLocal, JobOffer, User, get_db
 
 router = APIRouter(prefix="/api", tags=["offers"])
@@ -166,3 +168,37 @@ async def list_analyses(
         return AnalysisListResponse(**result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- TELEGRAM BOT ENDPOINT (NO AUTH REQUIRED) ---
+@router.post("/generate/{offer_id}", response_model=AdaptationResponse)
+@limiter.limit("10/minute")
+async def generate_cv_for_offer(
+    request: Request,
+    offer_id: int,
+    user_id: str = Depends(get_user_id),
+    db = Depends(get_db),
+):
+    """
+    Generate optimized CV for a job offer (Bot endpoint).
+    Requires: offer_id with is_valid=TRUE (score ≥60)
+    Returns: Cloudinary PDF URL
+
+    Note: Uses get_user_id instead of get_current_user for bot compatibility (no Bearer token needed)
+    """
+    try:
+        result = await AdaptationService.create_adaptation(
+            db=db,
+            user_id=user_id,
+            analysis_id=offer_id,
+        )
+        return AdaptationResponse(
+            id=result["id"],
+            adapted_cv_html=result["adapted_cv_html"][:1000] if result["adapted_cv_html"] else None,
+            adapted_cv_url=result["adapted_cv_url"],
+            created_at=result["created_at"],
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CV generation failed: {str(e)}")

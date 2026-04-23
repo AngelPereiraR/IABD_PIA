@@ -122,3 +122,88 @@ class AdaptationListResponse(BaseModel):
     limit: int
     offset: int
     items: list[AdaptationListItem]
+
+
+# --- Profile Schemas ---
+class ProfileFormacion(BaseModel):
+    titulo: Optional[str] = None
+    centro: Optional[str] = None
+    anio: Optional[str] = None
+
+
+class ProfileExperiencia(BaseModel):
+    puesto: Optional[str] = None
+    empresa: Optional[str] = None
+    duracion: Optional[str] = None
+    logros: list[str] = []
+    impacto: Optional[str] = None
+
+
+class ProfileProyecto(BaseModel):
+    nombre: Optional[str] = None
+    descripcion: Optional[str] = None
+    tecnologias: list[str] = []
+
+
+class ProfileIdioma(BaseModel):
+    idioma: Optional[str] = None
+    nivel: Optional[str] = None
+
+
+class ProfileCertificacion(BaseModel):
+    nombre: Optional[str] = None
+    emisor: Optional[str] = None
+    anio: Optional[str] = None
+
+
+class ProfileCurso(BaseModel):
+    nombre: Optional[str] = None
+    plataforma: Optional[str] = None
+    anio: Optional[str] = None
+
+
+class ProfileVoluntariado(BaseModel):
+    organizacion: Optional[str] = None
+    rol: Optional[str] = None
+    descripcion: Optional[str] = None
+    anio: Optional[str] = None
+
+
+class ProfileCVData(BaseModel):
+    nombre: Optional[str] = None
+    email: Optional[str] = None
+    linkedin: Optional[str] = None
+    github: Optional[str] = None
+    telefono: Optional[str] = None
+    ubicacion: Optional[str] = None
+    web: Optional[str] = None
+    resumen_base: Optional[str] = None
+    formacion: list[ProfileFormacion] = []
+    experiencia_base: list[ProfileExperiencia] = []
+    proyectos: list[ProfileProyecto] = []
+    habilidades_base: dict[str, list[str]] = {}
+    idiomas: list[ProfileIdioma] = []
+    certificaciones: list[ProfileCertificacion] = []
+    cursos: list[ProfileCurso] = []
+    voluntariado: list[ProfileVoluntariado] = []
+
+
+class ProfileResponse(BaseModel):
+    email: str
+    telegram_id: Optional[str] = None
+    master_cv_url: Optional[str] = None
+    avatar_url: Optional[str] = None
+    cv_data: Optional[ProfileCVData] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ProfileUpdate(BaseModel):
+    cv_data: Optional[ProfileCVData] = None
+    telegram_id: Optional[str] = None
+
+
+class AvatarUploadResponse(BaseModel):
+    avatar_url: str
+    status: str = "success"

@@ -9,6 +9,7 @@ from src.database import AsyncSessionLocal, User, get_db
 from src.cv_generator import CVGenerator
 import tempfile
 import os
+import asyncio
 
 router = APIRouter(prefix="/cv", tags=["cv"])
 limiter = get_limiter()
@@ -28,11 +29,15 @@ async def upload_cv(
         if file.content_type != "application/pdf":
             raise HTTPException(status_code=400, detail="Only PDF files allowed")
 
-        # Save to temp file
+        # Save to temp file (run sync I/O in thread pool)
         content = await file.read()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            tmp.write(content)
-            tmp_path = tmp.name
+
+        def save_temp_file():
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                tmp.write(content)
+                return tmp.name
+
+        tmp_path = await asyncio.to_thread(save_temp_file)
 
         try:
             # Upload to Cloudinary
@@ -43,9 +48,12 @@ async def upload_cv(
                 status="success"
             )
         finally:
-            # Clean temp file
-            if os.path.exists(tmp_path):
-                os.remove(tmp_path)
+            # Clean temp file (run sync I/O in thread pool)
+            def cleanup_file():
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+
+            await asyncio.to_thread(cleanup_file)
 
     except HTTPException:
         raise

@@ -1,32 +1,122 @@
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Dashboard } from "./pages/Dashboard";
-import { UploadCV } from "./pages/UploadCV";
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import useStore from './stores/globalStore';
+
+// Pages & Components
+import { LandingPage } from './features/landing/pages/LandingPage';
+import { LoginPage } from './features/auth/pages/LoginPage';
+import { RegisterPage } from './features/auth/pages/RegisterPage';
+import { GoogleCallbackPage } from './features/auth/pages/GoogleCallbackPage';
+import { DashboardPage } from './features/dashboard/pages/DashboardPage';
+import { CVPage } from './features/cv/pages/CVPage';
+import { AnalysisPage } from './features/analysis/pages/AnalysisPage';
+import { ResultPage } from './features/analysis/pages/ResultPage';
+import { HistoryPage } from './features/analysis/pages/HistoryPage';
+import { AdaptationPage } from './features/adaptations/pages/AdaptationPage';
+import ProfilePage from './features/profile/pages/ProfilePage';
+import { ProtectedRoute, CVRequiredRoute } from './shared/components';
 
 const qc = new QueryClient();
 
-function Nav() {
-  const cls = ({ isActive }) =>
-    `px-4 py-2 rounded ${isActive ? "bg-indigo-600 text-white" : "text-gray-600 hover:bg-gray-100"}`;
-  return (
-    <nav className="flex gap-2 p-4 border-b border-gray-200 bg-white">
-      <span className="font-bold text-indigo-700 mr-4">OptiCV</span>
-      <NavLink to="/" end className={cls}>Dashboard</NavLink>
-      <NavLink to="/upload-cv" className={cls}>CV Maestro</NavLink>
-    </nav>
-  );
-}
+function App() {
+  const { token, restoreSession } = useStore((state) => ({
+    token: state.auth.token,
+    restoreSession: state.authActions.restoreSession,
+  }));
 
-export default function App() {
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
+
   return (
     <QueryClientProvider client={qc}>
       <BrowserRouter>
-        <Nav />
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/upload-cv" element={<UploadCV />} />
+          <Route path="/" element={<LandingPage />} />
+
+          {/* Auth Routes */}
+          <Route path="/auth/login" element={token ? <Navigate to="/dashboard" /> : <LoginPage />} />
+          <Route path="/auth/register" element={token ? <Navigate to="/dashboard" /> : <RegisterPage />} />
+          <Route path="/auth/google-callback" element={<GoogleCallbackPage />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/cv"
+            element={
+              <ProtectedRoute>
+                <CVPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/analysis"
+            element={
+              <ProtectedRoute>
+                <CVRequiredRoute>
+                  <AnalysisPage />
+                </CVRequiredRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/analysis/:id"
+            element={
+              <ProtectedRoute>
+                <CVRequiredRoute>
+                  <ResultPage />
+                </CVRequiredRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/analysis/history"
+            element={
+              <ProtectedRoute>
+                <CVRequiredRoute>
+                  <HistoryPage />
+                </CVRequiredRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/adaptations/:analysisId"
+            element={
+              <ProtectedRoute>
+                <CVRequiredRoute>
+                  <AdaptationPage />
+                </CVRequiredRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
   );
 }
+
+export default App;

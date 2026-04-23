@@ -1,73 +1,175 @@
 {
-  "nombre": "Nombre Apellido",
-  "email": "correo@ejemplo.com",
-  "linkedin": "tu-perfil-linkedin",
-  "github": "tu-usuario-github",
-  "resumen_base": "Desarrollador Full Stack con experiencia en Python, FastAPI y PostgreSQL. Especializado en sistemas de inteligencia artificial y automatización. Apasionado por resolver problemas complejos con código limpio y escalable.",
+  "nombre": "Ángel Manuel Pereira Rodríguez",
+  "email": "ampr2003@gmail.com",
+  "linkedin": "ángel-manuel-pereira-rodríguez-009730253",
+  "github": null,
+  "telefono": "+34 636 16 08 17",
+  "ubicacion": "Cádiz, España",
+  "web": "https://portfolio-angelpereira.netlify.app/",
+  "resumen_base": "Desarrollador Full Stack y Mobile con experiencia en entornos laborales y en la creación de proyectos desde cero. Apasionado por el aprendizaje continuo, la adquisición de nuevas habilidades técnicas y la aplicación de las mismas para construir soluciones eficientes y escalables. Busco activamente consolidar mi experiencia y contribuir a proyectos desafiantes.",
   "formacion": [
     {
-      "titulo": "CFGS Inteligencia Artificial y Big Data",
-      "centro": "Centro Educativo",
-      "anio": "2024-2026"
+      "titulo": "Curso de especialización en Inteligencia Artificial y Bigdata (600h)",
+      "centro": "I.E.S. Fernando Aguilar Quignon, Cádiz",
+      "anio": "2025-2026"
     },
     {
-      "titulo": "Título anterior",
-      "centro": "Centro anterior",
-      "anio": "2020-2022"
+      "titulo": "Título Grado Superior de Desarrollo de Aplicaciones Web (2000h)",
+      "centro": "Centro Público de Enseñanza Rafael Alberti, Cádiz",
+      "anio": "2024-2025"
+    },
+    {
+      "titulo": "Título Grado Superior de Desarrollo de Aplicaciones Multiplataforma (2000h)",
+      "centro": "Centro Concertado de Enseñanza San Ignacio, Cádiz",
+      "anio": "2021-2023"
+    },
+    {
+      "titulo": "Título Bachillerato de Ciencias Tecnológico (2000h)",
+      "centro": "Centro Concertado de Enseñanza San Ignacio, Cádiz",
+      "anio": "2019-2021"
     }
   ],
   "experiencia_base": [
     {
-      "puesto": "Desarrollador Python",
-      "empresa": "Empresa ejemplo",
-      "duracion": "2023-2024",
+      "puesto": "Full Stack Developer",
+      "empresa": "Pikotea",
+      "duracion": "Septiembre 2024 – Junio 2025",
       "logros": [
-        "Desarrollo de API REST con FastAPI",
-        "Implementación de bases de datos PostgreSQL",
-        "Automatización de procesos con Python"
-      ]
+        "Participación activa en el desarrollo del proyecto SIPOS, asumiendo responsabilidades en diversas áreas de la programación.",
+        "Creación de prototipos de alta fidelidad en Figma a partir de diseños existentes."
+      ],
+      "impacto": null
+    },
+    {
+      "puesto": "Software Developer (Prácticas)",
+      "empresa": "MERCANZA",
+      "duracion": "Marzo 2023 – Junio 2023",
+      "logros": [
+        "Soporte en el desarrollo de proyectos de Business Intelligence utilizando Qlik Sense.",
+        "Colaboración en la creación y optimización de dashboards y visualizaciones de datos para clientes."
+      ],
+      "impacto": null
     }
   ],
   "proyectos": [
     {
-      "nombre": "OptiCV Engine",
-      "descripcion": "Sistema de monitorización y generación inteligente de CVs con análisis de ofertas usando IA",
-      "tecnologias": ["FastAPI", "LangChain", "PostgreSQL", "Cloudinary", "LaTeX"]
+      "nombre": "Página de Eventos",
+      "descripcion": "Diseño e implementación de una página de eventos para un creador de contenido de Twitch y YouTube.",
+      "tecnologias": []
     },
     {
-      "nombre": "Reclutador IA",
-      "descripcion": "Bot de Telegram que filtra ofertas de trabajo según criterios de relevancia",
-      "tecnologias": ["Python", "Telegram Bot API", "Gemini API", "Web Scraping"]
+      "nombre": "Blog de Artículos",
+      "descripcion": "Desarrollo de un blog autogestionable para un cliente, enfocado en la publicación de artículos.",
+      "tecnologias": []
+    },
+    {
+      "nombre": "Soluciones a Medida",
+      "descripcion": "Creación de diversas aplicaciones y sitios web para clientes personales.",
+      "tecnologias": []
+    },
+    {
+      "nombre": "Portfolio Personal",
+      "descripcion": "Implementación de un portfolio web profesional para mostrar proyectos y competencias.",
+      "tecnologias": []
     }
   ],
   "habilidades_base": {
-    "lenguajes": [
-      "Python",
-      "SQL",
+    "Lenguajes": [
       "JavaScript",
+      "TypeScript",
+      "Python",
+      "Java"
+    ],
+    "Front-End": [
       "HTML",
       "CSS",
-      "Bash"
-    ],
-    "frameworks": [
-      "FastAPI",
-      "LangChain",
+      "SASS/SCSS",
+      "Angular",
       "React",
-      "SQLAlchemy"
+      "Vue",
+      "Vite"
     ],
-    "herramientas": [
-      "Docker",
-      "Git",
+    "Back-End": [
+      "NodeJS",
+      "Express",
+      "NestJS",
+      "Spring Boot",
+      "Laravel",
+      "Django",
+      "Flask"
+    ],
+    "Mobile": [
+      "Flutter"
+    ],
+    "Bases de Datos": [
+      "MySQL",
       "PostgreSQL",
-      "Cloudinary",
-      "VS Code",
-      "Linux"
+      "SQLite",
+      "MongoDB"
     ],
-    "metodologias": [
-      "Async/await",
-      "REST APIs",
-      "Bases de datos relacionales",
-      "Control de versiones"
+    "Herramientas": [
+      "Docker",
+      "GitHub",
+      "Figma",
+      "Trello",
+      "Jira"
+    ],
+    "BI & ERP": [
+      "Qlik Sense",
+      "Power BI",
+      "Tableau",
+      "Odoo"
+    ],
+    "Big Data": [
+      "Nifi",
+      "Kafka",
+      "Dremio"
     ]
-  }
+  },
+  "idiomas": [
+    {
+      "idioma": "Español",
+      "nivel": "nativo"
+    },
+    {
+      "idioma": "Inglés",
+      "nivel": "fluido"
+    }
+  ],
+  "certificaciones": [],
+  "cursos": [
+    {
+      "nombre": "Curso de Desarrollo APP WEB (253h)",
+      "plataforma": "EOI",
+      "anio": "2024"
+    },
+    {
+      "nombre": "Flutter - Móvil: De cero a experto (50,5h)",
+      "plataforma": "Udemy",
+      "anio": "2024"
+    },
+    {
+      "nombre": "Angular: De cero a experto (46h)",
+      "plataforma": "Udemy",
+      "anio": "2023"
+    },
+    {
+      "nombre": "JavaScript Moderno: Guía para dominar el lenguaje (22,5h)",
+      "plataforma": "Udemy",
+      "anio": "2023"
+    },
+    {
+      "nombre": "Legacy - Flutter: Tu guía completa para IOS y Android (37,5h)",
+      "plataforma": "Udemy",
+      "anio": "2022-2023"
+    }
+  ],
+  "voluntariado": [
+    {
+      "organizacion": "Asociación Contra El Cáncer - Cádiz",
+      "rol": "Voluntario",
+      "descripcion": "Tareas de recaudación de fondos para la asociación.",
+      "anio": "2019"
+    }
+  ]
 }

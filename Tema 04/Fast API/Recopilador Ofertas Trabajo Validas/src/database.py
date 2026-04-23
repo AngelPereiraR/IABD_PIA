@@ -50,6 +50,11 @@ class AuthProvider(str, enum.Enum):
     EMAIL = "email"
 
 
+class UserRole(str, enum.Enum):
+    ADMIN = "admin"       # Usuario propietario del CV maestro local
+    USER = "user"         # Usuarios regulares
+
+
 # --- MODELOS ---
 class Base(DeclarativeBase):
     """Base para todos los modelos ORM."""
@@ -64,8 +69,11 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     auth_provider = Column(SQLEnum(AuthProvider), nullable=False, default=AuthProvider.EMAIL)
     password_hash = Column(String(255), nullable=True)  # NULL si OAuth
+    role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.USER)  # admin o user
     master_cv_url = Column(Text, nullable=True)  # URL Cloudinary del CV maestro
-    telegram_id = Column(String(50), nullable=True)
+    cv_data = Column(JSONB, nullable=True)  # Datos estructurados del CV extraídos del PDF con DeepSeek
+    avatar_url = Column(Text, nullable=True)  # URL Cloudinary de la foto de perfil
+    telegram_id = Column(String(50), nullable=True)  # Solo para admin
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -88,8 +96,8 @@ class JobOffer(Base):
 
     score = Column(Integer, nullable=True)  # 0-100 del análisis DeepSeek
     is_valid = Column(Boolean, default=None, nullable=True)  # TRUE if score >= 60
-    scoring_details = Column(JSONB, nullable=True)  # Breakdown: ats_score, recruiter_score, reasoning
-    analysis_result = Column(JSONB, nullable=True)  # Full DeepSeek response
+    scoring_details = Column(JSONB, nullable=True)  # Breakdown: ats_score, recruiter_score, reasoning (future use; see analysis_result)
+    analysis_result = Column(JSONB, nullable=True)  # Full RecruitmentDecision from DeepSeek: is_relevant, score, job_title, company, salary, posted_date, benefits, key_skills, rejection_reason, summary
     optimized_cv_url = Column(Text, nullable=True)  # URL Cloudinary del CV generado
 
     status = Column(
@@ -130,7 +138,8 @@ def init_db_sync():
     from sqlalchemy import create_engine
 
     # Usar engine síncrono para evitar problemas con ProactorEventLoop en Windows
-    sync_url = DATABASE_URL.replace("postgresql+psycopg://", "postgresql://")
+    # Reemplazar asyncpg por psycopg2 (driver síncrono)
+    sync_url = DATABASE_URL.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
     sync_engine = create_engine(sync_url, echo=False)
 
     try:

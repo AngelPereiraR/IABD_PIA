@@ -158,11 +158,11 @@ class RecruitmentBrain:
                 "offer_markdown": offer_markdown
             })
             
-            # Validación extra: asegurar que match es booleano
-            if not isinstance(result.get("match"), bool):
+            # Validación extra: asegurar que is_relevant es booleano
+            if not isinstance(result.get("is_relevant"), bool):
                 # Fallback simple por si el modelo devuelve string "true"
-                result["match"] = str(result.get("match")).lower() == "true"
-                
+                result["is_relevant"] = str(result.get("is_relevant")).lower() == "true"
+
             return result
 
         except Exception as e:
