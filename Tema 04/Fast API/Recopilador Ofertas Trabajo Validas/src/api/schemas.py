@@ -76,18 +76,24 @@ class AnalysisResponse(BaseModel):
     id: int
     score: Optional[int] = None
     is_valid: Optional[bool] = None
-    extracted_title: Optional[str] = None
-    extracted_company: Optional[str] = None
-    scoring_details: Optional[dict] = None
+    title: Optional[str] = None
+    company: Optional[str] = None
     offer_url: Optional[str] = None
+    salary: Optional[str] = None
+    job_type: Optional[str] = None
+    location: Optional[str] = None
+    benefits: Optional[str] = None
+    key_skills: Optional[list[str]] = None
+    summary: Optional[str] = None
+    created_at: Optional[datetime] = None
 
 
 class AnalysisListItem(BaseModel):
     id: int
     score: Optional[int] = None
     is_valid: Optional[bool] = None
-    extracted_title: Optional[str] = None
-    extracted_company: Optional[str] = None
+    title: Optional[str] = None
+    company: Optional[str] = None
     created_at: datetime
 
 
@@ -108,6 +114,10 @@ class AdaptationResponse(BaseModel):
     adapted_cv_html: Optional[str] = None
     adapted_cv_url: Optional[str] = None
     created_at: datetime
+    analysis_id: Optional[int] = None
+    job_title: Optional[str] = None
+    company: Optional[str] = None
+    score: Optional[int] = None
 
 
 class AdaptationListItem(BaseModel):
@@ -115,6 +125,9 @@ class AdaptationListItem(BaseModel):
     created_at: datetime
     job_offer_id: int
     adapted_cv_url: Optional[str] = None
+    job_title: Optional[str] = None
+    company: Optional[str] = None
+    score: Optional[int] = None
 
 
 class AdaptationListResponse(BaseModel):

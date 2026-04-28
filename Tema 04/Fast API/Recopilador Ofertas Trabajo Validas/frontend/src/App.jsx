@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Spinner } from './shared/components';
 import useStore from './stores/globalStore';
 
 // Pages & Components
@@ -14,24 +15,40 @@ import { AnalysisPage } from './features/analysis/pages/AnalysisPage';
 import { ResultPage } from './features/analysis/pages/ResultPage';
 import { HistoryPage } from './features/analysis/pages/HistoryPage';
 import { AdaptationPage } from './features/adaptations/pages/AdaptationPage';
+import { AdaptationsHistoryPage } from './features/adaptations/pages/AdaptationsHistoryPage';
+import { AdaptationDetailPage } from './features/adaptations/pages/AdaptationDetailPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import { ProtectedRoute, CVRequiredRoute } from './shared/components';
 
 const qc = new QueryClient();
 
 function App() {
-  const { token, restoreSession } = useStore((state) => ({
+  const [sessionRestored, setSessionRestored] = useState(false);
+  const { token, restoreSession, fetchCurrentCV } = useStore((state) => ({
     token: state.auth.token,
     restoreSession: state.authActions.restoreSession,
+    fetchCurrentCV: state.cvActions.fetchCurrentCV,
   }));
 
   useEffect(() => {
-    restoreSession();
-  }, [restoreSession]);
+    restoreSession().then(() => {
+      // Load current CV after session is restored
+      fetchCurrentCV();
+      setSessionRestored(true);
+    });
+  }, [restoreSession, fetchCurrentCV]);
+
+  if (!sessionRestored) {
+    return (
+      <QueryClientProvider client={qc}>
+        <Spinner message="Loading..." fullHeight containerClassName="bg-gray-50" />
+      </QueryClientProvider>
+    );
+  }
 
   return (
     <QueryClientProvider client={qc}>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
 
@@ -93,11 +110,33 @@ function App() {
           />
 
           <Route
-            path="/dashboard/adaptations/:analysisId"
+            path="/dashboard/adaptations"
+            element={
+              <ProtectedRoute>
+                <CVRequiredRoute>
+                  <AdaptationsHistoryPage />
+                </CVRequiredRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/adaptations/generate/:analysisId"
             element={
               <ProtectedRoute>
                 <CVRequiredRoute>
                   <AdaptationPage />
+                </CVRequiredRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/adaptations/:adaptationId"
+            element={
+              <ProtectedRoute>
+                <CVRequiredRoute>
+                  <AdaptationDetailPage />
                 </CVRequiredRoute>
               </ProtectedRoute>
             }

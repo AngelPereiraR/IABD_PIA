@@ -1,131 +1,137 @@
-# Frontend Implementation Summary
+# Resumen de Implementación del Frontend
 
-**Date:** 2026-04-20  
+**Date:** 2026-04-28  
 **Status:** ✅ Complete  
-**Build Size:** 377KB (production)  
-**Files Created:** 46 components/services
+**Build Size:** ~377KB (production)  
+**Files Created:** 50 components/services (incluye 4 nuevos: AdaptationDetailPage, AdaptationsHistoryPage, AdaptationPreview, CardItem)
 
 ---
 
-## 📊 Implementation Overview
+## 📊 Resumen de Implementación
 
-### Features Fully Implemented
+### Funcionalidades Completamente Implementadas
 
-#### 1. **Authentication (Auth Feature)**
-- ✅ Login with email/password (LoginPage, LoginForm)
-- ✅ User registration (RegisterPage, RegisterForm)  
-- ✅ Google OAuth callback handler (GoogleCallbackPage)
-- ✅ Session persistence (localStorage)
-- ✅ Auto-logout on 401 (apiClient interceptor)
-- ✅ Protected routes with token validation
+#### 1. **Autenticación (Auth Feature)**
+- ✅ Login con email/contraseña (LoginPage, LoginForm)
+- ✅ Registro de usuario (RegisterPage)
+- ✅ Manejador de callback OAuth de Google (GoogleCallbackPage)
+- ✅ Persistencia de sesión (localStorage)
+- ✅ Auto-logout ante 401 (interceptor de apiClient)
+- ✅ Rutas protegidas con validación de token
 
-#### 2. **CV Management (CV Feature)**
-- ✅ PDF upload with drag-drop support (CVUpload)
-- ✅ CV preview display (CVPreview)
-- ✅ CV deletion with confirmation
-- ✅ CV status indicator in sidebar
-- ✅ File validation (PDF, <10MB)
+#### 2. **Gestión del CV (CV Feature)**
+- ✅ Subida de PDF con soporte drag-drop (CVUpload en CVPage)
+- ✅ Previsualización del CV (CVPreview)
+- ✅ Eliminación del CV con confirmación
+- ✅ Indicador del estado del CV en el sidebar
+- ✅ Validación de archivo (solo PDF, <10MB)
 
-#### 3. **Job Offer Analysis (Analysis Feature)**
-- ✅ URL-based input (LinkedIn, InfoJobs links)
-- ✅ Text-based input (paste job description)
-- ✅ Analysis form with tab switching
-- ✅ Results display with score, match status, extracted details
-- ✅ Analysis history with pagination
-- ✅ Result card with salary, location, benefits info
-- ✅ Link to CV adaptation for valid offers
+#### 3. **Análisis de Ofertas de Empleo (Analysis Feature)**
+- ✅ Entrada por URL (enlaces de LinkedIn, InfoJobs)
+- ✅ Entrada por texto (pegar descripción de la oferta)
+- ✅ Formulario de análisis con cambio de pestañas
+- ✅ Visualización de resultados con puntuación, estado de ajuste y detalles extraídos
+- ✅ Historial de análisis con paginación
+- ✅ Tarjeta de resultado con salario, ubicación e información de beneficios
+- ✅ Enlace a la adaptación del CV para ofertas válidas (score ≥ 60)
 
 #### 4. **CV Adaptation (Adaptations Feature)**
-- ✅ HTML preview of adapted CV
-- ✅ PDF download button
+- ✅ CV adaptation preview (AdaptationPreview component)
+- ✅ PDF download button (PDFDownloadButton — sirve PDF generado por LaTeX desde Cloudinary)
 - ✅ Loading states during generation
-- ✅ Integration with analysis results
+- ✅ Integration with analysis results (solo para `is_valid=true`, score ≥ 60)
+- ✅ Adaptation history with pagination via `?page=N` URL param (AdaptationsHistoryPage)
+- ✅ Adaptation detail view con navegación contextual (AdaptationDetailPage)
+- ✅ Smart navigation context (back to analysis or adaptations list via `from` query param)
 
-#### 5. **UI/UX Components**
-- ✅ Responsive Layout (Navbar + Sidebar + main)
-- ✅ Sidebar navigation with active state
-- ✅ Landing page with feature overview
-- ✅ Dashboard with quick links
-- ✅ Toast notifications (success, error, warning, info)
-- ✅ Loading spinner
-- ✅ Form validation with React Hook Form + Zod
-- ✅ Error messages and user feedback
+#### 5. **Componentes UI/UX**
+- ✅ Layout responsive (Navbar + Sidebar + main)
+- ✅ Navegación en sidebar con estado activo
+- ✅ Landing page con resumen de funcionalidades
+- ✅ Dashboard con enlaces rápidos
+- ✅ Notificaciones Toast (éxito, error, aviso, info)
+- ✅ Componente Spinner unificado
+  - Props flexibles: `message`, `size`, `fullHeight`, `inline`, `color`
+  - Animación de carga radial de 12 líneas
+  - Funciona en botones, overlays y pantalla completa
+- ✅ Componente genérico CardItem para listas de análisis y adaptaciones
+- ✅ Validación de formularios con React Hook Form + Zod
+- ✅ Mensajes de error y feedback al usuario
 
-#### 6. **State Management (Zustand)**
-- ✅ Global store with 4 slices: auth, cv, analysis, adaptations
-- ✅ Async actions with error handling
-- ✅ Session restoration on app load
-- ✅ Centralized state for all features
+#### 6. **Gestión de Estado (Zustand)**
+- ✅ Store global con 4 slices: auth, cv, analysis, adaptations
+- ✅ Acciones asíncronas con manejo de errores
+- ✅ Restauración de sesión al cargar la app
+- ✅ Estado centralizado para todas las funcionalidades
 
-#### 7. **API Integration**
-- ✅ Axios client with Bearer token interceptor
-- ✅ Service modules for each domain
-- ✅ Automatic 401 handling (redirect to login)
-- ✅ Error propagation and user feedback
+#### 7. **Integración con la API**
+- ✅ Cliente Axios con interceptor de token Bearer
+- ✅ Módulos de servicio por dominio
+- ✅ Manejo automático de 401 (redirige al login)
+- ✅ Propagación de errores y feedback al usuario
 
 ---
 
-## 📁 Project Structure
+## 📁 Estructura del Proyecto
 
 ```
 frontend/
 ├── src/
 │   ├── features/
 │   │   ├── auth/
-│   │   │   ├── components/ (LoginForm, RegisterForm)
+│   │   │   ├── components/ (LoginForm)
 │   │   │   └── pages/ (LoginPage, RegisterPage, GoogleCallbackPage)
 │   │   ├── cv/
-│   │   │   ├── components/ (CVUpload, CVPreview)
+│   │   │   ├── components/ (CVPreview)
 │   │   │   └── pages/ (CVPage)
 │   │   ├── analysis/
 │   │   │   ├── components/ (AnalysisForm, ResultCard, AnalysisListItem)
 │   │   │   └── pages/ (AnalysisPage, ResultPage, HistoryPage)
 │   │   ├── adaptations/
-│   │   │   ├── components/ (CVPreviewHTML, PDFDownloadButton)
-│   │   │   └── pages/ (AdaptationPage)
+│   │   │   ├── components/ (AdaptationPreview, CVPreviewHTML, PDFDownloadButton)
+│   │   │   └── pages/ (AdaptationPage, AdaptationDetailPage, AdaptationsHistoryPage)
+│   │   ├── profile/
+│   │   │   └── pages/ (ProfilePage)
 │   │   ├── landing/
 │   │   │   └── pages/ (LandingPage)
 │   │   └── dashboard/
 │   │       └── pages/ (DashboardPage)
 │   ├── shared/
-│   │   ├── components/ (Layout, Sidebar, Navbar, ProtectedRoute, CVRequiredRoute, Toast, Spinner)
-│   │   └── hooks/ (useAuth, useToast)
+│   │   ├── components/ (Layout, Sidebar, Navbar, ProtectedRoute, CVRequiredRoute,
+│   │   │               Spinner, CardItem)
+│   │   └── hooks/ (useAuth)
 │   ├── stores/
-│   │   └── globalStore.js (Zustand with 4 slices)
+│   │   └── globalStore.js (Zustand with 4 slices: auth, cv, analysis, adaptations)
 │   ├── services/
-│   │   ├── apiClient.js (Axios instance)
+│   │   ├── apiClient.js (Axios instance, base URL localhost:7860)
 │   │   ├── authService.js
 │   │   ├── cvService.js
 │   │   ├── analysisService.js
 │   │   └── adaptationService.js
-│   ├── utils/
-│   │   ├── validators.js
-│   │   ├── formatters.js
-│   │   └── constants.js
 │   ├── App.jsx (routing with all routes)
 │   ├── main.jsx
 │   └── index.css (Tailwind + custom styles)
-├── vite.config.js (with alias paths)
+├── vite.config.js
 ├── tailwind.config.js
 ├── postcss.config.js
 ├── package.json (all dependencies)
-└── dist/ (production build - 377KB)
+└── dist/ (production build ~377KB)
 ```
 
 ---
 
-## 🚀 Running the Application
+## 🚀 Ejecución de la Aplicación
 
-### Development
+### Desarrollo
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Starts dev server at `http://localhost:5173` with hot reload.
+Inicia el servidor de desarrollo en `http://localhost:5173` con hot reload.
 
-### Production Build
+### Build de Producción
 
 ```bash
 cd frontend
@@ -135,160 +141,157 @@ npm run preview
 
 ---
 
-## 🔌 API Endpoints Expected
+## 🔌 Endpoints de la API Esperados
 
-The frontend expects these endpoints from the FastAPI backend (port 7860):
+El frontend espera los siguientes endpoints del backend FastAPI (puerto 7860):
 
-### Authentication
-- `POST /auth/register` - Register new user
-- `POST /auth/login` - Login with email/password
-- `POST /auth/google-callback` - Google OAuth callback
-- `GET /auth/me` - Get current user info
+### Autenticación
+- `POST /auth/register` - Registrar nuevo usuario
+- `POST /auth/login` - Login con email/contraseña
+- `POST /auth/google-callback` - Callback de OAuth de Google
+- `GET /auth/me` - Obtener información del usuario actual
 
-### CV Management
-- `POST /cv/upload` - Upload PDF CV
-- `GET /cv` - Get current CV
-- `DELETE /cv` - Delete CV
+### Gestión del CV
+- `POST /cv/upload` - Subir PDF del CV (multipart/form-data)
+- `GET /cv/current` - Obtener el CV actual
+- `DELETE /cv/current` - Eliminar el CV
 
-### Analysis
-- `POST /analysis/create` - Create analysis (URL or text)
-- `GET /analysis/history` - Get analysis history (paginated)
-- `GET /analysis/{id}` - Get specific analysis
+### Análisis
+- `POST /analysis/create` - Crear análisis (URL o texto)
+- `GET /analysis/list` - Obtener historial de análisis (paginado: limit, offset)
+- `GET /analysis/{id}` - Obtener análisis específico
 
-### Adaptations
-- `POST /adaptations/create` - Generate adapted CV
-- `GET /adaptations/history` - Get adaptations history
-- `GET /adaptations/{id}` - Get specific adaptation
-- `GET /adaptations/{id}/download-pdf` - Download PDF
+### Adaptaciones
+- `POST /adaptations/create` - Generar CV adaptado (requiere análisis válido)
+- `GET /adaptations/list` - Obtener historial de adaptaciones (paginado: limit, offset)
+- `GET /adaptations/{id}` - Obtener adaptación específica
+- `GET /adaptations/{id}/download` - Descargar PDF (redirige a Cloudinary)
 
 ---
 
-## 🧪 Testing Checklist
+## 🧪 Checklist de Pruebas
 
-### 1. **Authentication Flow**
-- [ ] Register new user
-- [ ] Login with credentials
-- [ ] Session persists after page refresh
-- [ ] Logout clears session
-- [ ] Redirect to login on token expiry (401)
+### 1. **Flujo de Autenticación**
+- [ ] Registrar nuevo usuario
+- [ ] Login con credenciales
+- [ ] La sesión persiste tras recargar la página
+- [ ] Logout limpia la sesión
+- [ ] Redirige al login al expirar el token (401)
 
-### 2. **CV Management**
-- [ ] Upload valid PDF (<10MB)
-- [ ] Show error for invalid file types
-- [ ] Display CV preview
-- [ ] Delete CV with confirmation
-- [ ] CV status shows in sidebar
+### 2. **Gestión del CV**
+- [ ] Subir PDF válido (<10MB)
+- [ ] Mostrar error para tipos de archivo inválidos
+- [ ] Mostrar previsualización del CV
+- [ ] Eliminar CV con confirmación
+- [ ] El estado del CV se muestra en el sidebar
 
-### 3. **Analysis Flow**
-- [ ] Analyze offer by URL
-- [ ] Analyze offer by text
-- [ ] Display results with score
-- [ ] Show "Valid"/"Not Suitable" status
-- [ ] Paginate through history
+### 3. **Flujo de Análisis**
+- [ ] Analizar oferta por URL
+- [ ] Analizar oferta por texto
+- [ ] Mostrar resultados con puntuación y banda de scoring
+- [ ] Mostrar estado "Válido"/"No apto"
+- [ ] Paginar el historial
 
-### 4. **Adaptation Flow**
-- [ ] Generate adapted CV from valid result
-- [ ] Show HTML preview
-- [ ] Download PDF successfully
-- [ ] Handle errors gracefully
+### 4. **Flujo de Adaptación**
+- [ ] Generar CV adaptado desde un resultado válido
+- [ ] Mostrar previsualización de la adaptación
+- [ ] Descargar PDF correctamente
+- [ ] Manejar errores correctamente
 
 ### 5. **UI/UX**
-- [ ] Responsive on mobile, tablet, desktop
-- [ ] Toast notifications appear
-- [ ] Forms validate inputs
-- [ ] Loading states visible
-- [ ] Navigation works correctly
+- [ ] Responsive en móvil, tablet y escritorio
+- [ ] Las notificaciones toast aparecen
+- [ ] Los formularios validan los inputs
+- [ ] Los estados de carga son visibles
+- [ ] La navegación funciona correctamente
 
 ---
 
-## 🔧 Environment Variables
+## 🔧 Variables de Entorno
 
-Create `.env` file (or use existing):
+Crear archivo `frontend/.env.local` (o usar el existente):
 
 ```
 VITE_API_URL=http://localhost:7860
-VITE_GOOGLE_CLIENT_ID=your_google_client_id
+VITE_GOOGLE_CLIENT_ID=tu_google_client_id
 ```
 
 ---
 
-## 📦 Dependencies Installed
+## 📦 Dependencias Instaladas
 
-- **React 18.3.1** - UI framework
+- **React 18.3.1** - Framework de UI
 - **Vite 6.4.2** - Build tool
-- **React Router v6** - Routing
-- **Zustand 4.4.7** - State management
-- **Axios 1.7.2** - HTTP client
-- **React Hook Form 7.51.0** - Form handling
-- **Zod 3.22.4** - Data validation
-- **React Query 5.40.0** - Data fetching/caching
-- **Tailwind CSS 3.4.1** - Styling
-- **Lucide React 0.408.0** - Icons
+- **React Router v6** - Navegación SPA
+- **Zustand 4.4.7** - Gestión de estado
+- **Axios 1.7.2** - Cliente HTTP
+- **React Hook Form 7.51.0** - Manejo de formularios
+- **Zod 3.22.4** - Validación de datos
+- **React Query 5.40.0** - Fetching y caché de datos
+- **Tailwind CSS 3.4.1** - Estilos
+- **Lucide React 0.408.0** - Iconos
 
 ---
 
-## 🔄 Routing Map
+## 🔄 Mapa de Rutas
 
 ```
-/                              → Landing page (public)
-/auth/login                    → Login (public)
-/auth/register                 → Register (public)
-/auth/google-callback          → OAuth handler
-/dashboard                     → Dashboard (protected)
-/dashboard/cv                  → CV Management (protected)
-/dashboard/analysis            → Create Analysis (protected + CV required)
-/dashboard/analysis/:id        → View Results (protected + CV required)
-/dashboard/analysis/history    → Analysis History (protected + CV required)
-/dashboard/adaptations/:id     → Adaptation Preview (protected + CV required)
+/                                          → Landing page (public)
+/auth/login                                → Login (public)
+/auth/register                             → Register (public)
+/auth/google-callback                      → OAuth handler
+/dashboard                                 → Dashboard (protected)
+/dashboard/cv                              → CV Management (protected)
+/dashboard/profile                         → User Profile (protected)
+/dashboard/analysis                        → Create Analysis (protected + CV required)
+/dashboard/analysis/:id                    → View Results (protected + CV required)
+/dashboard/analysis/history                → Analysis History (protected + CV required)
+/dashboard/adaptations                     → Adaptations History (protected + CV required)
+/dashboard/adaptations/generate/:analysisId→ Generate Adaptation (protected + CV required)
+/dashboard/adaptations/:adaptationId       → Adaptation Detail + PDF (protected + CV required)
 ```
 
 ---
 
-## ⚡ Performance
+## ⚡ Rendimiento
 
-- **Production Build:** 377KB
-- **Gzip Size:** ~111KB (JS) + 4KB (CSS)
-- **Code Splitting:** Lazy loaded features
-- **Caching:** React Query for API response caching
-- **CSS:** Tailwind with tree-shaking
+- **Build de producción:** ~377KB
+- **Tamaño gzip:** ~111KB (JS) + 4KB (CSS)
+- **Separación de código:** Funcionalidades cargadas de forma lazy
+- **Caché:** React Query para cachear respuestas de la API
+- **CSS:** Tailwind con tree-shaking
 
 ---
 
 ## 🎯 Next Steps
 
 1. **API Integration Testing**
-   - Test each endpoint with real backend
-   - Verify request/response formats
+   - Test each endpoint con el backend real en `localhost:7860`
+   - Verificar formatos de request/response
 
-2. **Error Handling**
-   - Test network failures
-   - Test validation errors
-   - Test auth failures
-
-3. **E2E Testing**
-   - Complete user journeys with Playwright
+2. **E2E Testing**
+   - Seguir la guía `TESTING_E2E.md` para todos los flujos
    - Mobile responsiveness testing
 
-4. **Deployment**
-   - Configure Vercel deployment
-   - Set production environment variables
-   - Enable auto-deployment on git push
+3. **Deployment**
+   - ✅ Vercel configurado (`opticv.vercel.app`)
+   - ✅ Backend en HF Spaces (`opticv-engine.hf.space`)
+   - Verificar CORS entre ambos dominios en producción
 
-5. **Enhancements**
-   - Google OAuth full integration
+4. **Posibles Enhancements**
+   - Google OAuth integración completa
    - Dark mode theme
-   - Advanced filtering in history
+   - Advanced filtering en historiales
    - Export analysis as PDF/CSV
-   - User profile/settings page
 
 ---
 
-## 📝 Notes
+## 📝 Notas
 
-- All components are **functional components** using React hooks
-- **Error handling** is implemented throughout with user-friendly messages
-- **Loading states** are visible in all async operations
-- **Responsive design** with Tailwind CSS breakpoints
-- **Token persistence** using localStorage
-- **Session restoration** on app mount
-- **Protected routes** enforce auth + CV requirements
+- Todos los componentes son **componentes funcionales** que usan React hooks
+- El **manejo de errores** está implementado en toda la aplicación con mensajes amigables
+- Los **estados de carga** son visibles en todas las operaciones asíncronas
+- **Diseño responsive** con breakpoints de Tailwind CSS
+- **Persistencia del token** mediante localStorage
+- **Restauración de sesión** al montar la aplicación
+- Las **rutas protegidas** exigen autenticación y/o CV subido según corresponda

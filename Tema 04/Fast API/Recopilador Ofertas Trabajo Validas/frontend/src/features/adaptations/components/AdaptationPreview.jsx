@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import useStore from '../../../stores/globalStore';
-import { FileText, Trash2, Download } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
-export function CVPreview() {
+export function AdaptationPreview({ adaptation, isLoading }) {
   const [previewHeight, setPreviewHeight] = useState(800);
   const [previewWidth, setPreviewWidth] = useState(100);
   const [maxHeight, setMaxHeight] = useState(1200);
@@ -23,37 +22,12 @@ export function CVPreview() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const { currentCV, deleteCV } = useStore((state) => ({
-    currentCV: state.cv.currentCV,
-    deleteCV: state.cvActions.deleteCV,
-  }));
-
-  if (!currentCV) {
+  if (!adaptation || !adaptation.adapted_cv_url) {
     return null;
   }
 
-  const cvUrl = currentCV.cv_url || currentCV.master_cv_url || currentCV.url;
-  const filename = currentCV.filename || 'CV Document';
-
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete your CV?')) {
-      await deleteCV();
-    }
-  };
-
-  const handleDownload = () => {
-    if (cvUrl) {
-      const downloadUrl = cvUrl.includes('?')
-        ? `${cvUrl}&fl=attachment`
-        : `${cvUrl}?fl=attachment`;
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
+  const cvUrl = adaptation.adapted_cv_url;
+  const filename = `${adaptation.job_title} - Adapted CV`;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -62,32 +36,16 @@ export function CVPreview() {
           <FileText size={32} className="text-indigo-600" />
           <div>
             <h3 className="text-lg font-semibold text-gray-800">{filename}</h3>
-            <p className="text-sm text-gray-500">
-              {currentCV.size ? `${(currentCV.size / 1024).toFixed(2)} KB` : 'Uploaded'}
-            </p>
+            <p className="text-sm text-gray-500">Adapted CV - {adaptation.company}</p>
           </div>
-        </div>
-        <div className="flex gap-2">
-          {cvUrl && (
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded transition"
-              title="Download CV"
-            >
-              <Download size={18} />
-            </button>
-          )}
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded transition"
-          >
-            <Trash2 size={18} />
-            Delete
-          </button>
         </div>
       </div>
 
-      {cvUrl && (
+      {isLoading ? (
+        <div className="p-12 text-center">
+          <p className="text-gray-600">Generating preview...</p>
+        </div>
+      ) : (
         <div className="bg-gray-50 p-4 space-y-4">
           {/* Height Controls */}
           <div className="flex items-center justify-between gap-4">
@@ -201,7 +159,7 @@ export function CVPreview() {
           <div className="pt-6" style={{ width: `${previewWidth}%`, margin: '0 auto' }}>
             <iframe
               src={cvUrl}
-              title="CV Preview"
+              title="Adapted CV Preview"
               className="w-full border border-gray-300 rounded"
               style={{ height: `${previewHeight}px` }}
             />

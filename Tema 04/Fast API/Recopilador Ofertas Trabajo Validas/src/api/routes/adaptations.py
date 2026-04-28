@@ -9,7 +9,7 @@ from src.api.limiter import get_limiter
 from src.api.adaptation_service import AdaptationService
 from src.database import User, get_db
 
-router = APIRouter(prefix="/adaptation", tags=["adaptation"])
+router = APIRouter(prefix="/adaptations", tags=["adaptations"])
 limiter = get_limiter()
 
 
@@ -35,14 +35,35 @@ async def create_adaptation(
 
         return AdaptationResponse(
             id=result["id"],
-            adapted_cv_html=result["adapted_cv_html"][:1000] if result["adapted_cv_html"] else None,  # Limit HTML in response
+            adapted_cv_html=result["adapted_cv_html"][:1000] if result["adapted_cv_html"] else None,
             adapted_cv_url=result["adapted_cv_url"],
-            created_at=None,
+            created_at=result.get("created_at"),
+            analysis_id=result.get("analysis_id"),
+            job_title=result.get("job_title"),
+            company=result.get("company"),
+            score=result.get("score"),
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Adaptation failed: {str(e)}")
+
+
+@router.get("/list", response_model=AdaptationListResponse)
+@limiter.limit("60/minute")
+async def list_adaptations(
+    request: Request,
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_db),
+):
+    """List all adaptations for current user with pagination"""
+    try:
+        result = await AdaptationService.list_adaptations(db, current_user.id, limit, offset)
+        return AdaptationListResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{adaptation_id}", response_model=AdaptationResponse)
@@ -62,23 +83,6 @@ async def get_adaptation(
         return AdaptationResponse(**result)
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/list", response_model=AdaptationListResponse)
-@limiter.limit("60/minute")
-async def list_adaptations(
-    request: Request,
-    limit: int = Query(10, ge=1, le=100),
-    offset: int = Query(0, ge=0),
-    current_user: User = Depends(get_current_user),
-    db = Depends(get_db),
-):
-    """List all adaptations for current user with pagination"""
-    try:
-        result = await AdaptationService.list_adaptations(db, current_user.id, limit, offset)
-        return AdaptationListResponse(**result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -31,13 +31,17 @@ class RecruitmentBrain:
         if not api_key:
             raise ValueError("Faltan credenciales de DeepSeek (DEEPSEEK_API_KEY) en .env")
 
-        # Configuración del modelo DeepSeek (API compatible con OpenAI)
-        # Usamos temperature=0 para máxima precisión y determinismo
+        # Configuración del modelo DeepSeek V4 Flash con Thinking Mode
+        # temperature=0 para máxima precisión, reasoning_effort="high" para razonamiento activado
         self.llm = ChatOpenAI(
-            model="deepseek-chat",
+            model="deepseek-v4-flash",
             temperature=0,
             api_key=api_key,
-            base_url="https://api.deepseek.com"
+            base_url="https://api.deepseek.com",
+            model_kwargs={
+                "reasoning_effort": "high",
+                "extra_body": {"thinking": {"type": "enabled"}}
+            }
         )
 
         # Configurar el parser de salida JSON

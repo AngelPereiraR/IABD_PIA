@@ -1,356 +1,434 @@
-# E2E Testing Guide
+# Guía de Pruebas E2E
 
-## Prerequisites
+## Requisitos Previos
 
-- FastAPI backend running on `http://localhost:7860`
-- Frontend dev server running on `http://localhost:5173`
-- Valid test credentials for API endpoints
+- Backend FastAPI ejecutándose en `http://localhost:7860` (puerto por defecto configurado en `apiClient.js`)
+- Servidor de desarrollo frontend en `http://localhost:5173`
+- Credenciales de prueba válidas para los endpoints de la API
+- `data/cv_usuario.pdf` debe existir (requerido por el bot thread)
 
 ---
 
-## 🚀 Setup & Running
+## 🚀 Configuración e Inicio
 
-### 1. Start Backend
+### 1. Iniciar el Backend
 
 ```bash
-# In the backend directory
+# Con entorno virtual activado
 python main.py
-# Or use uvicorn directly
+# O directamente con uvicorn
 uvicorn main:app --host 0.0.0.0 --port 7860 --reload
 ```
 
-Verify health at: `http://localhost:7860/health`
+Verificar health en: `http://localhost:7860/health`
 
-### 2. Start Frontend Dev Server
+### 2. Iniciar el Servidor Frontend
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Navigate to: `http://localhost:5173`
+Acceder a: `http://localhost:5173`
 
 ---
 
-## ✅ Manual Testing Checklist
+## ✅ Checklist de Pruebas Manuales
 
-### Test Suite 1: Authentication
+### Suite 1: Autenticación
 
-#### 1.1 User Registration
-- [ ] Navigate to `/auth/register`
-- [ ] Fill in name, email, password
-- [ ] Submit form
-- [ ] Should redirect to dashboard
-- [ ] Verify user info in sidebar
+#### 1.1 Registro de Usuario
+- [ ] Navegar a `/auth/register`
+- [ ] Rellenar nombre, email y contraseña
+- [ ] Enviar formulario
+- [ ] Debe redirigir al dashboard
+- [ ] Verificar info del usuario en el sidebar
 
-#### 1.2 User Login
-- [ ] Navigate to `/auth/login`
-- [ ] Enter registered email & password
-- [ ] Click "Login"
-- [ ] Should redirect to dashboard
-- [ ] Verify token in localStorage
+#### 1.2 Inicio de Sesión
+- [ ] Navegar a `/auth/login`
+- [ ] Introducir email y contraseña registrados
+- [ ] Hacer click en "Login"
+- [ ] Debe redirigir al dashboard
+- [ ] Verificar token en localStorage
 
-#### 1.3 Session Persistence
-- [ ] After login, refresh page
-- [ ] User should still be logged in
-- [ ] Check localStorage for token & user
+#### 1.3 Persistencia de Sesión
+- [ ] Después del login, recargar la página
+- [ ] El usuario debe seguir autenticado
+- [ ] Comprobar que token y usuario están en localStorage
 
-#### 1.4 Logout
-- [ ] Click logout button (top-right navbar)
-- [ ] Should redirect to landing page
-- [ ] localStorage should be cleared
-- [ ] Trying to access `/dashboard` should redirect to login
+#### 1.4 Cierre de Sesión
+- [ ] Hacer click en el botón de logout (navbar superior)
+- [ ] Debe redirigir a la landing page
+- [ ] localStorage debe quedar limpio
+- [ ] Intentar acceder a `/dashboard` debe redirigir al login
 
-#### 1.5 Token Expiry
-- [ ] Manually delete token from localStorage
-- [ ] Try to access protected route
-- [ ] Should redirect to login
-
----
-
-### Test Suite 2: CV Management
-
-#### 2.1 CV Upload
-- [ ] Navigate to `/dashboard/cv`
-- [ ] Drag & drop a valid PDF file
-- [ ] OR click upload area and select file
-- [ ] Should show "CV Uploaded" status
-- [ ] Preview should appear with file info
-
-#### 2.2 Invalid File Upload
-- [ ] Try to upload non-PDF file
-- [ ] Should show error message
-- [ ] "Invalid file type or size"
-
-#### 2.3 CV Preview
-- [ ] After successful upload
-- [ ] CV preview should show filename
-- [ ] Delete button should be visible
-
-#### 2.4 CV Deletion
-- [ ] Click delete button
-- [ ] Confirmation dialog appears
-- [ ] Confirm deletion
-- [ ] CV should be removed
-- [ ] Status should change to "No CV"
-
-#### 2.5 CV Required Guard
-- [ ] Without CV, navigate to `/dashboard/analysis`
-- [ ] Should redirect to `/dashboard/cv`
+#### 1.5 Expiración del Token
+- [ ] Eliminar manualmente el token de localStorage
+- [ ] Intentar acceder a una ruta protegida
+- [ ] Debe redirigir al login
 
 ---
 
-### Test Suite 3: Job Offer Analysis
+### Suite 2: Gestión del CV
 
-#### 3.1 Analysis by URL
-- [ ] Navigate to `/dashboard/analysis`
-- [ ] Select "URL" tab
-- [ ] Paste valid job URL (e.g., LinkedIn)
-- [ ] Click "Analyze Offer"
-- [ ] Loading spinner should appear
-- [ ] Results should display:
-  - [ ] Job title
-  - [ ] Company
-  - [ ] Match score (0-100)
-  - [ ] Valid/Not Suitable status
-  - [ ] Salary (if available)
-  - [ ] Location
-  - [ ] Benefits (if available)
+#### 2.1 Subida de CV
+- [ ] Navegar a `/dashboard/cv`
+- [ ] Arrastrar y soltar un archivo PDF válido
+- [ ] O hacer click en el área de subida y seleccionar archivo
+- [ ] Debe mostrar el estado "CV subido"
+- [ ] Debe aparecer la previsualización con información del archivo
 
-#### 3.2 Analysis by Text
-- [ ] Select "Text" tab
-- [ ] Paste job description (50-5000 chars)
-- [ ] Click "Analyze Offer"
-- [ ] Results should display same as URL analysis
+#### 2.2 Archivo Inválido
+- [ ] Intentar subir un archivo que no sea PDF
+- [ ] Debe mostrarse un mensaje de error
+- [ ] El error debe indicar tipo de archivo o tamaño inválido
 
-#### 3.3 Form Validation
-- [ ] Try to submit empty form → Should show error
-- [ ] Try short text (<50 chars) → Should show error
-- [ ] Try invalid URL → Should show error
+#### 2.3 Previsualización del CV
+- [ ] Tras una subida exitosa
+- [ ] La previsualización debe mostrar el nombre del archivo
+- [ ] El botón de eliminar debe ser visible
 
-#### 3.4 Analysis History
-- [ ] Create multiple analyses
-- [ ] Navigate to `/dashboard/analysis/history`
-- [ ] Should show paginated list
-- [ ] Each item should show:
-  - [ ] Score badge
-  - [ ] Title & company
-  - [ ] Valid/Not Suitable badge
-  - [ ] "View" button
+#### 2.4 Eliminación del CV
+- [ ] Hacer click en el botón de eliminar
+- [ ] Aparece diálogo de confirmación
+- [ ] Confirmar la eliminación
+- [ ] El CV debe quedar eliminado
+- [ ] El estado debe cambiar a "Sin CV"
 
-#### 3.5 History Pagination
-- [ ] Create >10 analyses
-- [ ] History should paginate (limit 10 per page)
-- [ ] Previous/Next buttons should work
-- [ ] Page number should update
-
-#### 3.6 View Specific Analysis
-- [ ] From history, click "View" on an item
-- [ ] Should navigate to `/dashboard/analysis/:id`
-- [ ] Should show detailed result card
-- [ ] If score >= 50 (valid), show "Generate CV Adaptation" button
+#### 2.5 Guarda de CV Requerido
+- [ ] Sin CV subido, navegar a `/dashboard/analysis`
+- [ ] Debe redirigir a `/dashboard/cv`
 
 ---
 
-### Test Suite 4: CV Adaptation
+### Suite 3: Análisis de Ofertas de Empleo
 
-#### 4.1 Generate Adaptation
-- [ ] View a valid offer result (is_valid=true)
-- [ ] Click "Generate CV Adaptation"
-- [ ] Navigate to `/dashboard/adaptations/:analysisId`
-- [ ] Loading spinner should appear
-- [ ] HTML preview should show adapted CV
+#### 3.1 Análisis por URL
+- [ ] Navegar a `/dashboard/analysis`
+- [ ] Seleccionar la pestaña "URL"
+- [ ] Pegar una URL de oferta válida (ej. LinkedIn, InfoJobs)
+- [ ] Hacer click en "Analizar Oferta"
+- [ ] Debe aparecer el spinner de carga
+- [ ] Los resultados deben mostrar:
+  - [ ] Título del puesto
+  - [ ] Empresa
+  - [ ] Puntuación de ajuste (0-100) con banda de clasificación:
+    - 0-59 → ATS_BLOCK (rechazo automático)
+    - 60-69 → Descarte (pasa ATS, débil en evaluación humana)
+    - 70-79 → Apto
+    - 80-89 → Fuerte
+    - 90-100 → Ideal
+  - [ ] Estado Válido/No apto (`is_valid = score >= 60`)
+  - [ ] Salario (si está disponible)
+  - [ ] Beneficios (si están disponibles)
+  - [ ] Habilidades clave extraídas (hasta 10)
 
-#### 4.2 HTML Preview
-- [ ] Adapted CV should display nicely formatted
-- [ ] Should include highlights for matched keywords
-- [ ] Should be readable on screen
+#### 3.2 Análisis por Texto
+- [ ] Seleccionar la pestaña "Texto"
+- [ ] Pegar la descripción de la oferta (50-5000 caracteres)
+- [ ] Hacer click en "Analizar Oferta"
+- [ ] Los resultados deben mostrar los mismos campos que el análisis por URL
 
-#### 4.3 PDF Download
-- [ ] Click "Download PDF" button
-- [ ] PDF should download to device
-- [ ] Filename should be `cv_adaptation_[id].pdf`
-- [ ] PDF should be readable
+#### 3.3 Validación del Formulario
+- [ ] Intentar enviar el formulario vacío → Debe mostrar error
+- [ ] Intentar texto corto (<50 caracteres) → Debe mostrar error
+- [ ] Intentar URL inválida → Debe mostrar error
 
-#### 4.4 Invalid Offer
-- [ ] For non-valid offers, adaptation button should not appear
-- [ ] Clicking back should not attempt generation
+#### 3.4 Historial de Análisis
+- [ ] Crear varios análisis
+- [ ] Navegar a `/dashboard/analysis/history`
+- [ ] Debe mostrar lista paginada
+- [ ] Cada elemento debe mostrar:
+  - [ ] Badge con la puntuación
+  - [ ] Título y empresa
+  - [ ] Badge Válido/No apto
+  - [ ] Botón "Ver"
 
----
+#### 3.5 Paginación del Historial
+- [ ] Crear más de 10 análisis
+- [ ] El historial debe paginar (límite 10 por página)
+- [ ] Los botones Anterior/Siguiente deben funcionar
+- [ ] El número de página debe actualizarse
 
-### Test Suite 5: UI/UX
-
-#### 5.1 Navigation
-- [ ] Sidebar links should work
-- [ ] Active state should highlight current page
-- [ ] Logo should navigate to home
-
-#### 5.2 Responsive Design
-- [ ] Test on mobile (375px width)
-- [ ] Test on tablet (768px width)
-- [ ] Test on desktop (1920px width)
-- [ ] Sidebar should collapse on mobile
-- [ ] Forms should stack vertically
-
-#### 5.3 Error Handling
-- [ ] Network error → Should show user-friendly message
-- [ ] 401 Unauthorized → Should redirect to login
-- [ ] 404 Not Found → Should show "Not found"
-- [ ] 429 Too Many Requests → Should show rate limit message
-- [ ] 500 Server Error → Should show "Try again later"
-
-#### 5.4 Loading States
-- [ ] Auth form: "Logging in..." / "Registering..." button text
-- [ ] CV upload: Progress/spinner visible
-- [ ] Analysis: Loading spinner with "Analyzing..." text
-- [ ] Adaptation: Loading spinner with "Generating adapted CV..." text
-
-#### 5.5 Toast Notifications
-- [ ] Success message after login
-- [ ] Error message on failed upload
-- [ ] Confirmation after CV deletion
-- [ ] Error message on API failures
+#### 3.6 Ver Análisis Específico
+- [ ] Desde el historial, hacer click en "Ver" en un elemento
+- [ ] Debe navegar a `/dashboard/analysis/:id`
+- [ ] Debe mostrar la tarjeta de resultado detallada
+- [ ] Si is_valid=true (score >= 60), mostrar botón "Generar Adaptación de CV"
+- [ ] Si is_valid=false, mostrar mensaje de que la oferta no supera el umbral mínimo
 
 ---
 
-## 🔍 Browser DevTools Testing
+### Suite 4: Adaptación del CV
 
-### 1. Network Tab
-- [ ] Verify all API calls to `http://localhost:7860`
-- [ ] Check request headers include `Authorization: Bearer <token>`
-- [ ] Verify response status codes (200, 201, 400, 401, etc.)
-- [ ] Check response payloads match expected structure
+#### 4.1 Generar Adaptación
+- [ ] Ver el resultado de una oferta válida (is_valid=true)
+- [ ] Hacer click en el botón "Generar Adaptación de CV"
+- [ ] Navegar a `/dashboard/adaptations/generate/:analysisId`
+- [ ] Debe aparecer el spinner de carga con texto "Generando..."
+- [ ] Tras la generación, debe redirigir a `/dashboard/adaptations/:adaptationId`
 
-### 2. Application Tab
-- [ ] localStorage should contain:
-  - [ ] `token` (JWT string)
-  - [ ] `user` (JSON with email, id, etc.)
-- [ ] Verify data is cleared on logout
+#### 4.2 Vista de Detalle de Adaptación
+- [ ] Navegar a `/dashboard/adaptations/:adaptationId`
+- [ ] Debe mostrar:
+  - [ ] Título del puesto y empresa
+  - [ ] Previsualización del CV adaptado (componente AdaptationPreview)
+  - [ ] Botón "Descargar PDF" (descarga desde Cloudinary)
+  - [ ] Botón "Volver" (navega al historial o al resultado del análisis según contexto)
+- [ ] La descarga del PDF debe funcionar (ver 4.4)
 
-### 3. Console
-- [ ] No JavaScript errors
-- [ ] No 404s for assets
-- [ ] Check for any deprecation warnings
+#### 4.3 Historial de Adaptaciones
+- [ ] Navegar a `/dashboard/adaptations` (a través de "Mis Adaptaciones" en el sidebar)
+- [ ] Debe mostrar la lista paginada de todas las adaptaciones anteriores (AdaptationsHistoryPage)
+- [ ] Cada elemento debe mostrar:
+  - [ ] Título del puesto
+  - [ ] Empresa
+  - [ ] Fecha de creación
+  - [ ] Al hacer click en la tarjeta (CardItem) debe navegar a la vista de detalle
+- [ ] Pagination via URL param `?page=N` — Previous/Next buttons con ChevronLeft/ChevronRight
+- [ ] Muestra total count y mensaje "No adapted CVs yet" cuando está vacío
 
----
+#### 4.4 Descarga de PDF
+- [ ] En la página de detalle, el componente AdaptationPreview debe renderizar el CV adaptado
+- [ ] Hacer click en el botón "Descargar PDF" (PDFDownloadButton)
+- [ ] El PDF se sirve desde Cloudinary (URL almacenada en `adapted_cv_url`)
+- [ ] El PDF está generado vía compilación LaTeX — verificar que es legible y bien formateado
+- [ ] El nombre del archivo corresponde a la oferta analizada
 
-## 🚨 Error Scenario Testing
-
-### Scenario 1: Network Offline
-1. Disable network in browser DevTools
-2. Try to analyze offer
-3. Should show "Network error" message
-4. Enable network, retry should work
-
-### Scenario 2: Invalid Token
-1. Login successfully
-2. Manually modify token in localStorage (corrupt it)
-3. Try API call
-4. Should get 401 and redirect to login
-
-### Scenario 3: Multiple Tabs
-1. Login in Tab A
-2. Open app in Tab B
-3. Both should be authenticated
-4. Logout in Tab A
-5. Tab B should also be logged out on next action
+#### 4.5 Oferta No Válida
+- [ ] Para ofertas no válidas (is_valid=false), el botón de adaptación no debe aparecer
+- [ ] Si se navega directamente debe mostrar mensaje de oferta no válida
 
 ---
 
-## 📊 Performance Testing
+### Suite 5: Perfil y Configuración
 
-### Build Performance
+#### 5.1 Página de Perfil
+- [ ] Navegar a `/dashboard/profile` a través del sidebar
+- [ ] Debe mostrar la información del usuario:
+  - [ ] Dirección de email
+  - [ ] Fecha de creación de la cuenta
+  - [ ] Información de último acceso
+- [ ] El perfil debe cargarse sin errores
+
+---
+
+### Suite 6: UI/UX
+
+#### 6.1 Navegación
+- [ ] Los enlaces del sidebar deben funcionar:
+  - [ ] Dashboard → `/dashboard`
+  - [ ] Mi CV → `/dashboard/cv`
+  - [ ] Analizar Ofertas → `/dashboard/analysis`
+  - [ ] Mis Adaptaciones → `/dashboard/adaptations`
+  - [ ] Perfil → `/dashboard/profile`
+- [ ] El estado activo debe resaltar la página actual
+- [ ] El logo debe navegar a inicio (`/`)
+
+#### 6.2 Diseño Responsive
+- [ ] Probar en móvil (375px de ancho)
+- [ ] Probar en tablet (768px de ancho)
+- [ ] Probar en escritorio (1920px de ancho)
+- [ ] El sidebar debe colapsar en móvil
+- [ ] Los formularios deben apilarse verticalmente
+
+#### 6.3 Manejo de Errores
+- [ ] Error de red → Debe mostrar mensaje amigable al usuario
+- [ ] 401 No autorizado → Debe redirigir al login
+- [ ] 404 No encontrado → Debe mostrar mensaje de "No encontrado"
+- [ ] 429 Demasiadas peticiones → Debe mostrar mensaje de límite de tasa
+- [ ] 500 Error del servidor → Debe mostrar "Inténtalo más tarde"
+
+#### 6.4 Estados de Carga
+- [ ] Formulario de auth: texto del botón "Iniciando sesión..." / "Registrando..."
+- [ ] Subida de CV: spinner de progreso visible
+- [ ] Análisis: componente Spinner con texto "Analizando..."
+- [ ] Generación de adaptación: componente Spinner con texto "Generando..."
+- [ ] Transiciones de página: Spinner con texto "Cargando..."
+
+#### 6.5 Notificaciones Toast
+- [ ] Mensaje de éxito tras el login
+- [ ] Mensaje de error si falla la subida
+- [ ] Confirmación tras eliminar el CV
+- [ ] Mensaje de error ante fallos de la API
+
+---
+
+## 🔍 Pruebas con DevTools del Navegador
+
+### 1. Pestaña de Red (Network)
+- [ ] Verificar que todas las llamadas a la API van a `http://localhost:7860` (configurado en `apiClient.js`)
+- [ ] Comprobar que las cabeceras incluyen `Authorization: Bearer <token>` (añadido por interceptor)
+- [ ] Verificar los códigos de respuesta HTTP (200, 201, 400, 401, 422, 429, etc.)
+- [ ] Comprobar que los payloads de respuesta coinciden con la estructura esperada
+
+### 2. Pestaña de Aplicación (Application)
+- [ ] El localStorage debe contener:
+  - [ ] `token` (cadena JWT)
+  - [ ] `user` (JSON con email, id, etc.)
+- [ ] Verificar que los datos se limpian al cerrar sesión
+
+### 3. Consola (Console)
+- [ ] Sin errores de JavaScript
+- [ ] Sin errores 404 de assets
+- [ ] Comprobar si hay advertencias de deprecación
+
+---
+
+## 🚨 Escenarios de Error
+
+### Escenario 1: Sin Conexión a la Red
+1. Deshabilitar la red en DevTools del navegador
+2. Intentar analizar una oferta
+3. Debe mostrar mensaje de "Error de red"
+4. Volver a habilitar la red, el reintento debe funcionar
+
+### Escenario 2: Token Inválido
+1. Iniciar sesión correctamente
+2. Modificar manualmente el token en localStorage (corromperlo)
+3. Intentar una llamada a la API
+4. Debe obtener 401 y redirigir al login
+
+### Escenario 3: Múltiples Pestañas
+1. Iniciar sesión en la pestaña A
+2. Abrir la app en la pestaña B
+3. Ambas deben estar autenticadas
+4. Cerrar sesión en la pestaña A
+5. La pestaña B también debe cerrar sesión en la próxima acción
+
+---
+
+## 📊 Pruebas de Rendimiento
+
+### Rendimiento del Build
 ```bash
 npm run build
-# Check dist/ folder size (target: <500KB)
-# Check gzip size (target: <150KB)
+# Comprobar tamaño de la carpeta dist/ (objetivo: <500KB)
+# Comprobar tamaño gzip (objetivo: <150KB)
 ```
 
-### Runtime Performance
-1. Open DevTools → Performance tab
-2. Analyze first page load
-3. Analyze navigation between pages
-4. Check for memory leaks (Open multiple analyses)
+### Rendimiento en Tiempo de Ejecución
+1. Abrir DevTools → Pestaña Rendimiento (Performance)
+2. Analizar la carga inicial de la página
+3. Analizar la navegación entre páginas
+4. Comprobar fugas de memoria (abrir múltiples análisis)
 
 ---
 
-## 📝 Test Report Template
+## 📝 Plantilla de Informe de Pruebas
 
-Create `tests/E2E_RESULTS.md`:
+Crear `tests/E2E_RESULTS.md`:
 
 ```markdown
-# E2E Testing Results
+# Resultados de Pruebas E2E
 
-**Date:** YYYY-MM-DD  
-**Tester:** Name  
-**Frontend Version:** [git commit]  
-**Backend Version:** [git commit]
+**Fecha:** AAAA-MM-DD  
+**Tester:** Nombre  
+**Versión Frontend:** [git commit]  
+**Versión Backend:** [git commit]
 
-## Test Suites
+## Suites de Prueba
 
-### Authentication ✅/❌
-- Registration: ✅/❌
+### Suite 1: Autenticación ✅/❌
+- Registro: ✅/❌
 - Login: ✅/❌
-- Session Persistence: ✅/❌
+- Persistencia de sesión: ✅/❌
 - Logout: ✅/❌
-- Token Expiry: ✅/❌
+- Expiración de token: ✅/❌
 
-### CV Management ✅/❌
-- Upload: ✅/❌
-- Invalid File: ✅/❌
-- Preview: ✅/❌
-- Deletion: ✅/❌
-- CV Guard: ✅/❌
+### Suite 2: Gestión de CV ✅/❌
+- Subida: ✅/❌
+- Archivo inválido: ✅/❌
+- Previsualización: ✅/❌
+- Eliminación: ✅/❌
+- Guarda de CV requerido: ✅/❌
 
-### Analysis ✅/❌
-- URL Analysis: ✅/❌
-- Text Analysis: ✅/❌
-- Form Validation: ✅/❌
-- History: ✅/❌
-- Pagination: ✅/❌
+### Suite 3: Análisis ✅/❌
+- Análisis por URL: ✅/❌
+- Análisis por texto: ✅/❌
+- Validación del formulario: ✅/❌
+- Listado del historial: ✅/❌
+- Paginación: ✅/❌
+- Ver resultado específico: ✅/❌
 
-### Adaptation ✅/❌
-- Generate: ✅/❌
-- Preview: ✅/❌
-- Download: ✅/❌
+### Suite 4: Adaptación ✅/❌
+- Generar adaptación: ✅/❌
+- Vista de detalle: ✅/❌
+- Historial/Lista: ✅/❌
+- Previsualización: ✅/❌
+- Descarga de PDF: ✅/❌
 
-### UI/UX ✅/❌
-- Navigation: ✅/❌
-- Responsive: ✅/❌
-- Error Handling: ✅/❌
-- Loading States: ✅/❌
-- Notifications: ✅/❌
+### Suite 5: Perfil ✅/❌
+- Carga de la página de perfil: ✅/❌
+- Visualización de datos del usuario: ✅/❌
 
-## Issues Found
-- [Issue #1 - Description]
-- [Issue #2 - Description]
+### Suite 6: UI/UX ✅/❌
+- Navegación: ✅/❌
+- Diseño responsive: ✅/❌
+- Manejo de errores: ✅/❌
+- Estados de carga: ✅/❌
+- Notificaciones toast: ✅/❌
 
-## Notes
-- Performance good/acceptable/needs work
-- No major blocking issues found
+## Incidencias Encontradas
+- [Incidencia #1 - Descripción]
+- [Incidencia #2 - Descripción]
+
+## Notas
+- Rendimiento bueno/aceptable/necesita mejoras
+- Sin problemas bloqueantes graves
 ```
 
 ---
 
-## 🎯 Success Criteria
+## 🎯 Criterios de Éxito
 
-All tests pass when:
-- ✅ All authentication flows work
-- ✅ CV upload/management functional
-- ✅ Analysis creates results correctly
-- ✅ Adaptation generates and downloads PDFs
-- ✅ Responsive on all screen sizes
-- ✅ No JavaScript console errors
-- ✅ All API calls successful
-- ✅ Error messages clear and helpful
-- ✅ Loading states visible
-- ✅ Session management works
+Todas las pruebas pasan cuando:
+- ✅ Todos los flujos de autenticación funcionan
+- ✅ Gestión de CV funcional (subida, previsualización, eliminación)
+- ✅ El análisis crea resultados correctamente con scoring de 5 bandas
+- ✅ La adaptación genera y descarga PDFs vía LaTeX/Cloudinary
+- ✅ Responsive en todos los tamaños de pantalla
+- ✅ Sin errores de JavaScript en la consola
+- ✅ Todas las llamadas a la API son exitosas
+- ✅ Los mensajes de error son claros y útiles
+- ✅ Los estados de carga son visibles
+- ✅ La gestión de sesión funciona correctamente
 
 ---
 
-## 🔗 Quick Links
+## 📍 Rutas de la Aplicación
 
+### Rutas Públicas
+- `/` - Landing page
+- `/auth/login` - Página de login (redirige a `/dashboard` si ya tiene token)
+- `/auth/register` - Página de registro (redirige a `/dashboard` si ya tiene token)
+- `/auth/google-callback` - Manejador de callback OAuth de Google
+
+### Rutas Protegidas (Solo requieren autenticación)
+- `/dashboard` - Dashboard principal
+- `/dashboard/cv` - Gestión del CV (subida, vista, eliminación)
+- `/dashboard/profile` - Página de perfil del usuario
+
+### Rutas Protegidas (Requieren autenticación + CV subido)
+- `/dashboard/analysis` - Create job offer analysis
+- `/dashboard/analysis/:id` - View analysis results
+- `/dashboard/analysis/history` - View all past analyses (paginado)
+- `/dashboard/adaptations` - Historial de adaptaciones (AdaptationsHistoryPage, paginado)
+- `/dashboard/adaptations/:adaptationId` - Ver adaptación específica + descarga PDF
+- `/dashboard/adaptations/generate/:analysisId` - Generar adaptación desde un análisis válido
+
+---
+
+## 🔗 Enlaces Rápidos
+
+### Desarrollo Local
 - Frontend: `http://localhost:5173`
 - Backend API: `http://localhost:7860`
-- Backend Docs: `http://localhost:7860/docs`
+- Backend Docs (Swagger): `http://localhost:7860/docs`
 - Backend ReDoc: `http://localhost:7860/redoc`
+- Health check: `http://localhost:7860/health`
+
+### Producción
+- Frontend: `https://opticv.vercel.app`
+- Backend: `https://opticv-engine.hf.space`
+- Health check: `https://opticv-engine.hf.space/health`

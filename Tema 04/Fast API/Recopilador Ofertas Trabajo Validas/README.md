@@ -1,6 +1,6 @@
-# 🤖 Recopilador Inteligente de Ofertas de Trabajo
+# 🤖 OptiCV - Recopilador Inteligente de Ofertas de Trabajo
 
-Sistema automatizado de análisis y notificación de ofertas laborales que combina **IA Generativa (Gemini 2.5 Flash)**, **Web Scraping inteligente** y **Notificaciones en tiempo real** vía Telegram. Monitorea correos de plataformas como LinkedIn e InfoJobs, evalúa el ajuste con tu CV usando criterios de selección profesional (ATS + RRHH), y te alerta solo de las oportunidades realmente relevantes.
+Sistema integral de análisis y visualización de ofertas laborales que combina **FastAPI backend**, **React frontend**, **IA Generativa** y **notificaciones en tiempo real**. Monitorea ofertas, analiza su ajuste con tu CV usando criterios profesionales (ATS + RRHH), proporciona adaptaciones personalizadas del CV, y te mantiene informado vía Telegram.
 
 ---
 
@@ -8,457 +8,332 @@ Sistema automatizado de análisis y notificación de ofertas laborales que combi
 
 - [Características](#-características)
 - [Arquitectura del Sistema](#-arquitectura-del-sistema)
+- [Stack Tecnológico](#-stack-tecnológico)
 - [Requisitos Previos](#-requisitos-previos)
 - [Instalación Local](#-instalación-local)
 - [Configuración](#-configuración)
 - [Uso](#-uso)
-- [Despliegue en Producción](#-despliegue-en-producción)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Flujo de Trabajo](#-flujo-de-trabajo)
+- [Despliegue](#-despliegue)
 - [Troubleshooting](#-troubleshooting)
-- [Tecnologías Utilizadas](#-tecnologías-utilizadas)
 
 ---
 
 ## ✨ Características
 
 ### 🎯 **Análisis Inteligente con IA**
-- **Doble Fase de Filtrado**: Simula tanto el escaneo ATS (Applicant Tracking System) como la evaluación de un reclutador humano
-- **Puntuación de Ajuste**: Sistema de scoring 0-100 con clasificación automática (Ideal/Fuerte/Apto/Dudoso)
-- **Anti-Alucinación**: Sistema de "grounding" que evita suposiciones no presentes en el texto original
-- **Extracción Estructurada**: Detecta automáticamente título, empresa, salario, beneficios y fecha de publicación
 
-### 🔍 **Web Scraping Robusto**
-- **Estrategia en Cascada**: Jina AI → FireCrawl → Scraping Directo
-- **Soporte Multi-Plataforma**: LinkedIn, InfoJobs y otras plataformas genéricas
-- **Limpieza Inteligente**: Selectores CSS personalizados para eliminar navegación, anuncios y elementos no deseados
-- **Manejo de Errores**: Reintentos automáticos con exponential backoff
+- **Doble Fase de Filtrado**: Simula tanto el escaneo ATS (Applicant Tracking System) como la evaluación de un reclutador humano
+- **Puntuación de Ajuste**: Sistema de scoring 0-100 con clasificación automática
+- **Anti-Alucinación**: Validación con "grounding" - solo usa información del texto original
+- **Extracción Estructurada**: Detecta automáticamente título, empresa, salario, beneficios
+
+### 📊 **Dashboard Web Completo**
+
+- **Historial de Análisis**: Lista paginada de ofertas analizadas con scores
+- **Historial de Adaptaciones**: CV adaptados anteriormente, organizados por oferta
+- **Vista de Análisis Detallado**: Desglose completo del análisis con justificación
+- **Generador de CV Adaptado**: Crea un CV personalizado para cada oferta en tiempo real
+- **Gestor de Perfil**: Edita tu información personal y datos del CV
+
+### 🔄 **Adaptación Dinámica de CV**
+
+- **Generación en LaTeX**: CV compilado a PDF vía LaTeX personalizado para cada oferta — no HTML estático
+- **Integración con IA**: DeepSeek filtra y adapta cada sección del CV según los requisitos de la oferta (sin inventar datos)
+- **Descarga de PDF**: Genera y descarga el CV adaptado directamente desde Cloudinary
+- **Historial de Versiones**: Consulta todas las adaptaciones anteriores desde `/dashboard/adaptations`
+- **Vista de Detalle**: Previsualización del CV adaptado y botón de descarga en `/dashboard/adaptations/:id`
 
 ### 📧 **Integración con Gmail**
+
 - **Búsqueda Automática**: Detecta alertas de empleo no leídas de LinkedIn e InfoJobs
-- **Limpieza Automática**: Elimina correos antiguos (>14 días) para mantener la bandeja organizada
-- **Resolución de Links**: Maneja automáticamente URLs de tracking y redirecciones
+- **Limpieza Automática**: Elimina correos antiguos (>14 días)
+- **OAuth 2.0**: Autenticación segura sin guardar contraseñas
 
-### 📱 **Notificaciones Telegram**
+### 📱 **Notificaciones Telegram** (Opcional)
+
 - **Alertas Visuales**: Iconos y barras de progreso según nivel de match
-- **Formato Rico**: Mensajes estructurados con todos los detalles relevantes
-- **Respuesta Inmediata**: Notificaciones en tiempo real cuando se encuentra una oportunidad
+- **Respuesta Inmediata**: Notificaciones cuando se encuentra una oportunidad relevante
 
-### 🐳 **Listo para Producción**
-- **Dockerizado**: Imagen optimizada con Python 3.11-slim
-- **Health Checks**: Endpoint `/health` para monitoreo
-- **Gestión de Secretos**: Inyección segura de credenciales vía variables de entorno
-- **Servidor Web**: Flask + Gunicorn para cumplir requisitos de plataformas como Render
+### 🔐 **Seguridad & Escalabilidad**
+
+- **Autenticación JWT**: Sessions seguras basadas en tokens
+- **Rate Limiting**: Control de tasa de API con slowapi
+- **Base de Datos Escalable**: PostgreSQL con migraciones Alembic
+- **CORS Configurado**: Seguridad entre frontend y backend
+- **Encriptación**: Contraseñas hasheadas con bcrypt
 
 ---
 
 ## 🏗️ Arquitectura del Sistema
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         MAIN PROCESS                            │
-│  ┌──────────────────┐          ┌─────────────────────────────┐  │
-│  │  Flask Server    │          │    Bot Logic Thread         │  │
-│  │  (Render Keep-   │          │    (Infinite Loop)          │  │
-│  │   Alive)         │          │                             │  │
-│  │                  │          │  ┌─────────────────────┐    │  │
-│  │  GET /           │          │  │ 1. Gmail Collector  │    │  │
-│  │  GET /health     │          │  │    - Fetch offers   │    │  │
-│  └──────────────────┘          │  │    - Clean old mail │    │  │
-│                                │  └──────────┬──────────┘    │  │
-│                                │             │               │  │
-│                                │  ┌──────────▼──────────┐    │  │
-│                                │  │ 2. Scraper          │    │  │
-│                                │  │    - Jina AI        │    │  │
-│                                │  │    - FireCrawl      │    │  │
-│                                │  │    - Direct HTTP    │    │  │
-│                                │  └──────────┬──────────┘    │  │
-│                                │             │               │  │
-│                                │  ┌──────────▼──────────┐    │  │
-│                                │  │ 3. Brain (Gemini)   │    │  │
-│                                │  │    - ATS Filter     │    │  │
-│                                │  │    - RRHH Eval      │    │  │
-│                                │  └──────────┬──────────┘    │  │
-│                                │             │               │  │
-│                                │  ┌──────────▼──────────┐    │  │
-│                                │  │ 4. Telegram Bot     │    │  │
-│                                │  │    - Send Alert     │    │  │
-│                                │  └─────────────────────┘    │  │
-│                                └─────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-
-External APIs:
-- Google Gmail API (OAuth 2.0)
-- Google Gemini 2.5 Flash
-- Jina AI Reader
-- FireCrawl API
+┌─────────────────────────────────────────────────────────────┐
+│                    ARQUITECTURA GENERAL                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────────────────────┐    ┌───────────────────────┐ │
+│  │  REACT FRONTEND (Vercel) │    │  FASTAPI BACKEND      │ │
+│  ├──────────────────────────┤    ├───────────────────────┤ │
+│  │ • React Router           │    │ • Uvicorn Server      │ │
+│  │ • Zustand State          │    │ • SQLAlchemy ORM      │ │
+│  │ • React Query            │    │ • PostgreSQL DB       │ │
+│  │ • React Hook Form        │    │ • LangChain           │ │
+│  │ • TailwindCSS            │    │ • LLM Integration     │ │
+│  │ • Lucide Icons           │    │ • Rate Limiting       │ │
+│  └──────────────────────────┘    └───────────────────────┘ │
+│           │                                 │                │
+│           │         REST API                │                │
+│           └─────────────────────────────────┘                │
+│                                                             │
+│  External Services:                                        │
+│  • Google Gmail API (OAuth 2.0)                           │
+│  • LLM Provider (DeepSeek / Gemini)                       │
+│  • Telegram Bot API (Opcional)                            │
+│  • Cloudinary (Storage)                                   │
+│  • Firecrawl (Web Scraping)                               │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+### Componentes Principales
+
+**Backend (src/):**
+
+- `main.py` - FastAPI app con routers y CORS
+- `api/routes/` - Endpoints: auth, cv, offers, adaptations, profile
+- `api/services/` - Lógica de negocio: analysis, adaptation, cv
+- `database.py` - Configuración SQLAlchemy
+- `brain.py` - LLM integration para análisis
+- `cv_generator.py` - Generación de CV adaptados
+- `loader.py` - Extracción de CV desde PDF
+- `mail_agent.py` - Integración Gmail (opcional)
+- `bot.py` - Notificaciones Telegram (opcional)
+
+**Frontend (frontend/):**
+
+- `src/features/` - Módulos por feature (auth, analysis, adaptations, etc.)
+- `src/shared/components/` - Componentes reutilizables (Layout, Spinner, CardItem, etc.)
+- `src/services/` - Clientes API
+- `src/stores/` - Zustand global state management
+
+---
+
+## 🛠️ Stack Tecnológico
+
+### Backend
+
+| Tecnología                      | Propósito                      |
+| ------------------------------- | ------------------------------ |
+| **FastAPI**                     | Framework web moderno y rápido |
+| **Uvicorn**                     | Servidor ASGI                  |
+| **SQLAlchemy (asyncio)**        | ORM asincrónico                |
+| **PostgreSQL / asyncpg**        | Base de datos escalable        |
+| **Alembic**                     | Migraciones de BD              |
+| **LangChain + langchain-openai**| Orquestación de LLM            |
+| **DeepSeek v4-Flash**           | LLM para análisis y adaptación |
+| **Cloudinary**                  | Almacenamiento de archivos     |
+| **Firecrawl / Jina AI**         | Web scraping avanzado          |
+| **slowapi**                     | Rate limiting                  |
+| **PyPDF**                       | Procesamiento de PDF           |
+| **pydantic-settings**           | Configuración con env vars     |
+| **passlib / python-jose**       | Hashing y JWT                  |
+
+### Frontend
+
+| Tecnología          | Propósito              |
+| ------------------- | ---------------------- |
+| **React 18.3**      | UI interactiva         |
+| **Vite 6.4**        | Build tool rápido      |
+| **React Router v6** | Navegación SPA         |
+| **Zustand 4.4**     | State management       |
+| **React Query 5**   | Gestión de datos       |
+| **React Hook Form** | Formularios            |
+| **TailwindCSS 3.4** | Estilos                |
+| **Axios 1.7**       | HTTP client            |
+| **Zod 3.22**        | Validación             |
+| **Lucide React**    | Iconos                 |
 
 ---
 
 ## 📦 Requisitos Previos
 
 ### Software
-- **Python 3.11+** (recomendado 3.11 para compatibilidad con LangChain)
-- **pip** (gestor de paquetes de Python)
-- **Git** (opcional, para clonar el repositorio)
-- **Docker** (opcional, para despliegue containerizado)
 
-### Cuentas y APIs Necesarias
+- **Python 3.11+** (backend)
+- **Node.js 18+** (frontend)
+- **PostgreSQL 12+** (base de datos)
+- **Git** (control de versiones)
 
-#### 1. **Google Cloud Platform** (para Gmail API y Gemini)
-- Proyecto en Google Cloud Console
-- OAuth 2.0 credentials habilitadas
-- Gmail API activada
-- Generative Language API (Gemini) activada
+### Cuentas Online
 
-#### 2. **Telegram Bot**
-- Bot creado con @BotFather
-- Bot Token y Chat ID
-
-#### 3. **APIs de Scraping** (Opcional pero recomendado)
-- FireCrawl API Key (https://firecrawl.dev)
-- Jina AI (gratuito, sin API key requerida)
+- **Google Cloud Platform** - Para Gmail API y/o Gemini
+- **Cloudinary** - Para almacenamiento de archivos (opcional)
+- **Firecrawl** - Para web scraping avanzado (opcional)
+- **Telegram Bot** - Para notificaciones (opcional)
+- **DeepSeek / OpenAI** - Para análisis con LLM (opcional)
 
 ---
 
 ## 🚀 Instalación Local
 
-### 1. Clonar o Descargar el Proyecto
+### 1. Clonar el Repositorio
 
-```powershell
+```bash
 git clone https://github.com/AngelPereiraR/IABD_PIA.git
-cd "IABD_PIA/Tema 02/Recopilador Ofertas Trabajo Validas"
+cd "IABD_PIA/Tema 04/Fast API/Recopilador Ofertas Trabajo Validas"
 ```
 
-### 2. Crear Entorno Virtual
+### 2. Configurar Backend
 
-```powershell
-# Crear entorno virtual
+#### 2.1 Crear entorno virtual
+
+```bash
 python -m venv .venv
 
-# Activar entorno virtual (PowerShell)
-.\.venv\Scripts\Activate.ps1
+# Windows
+.\.venv\Scripts\activate
 
-# Si da error de permisos, ejecuta:
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+# Linux/Mac
+source .venv/bin/activate
 ```
 
-### 3. Instalar Dependencias
+#### 2.2 Instalar dependencias
 
-```powershell
+```bash
 pip install -r requirements.txt
 ```
 
-### 4. Preparar CV
+#### 2.3 Configurar variables de entorno
 
-Coloca tu CV en formato PDF en:
+Crea un archivo `.env` en la raíz:
+
+```env
+# === DATABASE ===
+DATABASE_URL=postgresql+asyncpg://user:password@localhost/opticv_db
+
+# === JWT SECURITY ===
+SECRET_KEY=tu_secret_key_super_segura_aqui
+ALGORITHM=HS256
+
+# === LLMS (elige uno) ===
+DEEPSEEK_API_KEY=sk-xxxx
+# O
+GOOGLE_GEMINI_API_KEY=xxxx
+
+# === CLOUDINARY (Almacenamiento) ===
+CLOUDINARY_NAME=xxxx
+CLOUDINARY_API_KEY=xxxx
+CLOUDINARY_API_SECRET=xxxx
+
+# === GMAIL (Opcional) ===
+GOOGLE_CREDENTIALS_JSON={"installed":{...}}
+GOOGLE_TOKEN_JSON={"token":"..."}
+
+# === TELEGRAM (Opcional) ===
+TELEGRAM_BOT_TOKEN=xxxx
+TELEGRAM_CHAT_ID=xxxx
+
+# === FIRECRAWL (Opcional) ===
+FIRECRAWL_API_KEY=xxxx
 ```
-data/cv_usuario.pdf
+
+#### 2.4 Inicializar base de datos
+
+```bash
+# Crear tablas
+python init_db.py
+
+# Aplicar migraciones (si hay)
+alembic upgrade head
+
+# Inicializar usuario admin con CV y avatar en Cloudinary (opcional)
+python seed_user.py
+```
+
+### 3. Configurar Frontend
+
+#### 3.1 Instalar dependencias
+
+```bash
+cd frontend
+npm install
+```
+
+#### 3.2 Crear archivo de configuración
+
+Crea `frontend/.env.local`:
+
+```env
+VITE_API_URL=http://localhost:8000
 ```
 
 ---
 
 ## ⚙️ Configuración
 
-### 1. Configurar Google Cloud (OAuth + Gemini)
+### 1. Configurar Gmail (Opcional pero Recomendado)
 
-#### A. Crear Proyecto en Google Cloud Console
+#### A. Crear proyecto en Google Cloud Console
+
 1. Ve a https://console.cloud.google.com
-2. Crea un nuevo proyecto o selecciona uno existente
-3. Navega a **APIs & Services > Enable APIs and Services**
-4. Habilita las siguientes APIs:
-   - **Gmail API**
-   - **Generative Language API** (Gemini)
+2. Crea un nuevo proyecto
+3. Habilita **Gmail API**
+4. Descarga credenciales OAuth (Desktop app) como `credentials.json`
 
-#### B. Crear Credenciales OAuth 2.0
-1. Ve a **APIs & Services > Credentials**
-2. Haz clic en **+ CREATE CREDENTIALS > OAuth client ID**
-3. Tipo de aplicación: **Desktop app**
-4. Descarga el archivo JSON y guárdalo como `credentials.json` en la raíz del proyecto
+#### B. Generar token
 
-#### C. Configurar Pantalla de Consentimiento
-1. Ve a **OAuth consent screen**
-2. Tipo de usuario: **Externo** (para cuentas personales)
-3. Completa la información básica
-4. En **Scopes**, añade: `https://mail.google.com/` (Gmail completo)
-5. En **Test users**, añade tu correo personal
-
-#### D. Generar Token de Gmail
-
-```powershell
-# Con el entorno virtual activado
+```bash
 python src/setup_auth.py
 ```
 
-Este script:
-- Abrirá tu navegador
-- Te pedirá que inicies sesión con Google
-- Solicitará permisos de acceso a Gmail
-- Generará el archivo `token.json`
+Esto generará `token.json` automáticamente.
 
-⚠️ **Importante**: Si ves "Aplicación no verificada", haz clic en **Avanzado** → **Ir a [nombre-app] (inseguro)**.
+### 2. Configurar LLM (DeepSeek o Gemini)
 
-#### E. Obtener API Key de Gemini
-1. Ve a https://aistudio.google.com/app/apikey
-2. Crea una API Key
-3. Cópiala para usar en el archivo `.env`
+- **DeepSeek**: Obtén tu API key en https://platform.deepseek.com
+- **Gemini**: Obtén tu API key en https://aistudio.google.com/app/apikey
 
-### 2. Configurar Telegram Bot
+### 3. Configurar Cloudinary (Para almacenar PDFs)
 
-#### A. Crear Bot con BotFather
-```
-1. Abre Telegram y busca @BotFather
-2. Envía: /newbot
-3. Sigue las instrucciones (nombre y username)
-4. Copia el Token que te proporciona
-```
-
-#### B. Obtener Chat ID
-```
-1. Envía un mensaje a tu bot (cualquier mensaje)
-2. Ve a: https://api.telegram.org/bot<TU_TOKEN>/getUpdates
-3. Busca el campo "chat":{"id":123456789}
-4. Copia ese número (tu Chat ID)
-```
-
-### 3. Configurar APIs de Scraping (Opcional)
-
-#### FireCrawl
-1. Regístrate en https://firecrawl.dev
-2. Obtén tu API Key desde el dashboard
-3. Añádela al archivo `.env`
-
-### 4. Crear Archivo `.env`
-
-Crea un archivo llamado `.env` en la raíz del proyecto:
-
-```env
-# === GEMINI (Google AI) ===
-GEMINI_API_KEY=tu_api_key_de_gemini
-
-# === TELEGRAM ===
-TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
-TELEGRAM_CHAT_ID=123456789
-
-# === FIRECRAWL (Opcional pero recomendado) ===
-FIRECRAWL_API_KEY=fc-tu_api_key_aqui
-
-# === CONFIGURACION DEL SISTEMA ===
-# Interval en segundos (600 = 10 minutos)
-POLLING_INTERVAL=600
-```
-
-### 5. Verificar Archivos de Credenciales
-
-Tu estructura debe verse así:
-```
-├── credentials.json      ← OAuth credentials de Google
-├── token.json            ← Token generado por setup_auth.py
-├── .env                  ← Variables de entorno
-├── data/
-│   └── cv_usuario.pdf    ← Tu CV
-└── ...
-```
+1. Regístrate en https://cloudinary.com
+2. Obtén tus credenciales desde el dashboard
+3. Añádelas al `.env`
 
 ---
 
 ## 💻 Uso
 
-### Ejecución Local (Desarrollo)
+### Desarrollo Local
 
-```powershell
-# Con el entorno virtual activado
+#### Backend
+
+```bash
+# Con entorno virtual activado
 python main.py
 ```
 
-**Salida esperada:**
-```
- [INIT] Iniciando hilo del bot...
- [OK] Contexto y Cerebro listos.
- [SISTEMA] OPERATIVO. Iniciando bucle infinito...
- [LOOP #1] Iniciando ciclo...
-    [AUTH] Refrescando cliente de Gmail...
-    [BUSQUEDA] Buscando alertas recientes (<14 días)...
-    - Sin alertas. Proximo escaneo en 10 min.
-```
+Servidor disponible en: **http://localhost:7860**
+Documentación API: **http://localhost:7860/docs**
 
-### Servidor Web (Flask)
+#### Frontend
 
-El sistema incluye un servidor web en `http://localhost:10000`:
-- **GET /** → Página de status simple
-- **GET /health** → Endpoint de health check (retorna "OK")
-
-### Pruebas Unitarias de Componentes
-
-Cada módulo puede ejecutarse independientemente para pruebas:
-
-#### Probar Scraper
-```powershell
-python src/scraper.py
-```
-
-#### Probar Gmail Collector
-```powershell
-python src/mail_agent.py
-```
-
-#### Probar Telegram Notifier
-```powershell
-python src/bot.py
-```
-
-#### Probar Carga de CV
-```powershell
-python src/loader.py
-```
-
----
-
-## 🌐 Despliegue en Producción
-
-### Opción 1: Render (Recomendado - Free Tier)
-
-#### 1. Preparar el Repositorio
-```powershell
-# Si aún no está en Git
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/tu-usuario/tu-repo.git
-git push -u origin main
-```
-
-#### 2. Crear Web Service en Render
-
-1. Ve a https://render.com y regístrate
-2. **New** → **Web Service**
-3. Conecta tu repositorio de GitHub
-4. Configuración:
-   - **Name**: `job-scraper-bot` (o el que prefieras)
-   - **Region**: Elige el más cercano
-   - **Branch**: `main`
-   - **Root Directory**: `Tema 02/Recopilador Ofertas Trabajo Validas`
-   - **Runtime**: `Docker`
-   - **Instance Type**: `Free`
-
-#### 3. Configurar Variables de Entorno
-
-En la sección **Environment**, añade estas variables:
-
-```
-GEMINI_API_KEY=tu_api_key_de_gemini
-TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
-TELEGRAM_CHAT_ID=123456789
-FIRECRAWL_API_KEY=fc-tu_api_key
-```
-
-#### 4. Configurar Secretos JSON (Crítico)
-
-Para archivos como `credentials.json`, `token.json` y `.env`, usa el sistema de secretos:
-
-```
-GOOGLE_CREDENTIALS_JSON={"installed":{"client_id":"...","project_id":"...",...}}
-GOOGLE_TOKEN_JSON={"token":"...","refresh_token":"...","token_uri":"...",...}
-MY_ENV_FILE=GEMINI_API_KEY=xxx
-TELEGRAM_BOT_TOKEN=xxx
-TELEGRAM_CHAT_ID=xxx
-FIRECRAWL_API_KEY=xxx
-```
-
-**Cómo obtener el contenido de estos archivos:**
-
-##### En PowerShell:
-```powershell
-# Credentials.json (todo en una línea)
-Get-Content credentials.json -Raw | ConvertTo-Json -Compress
-
-# Token.json (todo en una línea)
-Get-Content token.json -Raw | ConvertTo-Json -Compress
-
-# .env (todo en una línea, con \n para saltos)
-(Get-Content .env -Raw).Replace("`r`n", "\n")
-```
-
-##### En Linux/Mac:
 ```bash
-# Credentials.json
-cat credentials.json | jq -c
-
-# Token.json
-cat token.json | jq -c
-
-# .env
-cat .env | sed ':a;N;$!ba;s/\n/\\n/g'
+cd frontend
+npm run dev
 ```
 
-#### 5. Desplegar
+App disponible en: **http://localhost:5173**
 
-Haz clic en **Create Web Service**. Render:
-1. Clonará tu repositorio
-2. Construirá la imagen Docker
-3. Inyectará las variables de entorno
-4. Ejecutará `entrypoint.sh` que:
-   - Creará `credentials.json`, `token.json` y `.env` desde las variables
-   - Arrancará Gunicorn con Flask
-   - Iniciará el hilo del bot en segundo plano
+### Flujo de Uso Típico
 
-#### 6. Verificar
-
-- Revisa los logs en tiempo real desde el dashboard de Render
-- Accede a `https://tu-app.onrender.com/health` para verificar que está vivo
-
-⚠️ **Limitaciones del Free Tier de Render**:
-- El servicio se "duerme" tras 15 minutos de inactividad
-- Solución: Configura un servicio externo (UptimeRobot, cron-job.org) para hacer ping al endpoint `/health` cada 10 minutos
-
----
-
-### Opción 2: Railway
-
-#### 1. Conectar Repositorio
-1. Ve a https://railway.app
-2. **New Project** → **Deploy from GitHub repo**
-3. Selecciona tu repositorio
-
-#### 2. Configurar
-- Railway detectará automáticamente el Dockerfile
-- Añade las mismas variables de entorno que en Render (paso 3 y 4 de arriba)
-
-#### 3. Deploy
-- Railway desplegará automáticamente
-- Obtendrás una URL pública tipo `https://xxx.up.railway.app`
-
----
-
-### Opción 3: Docker Local (Testing de Producción)
-
-```powershell
-# 1. Construir imagen
-docker build -t job-scraper:latest .
-
-# 2. Ejecutar con variables de entorno
-docker run -d `
-  -p 10000:10000 `
-  -e PORT=10000 `
-  -e GEMINI_API_KEY="tu_key" `
-  -e TELEGRAM_BOT_TOKEN="tu_token" `
-  -e TELEGRAM_CHAT_ID="tu_chat_id" `
-  -e FIRECRAWL_API_KEY="tu_key" `
-  -e GOOGLE_CREDENTIALS_JSON='{"installed":{...}}' `
-  -e GOOGLE_TOKEN_JSON='{"token":"..."}' `
-  -e MY_ENV_FILE='GEMINI_API_KEY=xxx
-TELEGRAM_BOT_TOKEN=xxx' `
-  --name job-scraper `
-  job-scraper:latest
-
-# 3. Ver logs
-docker logs -f job-scraper
-
-# 4. Detener
-docker stop job-scraper
-docker rm job-scraper
-```
+1. **Acceder al dashboard** → http://localhost:5173
+2. **Registrarse / Login** con email
+3. **Subir CV** → PDF procesado automáticamente
+4. **Analizar ofertas** → Ingresa URL de oferta
+5. **Ver análisis** → Score, desglose, justificación
+6. **Generar CV adaptado** → Descarga personalizado
+7. **Ver historial** → Análisis y adaptaciones anteriores
 
 ---
 
@@ -467,309 +342,259 @@ docker rm job-scraper
 ```
 Recopilador Ofertas Trabajo Validas/
 │
-├── main.py                 # Punto de entrada (Flask + Bot Thread)
-├── requirements.txt        # Dependencias de Python
-├── Dockerfile              # Imagen Docker optimizada
-├── entrypoint.sh           # Script de inicialización para producción
-├── .env                    # Variables de entorno (no commitear)
-├── credentials.json        # OAuth Google (no commitear)
-├── token.json              # Token Gmail (no commitear)
-├── .dockerignore           # Excluye archivos sensibles del build
-├── .gitignore              # Excluye archivos sensibles del repo
-├── workbench.md            # Documentación de desarrollo
+├── main.py                           # FastAPI entry point
+├── requirements.txt                  # Python dependencies
+├── init_db.py                        # Database initialization
+├── apply_migration.py                # Runner manual de migraciones
+├── seed_user.py                      # Inicializa usuario admin con CV/avatar en Cloudinary
+├── .env                              # Variables de entorno (no commitear)
 │
-├── data/
-│   └── cv_usuario.pdf      # Tu CV (no commitear si es privado)
+├── alembic/                          # Database migrations
+│   ├── env.py
+│   ├── alembic.ini
+│   └── versions/
+│       ├── 001_extend_auth_and_cv_adaptations.py  # auth_provider, cv_adaptations table
+│       ├── 002_add_cv_data_to_users.py             # cv_data JSONB column
+│       ├── 003_add_avatar_url_to_users.py          # avatar_url column
+│       ├── 004_add_role_to_users.py                # role ENUM (admin/user)
+│       └── 005_remove_scoring_details.py           # consolida datos en analysis_result
 │
-└── src/
-    ├── bot.py              # Telegram Notifier (envío de alertas)
-    ├── brain.py            # LLM Brain (análisis con Gemini)
-    ├── loader.py           # CV Loader (extracción de PDF)
-    ├── mail_agent.py       # Gmail Collector (búsqueda de ofertas)
-    ├── scraper.py          # Web Scraper (extracción de contenido)
-    └── setup_auth.py       # Generador de token OAuth
+├── src/
+│   ├── api/
+│   │   ├── routes/
+│   │   │   ├── auth.py               # Login, register, oauth
+│   │   │   ├── cv.py                 # CV upload, preview
+│   │   │   ├── offers.py             # Analysis de ofertas
+│   │   │   ├── adaptations.py        # CV adaptations
+│   │   │   └── profile.py            # User profile
+│   │   ├── services/
+│   │   │   ├── analysis_service.py   # Lógica de análisis
+│   │   │   ├── adaptation_service.py # Generación de CV
+│   │   │   ├── cv_service.py         # Gestión de CV
+│   │   │   └── auth_service.py       # Autenticación
+│   │   ├── schemas.py                # Pydantic models
+│   │   ├── dependencies.py           # DI
+│   │   └── limiter.py                # Rate limiting
+│   │
+│   ├── database.py                   # SQLAlchemy config
+│   ├── brain.py                      # LLM analysis
+│   ├── cv_generator.py               # CV generation
+│   ├── loader.py                     # PDF processing
+│   ├── storage.py                    # Cloudinary integration
+│   ├── token_manager.py              # Token management
+│   │
+│   ├── mail_agent.py                 # Gmail integration (opcional)
+│   ├── bot.py                        # Telegram bot (opcional)
+│   ├── scraper.py                    # Web scraping (opcional)
+│   └── setup_auth.py                 # OAuth setup helper
+│
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   │
+│   ├── src/
+│   │   ├── App.jsx                   # Main router
+│   │   ├── main.jsx
+│   │   │
+│   │   ├── features/
+│   │   │   ├── auth/
+│   │   │   │   ├── pages/
+│   │   │   │   │   ├── LoginPage.jsx
+│   │   │   │   │   ├── RegisterPage.jsx
+│   │   │   │   │   └── GoogleCallbackPage.jsx
+│   │   │   │   └── components/
+│   │   │   │       └── LoginForm.jsx
+│   │   │   │
+│   │   │   ├── analysis/
+│   │   │   │   ├── pages/
+│   │   │   │   │   ├── AnalysisPage.jsx
+│   │   │   │   │   ├── ResultPage.jsx
+│   │   │   │   │   └── HistoryPage.jsx
+│   │   │   │   └── components/
+│   │   │   │       ├── AnalysisForm.jsx
+│   │   │   │       ├── ResultCard.jsx
+│   │   │   │       └── AnalysisListItem.jsx
+│   │   │   │
+│   │   │   ├── adaptations/
+│   │   │   │   ├── pages/
+│   │   │   │   │   ├── AdaptationPage.jsx         # Generar adaptación (generate/:analysisId)
+│   │   │   │   │   ├── AdaptationDetailPage.jsx   # Ver adaptación + descarga PDF
+│   │   │   │   │   └── AdaptationsHistoryPage.jsx # Historial paginado de adaptaciones
+│   │   │   │   └── components/
+│   │   │   │       ├── AdaptationPreview.jsx      # Preview del CV adaptado
+│   │   │   │       ├── CVPreviewHTML.jsx
+│   │   │   │       └── PDFDownloadButton.jsx
+│   │   │   │
+│   │   │   ├── cv/
+│   │   │   │   ├── pages/
+│   │   │   │   │   └── CVPage.jsx
+│   │   │   │   └── components/
+│   │   │   │       ├── CVUpload.jsx
+│   │   │   │       └── CVPreview.jsx
+│   │   │   │
+│   │   │   ├── profile/
+│   │   │   │   └── pages/
+│   │   │   │       └── ProfilePage.jsx
+│   │   │   │
+│   │   │   ├── landing/
+│   │   │   │   └── pages/
+│   │   │   │       └── LandingPage.jsx
+│   │   │   │
+│   │   │   └── dashboard/
+│   │   │       └── pages/
+│   │   │           └── DashboardPage.jsx
+│   │   │
+│   │   ├── shared/
+│   │   │   ├── components/
+│   │   │   │   ├── Layout.jsx
+│   │   │   │   ├── Navbar.jsx
+│   │   │   │   ├── Sidebar.jsx
+│   │   │   │   ├── Spinner.jsx        # Loading universal (message, fullHeight, inline)
+│   │   │   │   ├── CardItem.jsx       # Card genérico para listas de análisis/adaptaciones
+│   │   │   │   ├── ProtectedRoute.jsx
+│   │   │   │   └── CVRequiredRoute.jsx
+│   │   │   └── hooks/
+│   │   │       └── useAuth.js
+│   │   │
+│   │   ├── services/
+│   │   │   ├── apiClient.js           # Axios instance
+│   │   │   ├── authService.js
+│   │   │   ├── analysisService.js
+│   │   │   ├── adaptationService.js
+│   │   │   ├── cvService.js
+│   │   │   └── profileService.js
+│   │   │
+│   │   └── stores/
+│   │       └── globalStore.js         # Zustand state
+│
+├── tests/
+│   ├── test_plan_01_integration.py
+│   ├── test_plan_02_apis.py
+│   ├── test_plan_03_latex.py
+│   ├── test_plan_04_api_fastapi.py
+│   ├── test_plan_05_rate_limiter.py
+│   └── test_concurrent_access.py
+│
+└── data/
+    └── cv_usuario.pdf                # Tu CV (lugar donde se carga)
 ```
-
-### Descripción de Módulos
-
-| Archivo | Responsabilidad |
-|---------|----------------|
-| `main.py` | Orquestador principal. Lanza Flask y el bucle del bot en paralelo |
-| `src/bot.py` | Gestiona notificaciones Telegram con formato enriquecido |
-| `src/brain.py` | Cerebro del sistema. Usa Gemini para analizar ofertas vs CV |
-| `src/loader.py` | Extrae texto del CV PDF usando PyPDFLoader |
-| `src/mail_agent.py` | Busca alertas en Gmail y limpia correos antiguos |
-| `src/scraper.py` | Estrategia en cascada para extraer contenido de ofertas |
-| `src/setup_auth.py` | Herramienta CLI para generar token.json localmente |
 
 ---
 
-## 🔄 Flujo de Trabajo
+## 🚀 Despliegue
 
-```
-                    ┌─────────────────────────────────────┐
-                    │       INICIO DEL SISTEMA            │
-                    └──────────────┬──────────────────────┘
-                                   │
-                    ┌──────────────▼──────────────────────┐
-                    │      Cargar CV (PDF → Texto)        │
-                    └──────────────┬──────────────────────┘
-                                   │
-                    ┌──────────────▼──────────────────────┐
-                    │      Inicializar Brain (Gemini)     │
-                    └──────────────┬──────────────────────┘
-                                   │
-                    ┌──────────────▼──────────────────────┐
-                    │      Inicializar Bot (Telegram)     │
-                    └──────────────┬──────────────────────┘
-                                   │
-        ┌──────────────────────────▼──────────────────────────┐
-        │             BUCLE INFINITO (cada 10 min)            │
-        │                                                     │
-        │  ┌────────────────────────────────────────────┐     │
-        │  │      Crear nuevo Gmail Collector           │     │
-        │  │     (Refresca credenciales OAuth)          │     │
-        │  └────────────────┬───────────────────────────┘     │
-        │                   │                                 │
-        │  ┌────────────────▼───────────────────────────┐     │
-        │  │      Limpiar correos antiguos (>14 días)   │     │
-        │  └────────────────┬───────────────────────────┘     │
-        │                   │                                 │
-        │  ┌────────────────▼───────────────────────────┐     │
-        │  │     Buscar ofertas UNREAD                  │     │
-        │  │     (LinkedIn + InfoJobs)                  │     │
-        │  └────────────────┬───────────────────────────┘     │
-        │                   │                                 │
-        │            ┌──────▼───────┐                         │
-        │            │ ¿Hay ofertas?│                         │
-        │            └──┬────────┬──┘                         │
-        │               │ NO     │ SÍ                         │
-        │       ┌───────▼─┐    ┌─▼─────────────┐              │
-        │       │ Esperar │    │ Para cada URL │              │
-        │       │ 10 min  │    └─┬─────────────┘              │
-        │       └────┬────┘      │                            │
-        │            │         ┌──▼──────────────────────┐    │
-        │            │         │  SCRAPER (Cascada)      │    │
-        │            │         ├─────────────────────────┤    │
-        │            │         │  Intento: Jina AI       │    │
-        │            │         │    ├─  → Continuar      │    │
-        │            │         │    └─  → Siguiente      │    │
-        │            │         │                         │    │
-        │            │         │  Intento: FireCrawl     │    │
-        │            │         │    ├─  → Continuar      │    │
-        │            │         │    └─  → Siguiente      │    │
-        │            │         │                         │    │
-        │            │         │  Intento: Directo       │    │
-        │            │         │    ├─  → Continuar      │    │
-        │            │         │    └─  → Descartar      │    │
-        │            │         └──┬──────────────────────┘    │
-        │            │            │                           │
-        │            │    ┌───────▼───────────────────────┐   │
-        │            │    │  BRAIN: Análisis con IA       │   │
-        │            │    ├───────────────────────────────┤   │
-        │            │    │ FASE 1: Filtro ATS            │   │
-        │            │    │  ↓                            │   │
-        │            │    │ FASE 2: Evaluación RRHH       │   │
-        │            │    │  ↓                            │   │
-        │            │    │ Genera Score (0-100)          │   │
-        │            │    └───────┬───────────────────────┘   │
-        │            │            │                           │
-        │            │     ┌──────▼───────┐                   │
-        │            │     │ Score >= 70? │                   │
-        │            │     └──┬────────┬──┘                   │
-        │            │        │ NO     │ SÍ                   │
-        │            │   ┌────▼──┐  ┌──▼──────────────────┐   │
-        │            │   │Ocultar│  │  TELEGRAM ALERT     │   │
-        │            │   └───┬───┘  │  Título + Empresa   │   │
-        │            │       │      │  Salario            │   │
-        │            │       │      │  Score + Barra      │   │
-        │            │       │      │  Justificación      │   │
-        │            │       │      │  Link directo       │   │
-        │            │       │      └──┬──────────────────┘   │
-        │            │       │         │                      │
-        │            │     ┌─▼─────────▼───┐                  │
-        │            │     │ ¿Más ofertas? │                  │
-        │            │     └─┬──────────┬──┘                  │
-        │            │       │ SÍ    NO │                     │
-        │            └───────┴──────────┘                     │
-        │                    │                                │
-        └────────────────────┘                                │
-                             │                                │
-                    ┌────────▼────────┐                       │
-                    │   Sleep 10min   │                       │
-                    └────────┬────────┘                       │
-                             │                                │
-                             └──────────────► (Volver al bucle)
+### Backend (Render / Railway / Similar)
+
+1. Haz push a GitHub
+2. Conecta el repositorio en la plataforma (Render, Railway, etc.)
+3. Configura variables de entorno
+4. Deploy automático desde main
+
+### Frontend (Vercel)
+
+```bash
+# Vercel CLI
+npm install -g vercel
+vercel
 ```
 
-### Desglose del Proceso
-
-1. **Inicialización** (Una sola vez al arrancar)
-   - Carga del CV en memoria
-   - Conexión con Gemini
-   - Validación de credenciales Telegram
-
-2. **Bucle Principal** (Cada 10 minutos)
-   - Refresco de conexión Gmail (evita timeouts OAuth)
-   - Limpieza automática de correos viejos
-   - Búsqueda de alertas nuevas no leídas
-
-3. **Procesamiento por Oferta**
-   - **Scraping en Cascada**: Intenta 3 métodos hasta obtener contenido válido
-   - **Análisis Dual**: Filtro ATS + Evaluación Humana
-   - **Decisión**: Solo notifica si `score >= 70`
-
-4. **Notificación**
-   - Formato rico con iconos según score
-   - Información estructurada (título, salario, beneficios, etc.)
-   - Link directo para aplicar
+O conecta tu GitHub a Vercel y hace deploy automático.
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Error: "No se encuentra credentials.json"
-**Solución**: Asegúrate de haber descargado las credenciales OAuth de Google Cloud Console y guardarlas como `credentials.json` en la raíz del proyecto.
+### Error: "database.db: no such file or directory"
 
-### Error: "Invalid grant" al generar token
-**Causas comunes**:
-1. El token expiró (válido por 7 días en modo test)
-2. Cambiaste los scopes en Google Cloud Console
+**Solución**: Ejecuta `python init_db.py` para crear la base de datos.
 
-**Solución**: 
-```powershell
-# Elimina el token antiguo y genera uno nuevo
-del token.json
-python src/setup_auth.py
-```
+### Error: "SECRET_KEY not found"
 
-### Error: "Application not verified" en OAuth
-**Solución**: Es normal en aplicaciones en desarrollo. Haz clic en **Avanzado** → **Ir a [nombre-app] (inseguro)**.
+**Solución**: Asegúrate de tener `.env` con `SECRET_KEY` configurada.
 
-Para eliminar la advertencia (opcional):
-1. Ve a Google Cloud Console
-2. OAuth consent screen → Publishing status
-3. Completa el proceso de verificación (requiere revisión de Google)
+### Error: "CORS blocked"
 
-### Bot no recibe correos nuevos
-**Verificaciones**:
-1. Los correos deben estar **NO LEÍDOS**
-2. Deben ser de LinkedIn (`@linkedin.com`) o InfoJobs (`@infojobs.net`)
-3. Deben contener palabras clave como "alerta de empleo"
-4. No deben tener más de 14 días
+**Solución**: Verifica que tu frontend está en `allow_origins` en `main.py`.
 
-**Nota importante**: El sistema reinicia el cliente Gmail en cada ciclo porque `GmailToolkit` cachea internamente la lista de correos en el momento de su inicialización. Sin este refresco, los correos que lleguen después no serán detectados hasta el siguiente reinicio del servicio.
-
-**Test manual**:
-```powershell
-python src/mail_agent.py
-```
-
-### Scraper retorna contenido vacío
-**Causas**:
-1. La página requiere JavaScript (Jina/FireCrawl deberían manejarlo)
-2. URL inválida o bloqueada
-
-**Solución**: Revisa los logs para ver qué estrategia falló:
-```
-[SCRAPER] Jina AI: ✅ | FireCrawl: ❌ | Directo: ❌
-```
-
-### Gemini retorna errores 429 (Rate Limit)
-**Solución**: 
-- Free tier: 15 RPM (requests per minute)
-- Ajusta `POLLING_INTERVAL` a un valor más alto (ej. 1200 = 20 min)
-
-### Docker: "exec format error" en entrypoint.sh
-**Causa**: Finales de línea Windows (CRLF) en lugar de Unix (LF)
+### Frontend no conecta con backend
 
 **Solución**:
-```powershell
-# Convierte a LF usando Git
-git config core.autocrlf input
-git rm --cached -r .
-git reset --hard
+
+- Verifica que `VITE_API_URL` en `.env.local` es correcto
+- Backend debe estar ejecutándose en http://localhost:7860
+- CORS debe permitir localhost:5173
+
+### Análisis fallan sin error claro
+
+**Solución**:
+
+- Verifica que tienes una API key de LLM configurada
+- Revisa logs del backend: `python main.py`
+- Rate limiting puede estar activo
+
+---
+
+## 🎯 Bandas de Puntuación (Scoring)
+
+El análisis devuelve un score 0-100 calculado en dos fases (ATS + evaluación humana):
+
+| Rango   | Nivel       | Significado                                              |
+| ------- | ----------- | -------------------------------------------------------- |
+| 0 – 59  | ATS_BLOCK   | Rechazo automático — faltan requisitos indispensables    |
+| 60 – 69 | Descarte    | Pasa el ATS pero débil en evaluación cualitativa         |
+| 70 – 79 | Apto        | Match competente                                         |
+| 80 – 89 | Fuerte      | Match sólido, candidato destacado                        |
+| 90 – 100| Ideal       | Ajuste perfecto                                          |
+
+`is_valid = (score >= 60)` — solo las ofertas válidas permiten generar una adaptación de CV.
+
+---
+
+## 📊 Flujo de Desarrollo
+
+```
+User Input → Frontend Form
+    ↓
+REST API → Backend Endpoint
+    ↓
+Service Layer → Business Logic
+    ↓
+LLM Analysis → Score & Details
+    ↓
+Database → Store Results
+    ↓
+REST API Response → Frontend Display
+    ↓
+UI Update → User sees results
 ```
 
-O edita `entrypoint.sh` en VS Code y cambia el final de línea (esquina inferior derecha: CRLF → LF)
+---
 
-### Render: "Health check failed"
-**Verificaciones**:
-1. El servicio debe responder en el puerto especificado por `$PORT`
-2. El endpoint `/health` debe retornar status 200
+## 🔒 Seguridad
 
-**Test local**:
-```powershell
-curl http://localhost:10000/health
-# Debe retornar: OK
-```
+- ✅ Contraseñas hasheadas con bcrypt
+- ✅ JWT tokens para autenticación
+- ✅ CORS configurado correctamente
+- ✅ Rate limiting en endpoints
+- ✅ Variables sensibles en `.env` (no commitear)
+- ✅ OAuth 2.0 para Gmail (sin guardar contraseñas)
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## 📞 Soporte & Contacto
 
-### Backend & Framework
-- **Python 3.11** - Lenguaje principal
-- **Flask** - Servidor web ligero
-- **Gunicorn** - WSGI HTTP Server para producción
+**Autor**: Ángel Pereira  
+**GitHub**: [@AngelPereiraR](https://github.com/AngelPereiraR)  
+**Email**: ampr2003@gmail.com
 
-### IA & LangChain
-- **LangChain** - Framework de orquestación LLM
-- **Google Gemini 2.5 Flash** - Modelo de análisis de ofertas
-- **LangChain Google Community** - Integración Gmail Toolkit
-
-### Web Scraping
-- **Jina AI Reader** - Scraping rápido sin API key
-- **FireCrawl** - Scraping avanzado con renderizado JS
-- **Requests + BeautifulSoup** - Scraping directo de fallback
-
-### APIs & Servicios
-- **Gmail API** - Acceso a correos vía OAuth 2.0
-- **Telegram Bot API** - Notificaciones en tiempo real
-- **PyPDF** - Extracción de texto de CV en PDF
-
-### DevOps
-- **Docker** - Containerización
-- **Render/Railway** - Plataformas de despliegue
-- **python-dotenv** - Gestión de variables de entorno
+Para problemas o sugerencias, abre un issue en el repositorio.
 
 ---
 
-### Ideas de Mejoras
-- [ ] Soporte para más plataformas (Indeed, Glassdoor, etc.)
-- [ ] Dashboard web para visualizar estadísticas
-- [ ] Base de datos para histórico de ofertas
-- [ ] Sistema de respuestas automáticas
-- [ ] Integración con Notion/Trello para tracking de aplicaciones
-- [ ] Generación automática de cover letters personalizadas
+## 📄 Licencia
 
-
----
-
-## 👤 Autor
-
-**Ángel Pereira**
-- GitHub: [@AngelPereiraR](https://github.com/AngelPereiraR)
-- Proyecto: [IABD_PIA](https://github.com/AngelPereiraR/IABD_PIA)
-
----
-
-## 🙏 Agradecimientos
-
-- **Google Cloud** por las APIs de Gmail y Gemini
-- **LangChain** por el framework de orquestación
-- **Jina AI** y **FireCrawl** por las herramientas de scraping
-- **Telegram** por la plataforma de bots
-
----
-
-## 📞 Soporte
-
-Si encuentras algún problema o tienes preguntas:
-
-1. Revisa la sección [Troubleshooting](#-troubleshooting)
-2. Consulta el archivo `workbench.md` para detalles técnicos
-3. Abre un **Issue** en el repositorio de GitHub
+Proyecto educativo para el ciclo IABD - CFGS
 
 ---
 

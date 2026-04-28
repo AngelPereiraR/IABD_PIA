@@ -5,7 +5,7 @@ export const analysisService = {
     apiClient.post('/analysis/create', input),
 
   getAnalysisHistory: (limit = 10, offset = 0) =>
-    apiClient.get('/analysis/history', {
+    apiClient.get('/analysis/list', {
       params: { limit, offset },
     }),
 

@@ -7,10 +7,10 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, select, Boolean, Enum as SQLEnum
+from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, select, Boolean, Enum as SQLEnum, create_engine
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, relationship
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, relationship, Session
 import enum
 from dotenv import load_dotenv
 
@@ -28,17 +28,39 @@ if DATABASE_URL.startswith("postgresql://"):
 if "?" in DATABASE_URL:
     DATABASE_URL = DATABASE_URL.split("?")[0]
 
-# Engine asincrono
+# Engine asincrono (para FastAPI - API requests)
 engine = create_async_engine(
     DATABASE_URL,
-    echo=False,  # Cambia a True para debug SQL
-    future=True
+    echo=False,
+    future=True,
+    pool_size=3,        # Reducido: solo para API requests
+    max_overflow=5,     # Overflow limitado
+    pool_pre_ping=True, # Verify connections before using
+    pool_recycle=3600,  # Recycle connections every hour
 )
 
 # Session factory
 AsyncSessionLocal = sessionmaker(
     engine,
     class_=AsyncSession,
+    expire_on_commit=False,
+    future=True
+)
+
+# Synchronous engine and session (for bot thread - separate pool)
+sync_url = DATABASE_URL.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
+sync_engine = create_engine(
+    sync_url,
+    echo=False,
+    future=True,
+    pool_size=2,        # Muy pequeño: bot solo necesita 1-2 conexiones
+    max_overflow=1,     # Overflow mínimo
+    pool_pre_ping=True, # Verify connections before using
+    pool_recycle=3600,  # Recycle connections every hour
+)
+SessionLocal = sessionmaker(
+    sync_engine,
+    class_=Session,
     expire_on_commit=False,
     future=True
 )
@@ -96,7 +118,6 @@ class JobOffer(Base):
 
     score = Column(Integer, nullable=True)  # 0-100 del análisis DeepSeek
     is_valid = Column(Boolean, default=None, nullable=True)  # TRUE if score >= 60
-    scoring_details = Column(JSONB, nullable=True)  # Breakdown: ats_score, recruiter_score, reasoning (future use; see analysis_result)
     analysis_result = Column(JSONB, nullable=True)  # Full RecruitmentDecision from DeepSeek: is_relevant, score, job_title, company, salary, posted_date, benefits, key_skills, rejection_reason, summary
     optimized_cv_url = Column(Text, nullable=True)  # URL Cloudinary del CV generado
 

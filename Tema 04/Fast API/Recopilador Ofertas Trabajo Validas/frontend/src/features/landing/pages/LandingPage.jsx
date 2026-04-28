@@ -1,8 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Zap, BarChart3, FileText, Download } from 'lucide-react';
 import { Footer } from '../../../shared/components';
+import useStore from '../../../stores/globalStore';
 
 export function LandingPage() {
+  const navigate = useNavigate();
+  const token = useStore((state) => state.auth.token);
+
   const features = [
     { icon: FileText, title: 'Upload Your CV', desc: 'Securely store your resume for instant analysis' },
     { icon: BarChart3, title: 'Smart Analysis', desc: 'AI-powered evaluation of job offers against your profile' },
@@ -15,12 +19,23 @@ export function LandingPage() {
       <nav className="flex justify-between items-center p-6 bg-white border-b border-gray-200">
         <h1 className="text-2xl font-bold text-indigo-700">OptiCV</h1>
         <div className="flex gap-4">
-          <Link to="/auth/login" className="px-4 py-2 text-indigo-600 hover:bg-gray-100 rounded">
-            Login
-          </Link>
-          <Link to="/auth/register" className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-            Register
-          </Link>
+          {token ? (
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            >
+              Dashboard
+            </button>
+          ) : (
+            <>
+              <Link to="/auth/login" className="px-4 py-2 text-indigo-600 hover:bg-gray-100 rounded">
+                Login
+              </Link>
+              <Link to="/auth/register" className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                Register
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 

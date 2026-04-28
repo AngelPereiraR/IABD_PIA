@@ -22,10 +22,9 @@ export function AnalysisForm({ onSuccess }) {
   });
 
   const onSubmit = async (data) => {
-    const input = {
-      type: data.type,
-      [data.type === 'url' ? 'url' : 'text']: data.content,
-    };
+    const input = data.type === 'url'
+      ? { offer_url: data.content }
+      : { offer_text: data.content };
     const result = await createAnalysis(input);
     if (result.success) {
       reset();

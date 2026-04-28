@@ -25,15 +25,26 @@ const useStore = create((set, get) => ({
       set((state) => ({ auth: { ...state.auth, isLoading: true, error: null } }));
       try {
         const response = await authService.login(email, password);
-        const { token, user } = response.data;
+        console.log('Login response:', response);
+        const { access_token, user_id, email: userEmail } = response.data;
+
+        if (!access_token || !user_id) {
+          throw new Error('Invalid response structure: missing access_token or user_id');
+        }
+
+        const token = access_token;
+        const user = { id: user_id, email: userEmail };
+
         set((state) => ({
           auth: { ...state.auth, user, token, isLoading: false, error: null },
         }));
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+        console.log('Login successful, token stored');
         return { success: true };
       } catch (error) {
-        const message = error.response?.data?.detail || 'Login failed';
+        console.error('Login error:', error);
+        const message = error.response?.data?.detail || error.message || 'Login failed';
         set((state) => ({ auth: { ...state.auth, isLoading: false, error: message } }));
         return { success: false, error: message };
       }
@@ -43,7 +54,11 @@ const useStore = create((set, get) => ({
       set((state) => ({ auth: { ...state.auth, isLoading: true, error: null } }));
       try {
         const response = await authService.register(email, password, name);
-        const { token, user } = response.data;
+        const { access_token, user_id, email: userEmail } = response.data;
+
+        const token = access_token;
+        const user = { id: user_id, email: userEmail };
+
         set((state) => ({
           auth: { ...state.auth, user, token, isLoading: false, error: null },
         }));
@@ -61,7 +76,11 @@ const useStore = create((set, get) => ({
       set((state) => ({ auth: { ...state.auth, isLoading: true, error: null } }));
       try {
         const response = await authService.googleCallback(code);
-        const { token, user } = response.data;
+        const { access_token, user_id, email: userEmail } = response.data;
+
+        const token = access_token;
+        const user = { id: user_id, email: userEmail };
+
         set((state) => ({
           auth: { ...state.auth, user, token, isLoading: false, error: null },
         }));
@@ -104,6 +123,7 @@ const useStore = create((set, get) => ({
   // ===== CV SLICE =====
   cv: {
     currentCV: null,
+    isLoading: false,
     isUploading: false,
     error: null,
   },
@@ -141,11 +161,14 @@ const useStore = create((set, get) => ({
     },
 
     fetchCurrentCV: async () => {
+      set((state) => ({ cv: { ...state.cv, isLoading: true, error: null } }));
       try {
         const response = await cvService.getCV();
-        set((state) => ({ cv: { ...state.cv, currentCV: response.data } }));
+        set((state) => ({ cv: { ...state.cv, currentCV: response.data, isLoading: false } }));
         return { success: true };
       } catch (error) {
+        const message = error.response?.data?.detail || 'Failed to load CV';
+        set((state) => ({ cv: { ...state.cv, isLoading: false, error: message } }));
         return { success: false };
       }
     },
@@ -156,6 +179,8 @@ const useStore = create((set, get) => ({
     analyses: [],
     currentAnalysis: null,
     isAnalyzing: false,
+    isLoadingHistory: false,
+    totalAnalyses: 0,
     error: null,
   },
 
@@ -195,13 +220,21 @@ const useStore = create((set, get) => ({
     },
 
     loadAnalysisHistory: async (limit = 10, offset = 0) => {
+      set((state) => ({ analysis: { ...state.analysis, isLoadingHistory: true } }));
       try {
         const response = await analysisService.getAnalysisHistory(limit, offset);
         set((state) => ({
-          analysis: { ...state.analysis, analyses: response.data },
+          analysis: {
+            ...state.analysis,
+            analyses: response.data.items || [],
+            totalAnalyses: response.data.total || 0,
+            isLoadingHistory: false,
+          },
         }));
-        return { success: true };
+        return { success: true, total: response.data.total || 0, itemsCount: (response.data.items || []).length };
       } catch (error) {
+        console.error('Error loading analysis history:', error);
+        set((state) => ({ analysis: { ...state.analysis, isLoadingHistory: false } }));
         return { success: false };
       }
     },
@@ -212,6 +245,8 @@ const useStore = create((set, get) => ({
     adaptations: [],
     currentAdaptation: null,
     isGenerating: false,
+    isLoadingHistory: false,
+    total: 0,
     error: null,
   },
 
@@ -244,14 +279,38 @@ const useStore = create((set, get) => ({
     },
 
     loadAdaptationHistory: async (limit = 10, offset = 0) => {
+      set((state) => ({
+        adaptations: { ...state.adaptations, isLoadingHistory: true },
+      }));
       try {
         const response = await adaptationService.getAdaptationHistory(limit, offset);
         set((state) => ({
-          adaptations: { ...state.adaptations, adaptations: response.data },
+          adaptations: {
+            ...state.adaptations,
+            adaptations: response.data.items || response.data || [],
+            total: response.data.total || 0,
+            isLoadingHistory: false,
+          },
         }));
-        return { success: true };
+        return { success: true, total: response.data.total || 0, itemsCount: (response.data.items || response.data || []).length };
       } catch (error) {
+        console.error('Error loading adaptation history:', error);
+        set((state) => ({
+          adaptations: { ...state.adaptations, isLoadingHistory: false },
+        }));
         return { success: false };
+      }
+    },
+
+    loadAdaptation: async (id) => {
+      try {
+        const response = await adaptationService.getAdaptation(id);
+        set((state) => ({
+          adaptations: { ...state.adaptations, currentAdaptation: response.data },
+        }));
+        return { success: true, data: response.data };
+      } catch (error) {
+        return { success: false, error: 'Adaptation not found' };
       }
     },
 

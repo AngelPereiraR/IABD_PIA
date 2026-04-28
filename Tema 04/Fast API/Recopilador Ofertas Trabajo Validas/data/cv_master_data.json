@@ -2,41 +2,42 @@
   "nombre": "Ángel Manuel Pereira Rodríguez",
   "email": "ampr2003@gmail.com",
   "linkedin": "ángel-manuel-pereira-rodríguez-009730253",
-  "github": null,
+  "github": "AngelPereiraR",
   "telefono": "+34 636 16 08 17",
   "ubicacion": "Cádiz, España",
-  "web": "https://portfolio-angelpereira.netlify.app/",
-  "resumen_base": "Desarrollador Full Stack y Mobile con experiencia en entornos laborales y en la creación de proyectos desde cero. Apasionado por el aprendizaje continuo, la adquisición de nuevas habilidades técnicas y la aplicación de las mismas para construir soluciones eficientes y escalables. Busco activamente consolidar mi experiencia y contribuir a proyectos desafiantes.",
+  "web": "portfolio-angelpereira.netlify.app",
+  "resumen_base": "Desarrollador Full Stack y Mobile con experiencia real en entornos laborales y proyectos propios. Versátil en front-end, back-end, mobile, big data e inteligencia artificial, con capacidad para adaptarme a distintos roles y tecnologías.",
   "formacion": [
     {
-      "titulo": "Curso de especialización en Inteligencia Artificial y Bigdata (600h)",
+      "titulo": "Curso de especialización en Inteligencia Artificial y Big Data (600h)",
       "centro": "I.E.S. Fernando Aguilar Quignon, Cádiz",
-      "anio": "2025-2026"
+      "anio": "2026"
     },
     {
       "titulo": "Título Grado Superior de Desarrollo de Aplicaciones Web (2000h)",
       "centro": "Centro Público de Enseñanza Rafael Alberti, Cádiz",
-      "anio": "2024-2025"
+      "anio": "2025"
     },
     {
       "titulo": "Título Grado Superior de Desarrollo de Aplicaciones Multiplataforma (2000h)",
       "centro": "Centro Concertado de Enseñanza San Ignacio, Cádiz",
-      "anio": "2021-2023"
+      "anio": "2023"
     },
     {
-      "titulo": "Título Bachillerato de Ciencias Tecnológico (2000h)",
+      "titulo": "Bachillerato de Ciencias Tecnológico",
       "centro": "Centro Concertado de Enseñanza San Ignacio, Cádiz",
-      "anio": "2019-2021"
+      "anio": "2021"
     }
   ],
   "experiencia_base": [
     {
-      "puesto": "Full Stack Developer",
+      "puesto": "Full Stack & Mobile Developer",
       "empresa": "Pikotea",
       "duracion": "Septiembre 2024 – Junio 2025",
       "logros": [
-        "Participación activa en el desarrollo del proyecto SIPOS, asumiendo responsabilidades en diversas áreas de la programación.",
-        "Creación de prototipos de alta fidelidad en Figma a partir de diseños existentes."
+        "Desarrollo de aplicación móvil con Flutter en equipo de 7 personas (desarrollo, testing y diseño), resolviendo más de 40 incidencias e implementando más de 100 tests funcionales.",
+        "Prototipado de alta fidelidad con interactividad avanzada en Figma, colaborando directamente con la diseñadora del equipo.",
+        "Participación puntual en backend con Spring Boot y servicios de GCP."
       ],
       "impacto": null
     },
@@ -45,8 +46,8 @@
       "empresa": "MERCANZA",
       "duracion": "Marzo 2023 – Junio 2023",
       "logros": [
-        "Soporte en el desarrollo de proyectos de Business Intelligence utilizando Qlik Sense.",
-        "Colaboración en la creación y optimización de dashboards y visualizaciones de datos para clientes."
+        "Desarrollo de dashboards estadísticos y de clientes para la Comunidad de Madrid mediante Qlik Sense.",
+        "Creación y optimización de métricas y visualizaciones de datos en colaboración con el equipo técnico."
       ],
       "impacto": null
     }
@@ -54,23 +55,28 @@
   "proyectos": [
     {
       "nombre": "Página de Eventos",
-      "descripcion": "Diseño e implementación de una página de eventos para un creador de contenido de Twitch y YouTube.",
-      "tecnologias": []
+      "descripcion": "Plataforma de eventos para un creador de contenido de Twitch y YouTube.",
+      "tecnologias": [
+        "Angular",
+        "NestJS"
+      ]
     },
     {
       "nombre": "Blog de Artículos",
-      "descripcion": "Desarrollo de un blog autogestionable para un cliente, enfocado en la publicación de artículos.",
-      "tecnologias": []
+      "descripcion": "Blog autogestionable para publicación de artículos de un cliente.",
+      "tecnologias": [
+        "Angular",
+        "Express"
+      ]
     },
     {
       "nombre": "Soluciones a Medida",
-      "descripcion": "Creación de diversas aplicaciones y sitios web para clientes personales.",
-      "tecnologias": []
-    },
-    {
-      "nombre": "Portfolio Personal",
-      "descripcion": "Implementación de un portfolio web profesional para mostrar proyectos y competencias.",
-      "tecnologias": []
+      "descripcion": "Aplicaciones web y móviles para clientes personales.",
+      "tecnologias": [
+        "Angular",
+        "NestJS",
+        "Flutter"
+      ]
     }
   ],
   "habilidades_base": {
@@ -78,16 +84,18 @@
       "JavaScript",
       "TypeScript",
       "Python",
-      "Java"
+      "Java",
+      "R"
     ],
-    "Front-End": [
+    "Front-End / Mobile": [
       "HTML",
       "CSS",
       "SASS/SCSS",
       "Angular",
       "React",
       "Vue",
-      "Vite"
+      "Vite",
+      "Flutter"
     ],
     "Back-End": [
       "NodeJS",
@@ -96,10 +104,8 @@
       "Spring Boot",
       "Laravel",
       "Django",
-      "Flask"
-    ],
-    "Mobile": [
-      "Flutter"
+      "Flask",
+      "FastAPI"
     ],
     "Bases de Datos": [
       "MySQL",
@@ -112,7 +118,31 @@
       "GitHub",
       "Figma",
       "Trello",
-      "Jira"
+      "Jira",
+      "Jupyter Notebook",
+      "R Studio"
+    ],
+    "Cloud (AWS)": [
+      "S3",
+      "RDS",
+      "Glue",
+      "Athena",
+      "Lambda",
+      "EMR"
+    ],
+    "Big Data": [
+      "Hadoop",
+      "Spark",
+      "Hive",
+      "Pig",
+      "Sqoop",
+      "Flume",
+      "Zookeeper",
+      "Nifi",
+      "Kafka",
+      "Dremio",
+      "Prometheus",
+      "Grafana"
     ],
     "BI & ERP": [
       "Qlik Sense",
@@ -120,10 +150,23 @@
       "Tableau",
       "Odoo"
     ],
-    "Big Data": [
-      "Nifi",
-      "Kafka",
-      "Dremio"
+    "Machine Learning / IA": [
+      "EDA",
+      "Naive Bayes",
+      "KNN",
+      "Decision Tree",
+      "Random Forest",
+      "SVM",
+      "PCA",
+      "Regresión Lineal",
+      "Regresión Polinómica",
+      "Regresión Logística",
+      "K-Medias",
+      "K-Medias Difuso",
+      "DBSCAN",
+      "Redes Neuronales",
+      "Validación Cruzada",
+      "Curva ROC"
     ]
   },
   "idiomas": [
@@ -144,7 +187,7 @@
       "anio": "2024"
     },
     {
-      "nombre": "Flutter - Móvil: De cero a experto (50,5h)",
+      "nombre": "Flutter – Móvil: De cero a experto (50,5h)",
       "plataforma": "Udemy",
       "anio": "2024"
     },
@@ -159,17 +202,10 @@
       "anio": "2023"
     },
     {
-      "nombre": "Legacy - Flutter: Tu guía completa para IOS y Android (37,5h)",
+      "nombre": "Legacy – Flutter: Tu guía completa para iOS y Android (37,5h)",
       "plataforma": "Udemy",
-      "anio": "2022-2023"
+      "anio": "2023"
     }
   ],
-  "voluntariado": [
-    {
-      "organizacion": "Asociación Contra El Cáncer - Cádiz",
-      "rol": "Voluntario",
-      "descripcion": "Tareas de recaudación de fondos para la asociación.",
-      "anio": "2019"
-    }
-  ]
+  "voluntariado": []
 }

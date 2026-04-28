@@ -7,8 +7,8 @@ export const cvService = {
     }),
 
   getCV: () =>
-    apiClient.get('/cv'),
+    apiClient.get('/cv/current'),
 
   deleteCV: () =>
-    apiClient.delete('/cv'),
+    apiClient.delete('/cv/current'),
 };

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Upload, Plus, Trash2, Save, AlertCircle, CheckCircle } from 'lucide-react'
 import { profileService } from '../../../services/profileService'
-import Layout from '../../../shared/components/Layout'
+import { Layout } from '../../../shared/components'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
@@ -36,6 +36,8 @@ export default function ProfilePage() {
   })
 
   const [preview, setPreview] = useState(null)
+  const [newSkillCategory, setNewSkillCategory] = useState('')
+  const [newSkillName, setNewSkillName] = useState('')
   const [expandedSections, setExpandedSections] = useState({
     datosPersonales: true,
     resumen: true,
@@ -340,16 +342,24 @@ export default function ProfilePage() {
   }
 
   const removeHabilidad = (categoria, index) => {
-    setProfile(prev => ({
-      ...prev,
-      cv_data: {
-        ...prev.cv_data,
-        habilidades_base: {
-          ...prev.cv_data.habilidades_base,
-          [categoria]: prev.cv_data.habilidades_base[categoria].filter((_, i) => i !== index)
+    setProfile(prev => {
+      const updatedSkills = prev.cv_data.habilidades_base[categoria].filter((_, i) => i !== index)
+      const newHabilidades = { ...prev.cv_data.habilidades_base }
+
+      if (updatedSkills.length === 0) {
+        delete newHabilidades[categoria]
+      } else {
+        newHabilidades[categoria] = updatedSkills
+      }
+
+      return {
+        ...prev,
+        cv_data: {
+          ...prev.cv_data,
+          habilidades_base: newHabilidades
         }
       }
-    }))
+    })
   }
 
   const handleSave = async () => {
@@ -420,7 +430,7 @@ export default function ProfilePage() {
             {/* Info */}
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {profile.cv_data.nombre || 'Sin nombre'}
+                {profile.cv_data.nombre || 'No name'}
               </h1>
               <p className="text-gray-600 mb-4">{profile.email}</p>
               <div className="flex gap-4">
@@ -447,7 +457,7 @@ export default function ProfilePage() {
               </div>
               {isAdmin && (
                 <div className="mt-4 inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                  👑 Administrador
+                  👑 Administrator
                 </div>
               )}
             </div>
@@ -474,7 +484,7 @@ export default function ProfilePage() {
 
         {/* Form Sections */}
         <div className="space-y-6">
-          {/* Datos Personales */}
+          {/* Personal Data */}
           <div className="bg-white rounded-lg shadow-sm">
             <button
               onClick={() =>
@@ -485,80 +495,104 @@ export default function ProfilePage() {
               }
               className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
             >
-              Datos Personales
+              Personal Data
               <span>{expandedSections.datosPersonales ? '▼' : '▶'}</span>
             </button>
             {expandedSections.datosPersonales && (
               <div className="px-6 py-4 border-t border-gray-200 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder="Nombre completo"
-                    value={profile.cv_data.nombre || ''}
-                    onChange={e => updateCVData('nombre', e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    value={profile.cv_data.email || ''}
-                    onChange={e => updateCVData('email', e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      value={profile.cv_data.nombre || ''}
+                      onChange={e => updateCVData('nombre', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={profile.cv_data.email || ''}
+                      onChange={e => updateCVData('email', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder="LinkedIn (usuario)"
-                    value={profile.cv_data.linkedin || ''}
-                    onChange={e => updateCVData('linkedin', e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                  <input
-                    type="text"
-                    placeholder="GitHub (usuario)"
-                    value={profile.cv_data.github || ''}
-                    onChange={e => updateCVData('github', e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
+                    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                      <span className="px-3 py-2 bg-gray-100 text-gray-600 text-sm whitespace-nowrap">linkedin.com/in/</span>
+                      <input
+                        type="text"
+                        value={profile.cv_data.linkedin || ''}
+                        onChange={e => updateCVData('linkedin', e.target.value)}
+                        className="flex-1 px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="username"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
+                    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                      <span className="px-3 py-2 bg-gray-100 text-gray-600 text-sm whitespace-nowrap">github.com/</span>
+                      <input
+                        type="text"
+                        value={profile.cv_data.github || ''}
+                        onChange={e => updateCVData('github', e.target.value)}
+                        className="flex-1 px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="username"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
-                  <input
-                    type="tel"
-                    placeholder="Teléfono"
-                    value={profile.cv_data.telefono || ''}
-                    onChange={e => updateCVData('telefono', e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Ubicación"
-                    value={profile.cv_data.ubicacion || ''}
-                    onChange={e => updateCVData('ubicacion', e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                  <input
-                    type="url"
-                    placeholder="Website/Portfolio"
-                    value={profile.cv_data.web || ''}
-                    onChange={e => updateCVData('web', e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <input
+                      type="tel"
+                      value={profile.cv_data.telefono || ''}
+                      onChange={e => updateCVData('telefono', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <input
+                      type="text"
+                      value={profile.cv_data.ubicacion || ''}
+                      onChange={e => updateCVData('ubicacion', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Website/Portfolio</label>
+                    <input
+                      type="url"
+                      value={profile.cv_data.web || ''}
+                      onChange={e => updateCVData('web', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
                 </div>
                 {isAdmin && (
-                  <input
-                    type="text"
-                    placeholder="Telegram Chat ID (solo admin)"
-                    value={profile.telegram_id || ''}
-                    onChange={e => setProfile(prev => ({ ...prev, telegram_id: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Telegram Chat ID (Admin only)</label>
+                    <input
+                      type="text"
+                      value={profile.telegram_id || ''}
+                      onChange={e => setProfile(prev => ({ ...prev, telegram_id: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
                 )}
               </div>
             )}
           </div>
 
-          {/* Resumen */}
+          {/* Professional Summary */}
           <div className="bg-white rounded-lg shadow-sm">
             <button
               onClick={() =>
@@ -569,13 +603,13 @@ export default function ProfilePage() {
               }
               className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
             >
-              Resumen Profesional
+              Professional Summary
               <span>{expandedSections.resumen ? '▼' : '▶'}</span>
             </button>
             {expandedSections.resumen && (
               <div className="px-6 py-4 border-t border-gray-200">
                 <textarea
-                  placeholder="Resumen de tu perfil profesional"
+                  placeholder="Write your professional profile summary"
                   value={profile.cv_data.resumen_base || ''}
                   onChange={e => updateCVData('resumen_base', e.target.value)}
                   rows="5"
@@ -585,7 +619,7 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {/* Habilidades */}
+          {/* Skills */}
           <div className="bg-white rounded-lg shadow-sm">
             <button
               onClick={() =>
@@ -596,7 +630,7 @@ export default function ProfilePage() {
               }
               className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
             >
-              Habilidades
+              Skills
               <span>{expandedSections.habilidades ? '▼' : '▶'}</span>
             </button>
             {expandedSections.habilidades && (
@@ -622,11 +656,58 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 ))}
+                <div className="border-t border-gray-200 pt-4 space-y-3">
+                  <h4 className="font-medium text-gray-900">Add New Skill</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                      <input
+                        type="text"
+                        value={newSkillCategory}
+                        onChange={(e) => setNewSkillCategory(e.target.value)}
+                        placeholder="e.g., Programming"
+                        list="skill-categories"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                      <datalist id="skill-categories">
+                        {Object.keys(profile.cv_data.habilidades_base || {}).map((cat) => (
+                          <option key={cat} value={cat} />
+                        ))}
+                      </datalist>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Skill Name</label>
+                      <input
+                        type="text"
+                        value={newSkillName}
+                        onChange={(e) => setNewSkillName(e.target.value)}
+                        placeholder="e.g., React"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        onClick={() => {
+                          if (newSkillCategory && newSkillName) {
+                            addHabilidad(newSkillCategory, newSkillName)
+                            setNewSkillName('')
+                            setNewSkillCategory('')
+                          }
+                        }}
+                        disabled={!newSkillCategory || !newSkillName}
+                        className="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400"
+                      >
+                        <Plus size={18} className="inline mr-1" />
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Formación */}
+          {/* Academic Education */}
           <div className="bg-white rounded-lg shadow-sm">
             <button
               onClick={() =>
@@ -637,39 +718,45 @@ export default function ProfilePage() {
               }
               className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
             >
-              Formación Académica
+              Academic Education
               <span>{expandedSections.formacion ? '▼' : '▶'}</span>
             </button>
             {expandedSections.formacion && (
               <div className="px-6 py-4 border-t border-gray-200 space-y-4">
                 {profile.cv_data.formacion.map((item, idx) => (
                   <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <input
-                      type="text"
-                      placeholder="Título"
-                      value={item.titulo || ''}
-                      onChange={e => updateFormacion(idx, 'titulo', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Centro educativo"
-                      value={item.centro || ''}
-                      onChange={e => updateFormacion(idx, 'centro', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Año"
-                      value={item.anio || ''}
-                      onChange={e => updateFormacion(idx, 'anio', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Degree/Title</label>
+                      <input
+                        type="text"
+                        value={item.titulo || ''}
+                        onChange={e => updateFormacion(idx, 'titulo', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Institution/School</label>
+                      <input
+                        type="text"
+                        value={item.centro || ''}
+                        onChange={e => updateFormacion(idx, 'centro', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                      <input
+                        type="text"
+                        value={item.anio || ''}
+                        onChange={e => updateFormacion(idx, 'anio', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
                     <button
                       onClick={() => removeFormacion(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Eliminar
+                      <Trash2 size={18} /> Delete
                     </button>
                   </div>
                 ))}
@@ -677,13 +764,13 @@ export default function ProfilePage() {
                   onClick={addFormacion}
                   className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
                 >
-                  <Plus size={20} /> Agregar formación
+                  <Plus size={20} /> Add Education
                 </button>
               </div>
             )}
           </div>
 
-          {/* Experiencia */}
+          {/* Professional Experience */}
           <div className="bg-white rounded-lg shadow-sm">
             <button
               onClick={() =>
@@ -694,46 +781,56 @@ export default function ProfilePage() {
               }
               className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
             >
-              Experiencia Profesional
+              Professional Experience
               <span>{expandedSections.experiencia ? '▼' : '▶'}</span>
             </button>
             {expandedSections.experiencia && (
               <div className="px-6 py-4 border-t border-gray-200 space-y-4">
                 {profile.cv_data.experiencia_base.map((item, idx) => (
                   <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <input
-                      type="text"
-                      placeholder="Puesto"
-                      value={item.puesto || ''}
-                      onChange={e => updateExperiencia(idx, 'puesto', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Empresa"
-                      value={item.empresa || ''}
-                      onChange={e => updateExperiencia(idx, 'empresa', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Duración (ej: 2023-2024)"
-                      value={item.duracion || ''}
-                      onChange={e => updateExperiencia(idx, 'duracion', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Impacto cuantificable (ej: Redujo tiempo un 40%)"
-                      value={item.impacto || ''}
-                      onChange={e => updateExperiencia(idx, 'impacto', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+                      <input
+                        type="text"
+                        value={item.puesto || ''}
+                        onChange={e => updateExperiencia(idx, 'puesto', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                      <input
+                        type="text"
+                        value={item.empresa || ''}
+                        onChange={e => updateExperiencia(idx, 'empresa', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                      <input
+                        type="text"
+                        value={item.duracion || ''}
+                        onChange={e => updateExperiencia(idx, 'duracion', e.target.value)}
+                        placeholder="e.g., 2023-2024"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Quantifiable Impact</label>
+                      <input
+                        type="text"
+                        value={item.impacto || ''}
+                        onChange={e => updateExperiencia(idx, 'impacto', e.target.value)}
+                        placeholder="e.g., Reduced time by 40%"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
                     <button
                       onClick={() => removeExperiencia(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Eliminar
+                      <Trash2 size={18} /> Delete
                     </button>
                   </div>
                 ))}
@@ -741,13 +838,13 @@ export default function ProfilePage() {
                   onClick={addExperiencia}
                   className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
                 >
-                  <Plus size={20} /> Agregar experiencia
+                  <Plus size={20} /> Add Experience
                 </button>
               </div>
             )}
           </div>
 
-          {/* Proyectos */}
+          {/* Featured Projects */}
           <div className="bg-white rounded-lg shadow-sm">
             <button
               onClick={() =>
@@ -758,32 +855,36 @@ export default function ProfilePage() {
               }
               className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
             >
-              Proyectos Destacados
+              Featured Projects
               <span>{expandedSections.proyectos ? '▼' : '▶'}</span>
             </button>
             {expandedSections.proyectos && (
               <div className="px-6 py-4 border-t border-gray-200 space-y-4">
                 {profile.cv_data.proyectos.map((item, idx) => (
                   <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <input
-                      type="text"
-                      placeholder="Nombre del proyecto"
-                      value={item.nombre || ''}
-                      onChange={e => updateProyecto(idx, 'nombre', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <textarea
-                      placeholder="Descripción"
-                      value={item.descripcion || ''}
-                      onChange={e => updateProyecto(idx, 'descripcion', e.target.value)}
-                      rows="3"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                      <input
+                        type="text"
+                        value={item.nombre || ''}
+                        onChange={e => updateProyecto(idx, 'nombre', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                      <textarea
+                        value={item.descripcion || ''}
+                        onChange={e => updateProyecto(idx, 'descripcion', e.target.value)}
+                        rows="3"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
                     <button
                       onClick={() => removeProyecto(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Eliminar
+                      <Trash2 size={18} /> Delete
                     </button>
                   </div>
                 ))}
@@ -791,13 +892,13 @@ export default function ProfilePage() {
                   onClick={addProyecto}
                   className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
                 >
-                  <Plus size={20} /> Agregar proyecto
+                  <Plus size={20} /> Add Project
                 </button>
               </div>
             )}
           </div>
 
-          {/* Idiomas */}
+          {/* Languages */}
           <div className="bg-white rounded-lg shadow-sm">
             <button
               onClick={() =>
@@ -808,36 +909,41 @@ export default function ProfilePage() {
               }
               className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
             >
-              Idiomas
+              Languages
               <span>{expandedSections.idiomas ? '▼' : '▶'}</span>
             </button>
             {expandedSections.idiomas && (
               <div className="px-6 py-4 border-t border-gray-200 space-y-4">
                 {profile.cv_data.idiomas.map((item, idx) => (
                   <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <input
-                      type="text"
-                      placeholder="Idioma"
-                      value={item.idioma || ''}
-                      onChange={e => updateIdioma(idx, 'idioma', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <select
-                      value={item.nivel || ''}
-                      onChange={e => updateIdioma(idx, 'nivel', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    >
-                      <option value="">Seleccionar nivel</option>
-                      <option value="nativo">Nativo</option>
-                      <option value="fluido">Fluido</option>
-                      <option value="intermedio">Intermedio</option>
-                      <option value="básico">Básico</option>
-                    </select>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                      <input
+                        type="text"
+                        value={item.idioma || ''}
+                        onChange={e => updateIdioma(idx, 'idioma', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
+                      <select
+                        value={item.nivel || ''}
+                        onChange={e => updateIdioma(idx, 'nivel', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      >
+                        <option value="">Select level</option>
+                        <option value="nativo">Native</option>
+                        <option value="fluido">Fluent</option>
+                        <option value="intermedio">Intermediate</option>
+                        <option value="básico">Basic</option>
+                      </select>
+                    </div>
                     <button
                       onClick={() => removeIdioma(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Eliminar
+                      <Trash2 size={18} /> Delete
                     </button>
                   </div>
                 ))}
@@ -845,13 +951,13 @@ export default function ProfilePage() {
                   onClick={addIdioma}
                   className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
                 >
-                  <Plus size={20} /> Agregar idioma
+                  <Plus size={20} /> Add Language
                 </button>
               </div>
             )}
           </div>
 
-          {/* Certificaciones */}
+          {/* Certifications */}
           <div className="bg-white rounded-lg shadow-sm">
             <button
               onClick={() =>
@@ -862,39 +968,45 @@ export default function ProfilePage() {
               }
               className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
             >
-              Certificaciones
+              Certifications
               <span>{expandedSections.certificaciones ? '▼' : '▶'}</span>
             </button>
             {expandedSections.certificaciones && (
               <div className="px-6 py-4 border-t border-gray-200 space-y-4">
                 {profile.cv_data.certificaciones.map((item, idx) => (
                   <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <input
-                      type="text"
-                      placeholder="Nombre de la certificación"
-                      value={item.nombre || ''}
-                      onChange={e => updateCertificacion(idx, 'nombre', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Entidad emisora"
-                      value={item.emisor || ''}
-                      onChange={e => updateCertificacion(idx, 'emisor', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Año"
-                      value={item.anio || ''}
-                      onChange={e => updateCertificacion(idx, 'anio', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Certification Name</label>
+                      <input
+                        type="text"
+                        value={item.nombre || ''}
+                        onChange={e => updateCertificacion(idx, 'nombre', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Issuing Organization</label>
+                      <input
+                        type="text"
+                        value={item.emisor || ''}
+                        onChange={e => updateCertificacion(idx, 'emisor', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                      <input
+                        type="text"
+                        value={item.anio || ''}
+                        onChange={e => updateCertificacion(idx, 'anio', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
                     <button
                       onClick={() => removeCertificacion(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Eliminar
+                      <Trash2 size={18} /> Delete
                     </button>
                   </div>
                 ))}
@@ -902,13 +1014,13 @@ export default function ProfilePage() {
                   onClick={addCertificacion}
                   className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
                 >
-                  <Plus size={20} /> Agregar certificación
+                  <Plus size={20} /> Add Certification
                 </button>
               </div>
             )}
           </div>
 
-          {/* Cursos */}
+          {/* Courses */}
           <div className="bg-white rounded-lg shadow-sm">
             <button
               onClick={() =>
@@ -919,39 +1031,46 @@ export default function ProfilePage() {
               }
               className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
             >
-              Cursos
+              Courses
               <span>{expandedSections.cursos ? '▼' : '▶'}</span>
             </button>
             {expandedSections.cursos && (
               <div className="px-6 py-4 border-t border-gray-200 space-y-4">
                 {profile.cv_data.cursos.map((item, idx) => (
                   <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <input
-                      type="text"
-                      placeholder="Nombre del curso"
-                      value={item.nombre || ''}
-                      onChange={e => updateCurso(idx, 'nombre', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Plataforma (Coursera, Udemy, etc.)"
-                      value={item.plataforma || ''}
-                      onChange={e => updateCurso(idx, 'plataforma', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Año"
-                      value={item.anio || ''}
-                      onChange={e => updateCurso(idx, 'anio', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                      <input
+                        type="text"
+                        value={item.nombre || ''}
+                        onChange={e => updateCurso(idx, 'nombre', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                      <input
+                        type="text"
+                        value={item.plataforma || ''}
+                        onChange={e => updateCurso(idx, 'plataforma', e.target.value)}
+                        placeholder="e.g., Coursera, Udemy"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                      <input
+                        type="text"
+                        value={item.anio || ''}
+                        onChange={e => updateCurso(idx, 'anio', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
                     <button
                       onClick={() => removeCurso(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Eliminar
+                      <Trash2 size={18} /> Delete
                     </button>
                   </div>
                 ))}
@@ -959,13 +1078,13 @@ export default function ProfilePage() {
                   onClick={addCurso}
                   className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
                 >
-                  <Plus size={20} /> Agregar curso
+                  <Plus size={20} /> Add Course
                 </button>
               </div>
             )}
           </div>
 
-          {/* Voluntariado */}
+          {/* Volunteering */}
           <div className="bg-white rounded-lg shadow-sm">
             <button
               onClick={() =>
@@ -976,46 +1095,54 @@ export default function ProfilePage() {
               }
               className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
             >
-              Voluntariado
+              Volunteering
               <span>{expandedSections.voluntariado ? '▼' : '▶'}</span>
             </button>
             {expandedSections.voluntariado && (
               <div className="px-6 py-4 border-t border-gray-200 space-y-4">
                 {profile.cv_data.voluntariado.map((item, idx) => (
                   <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <input
-                      type="text"
-                      placeholder="Organización"
-                      value={item.organizacion || ''}
-                      onChange={e => updateVoluntariado(idx, 'organizacion', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Rol"
-                      value={item.rol || ''}
-                      onChange={e => updateVoluntariado(idx, 'rol', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <textarea
-                      placeholder="Descripción de actividades"
-                      value={item.descripcion || ''}
-                      onChange={e => updateVoluntariado(idx, 'descripcion', e.target.value)}
-                      rows="3"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Año"
-                      value={item.anio || ''}
-                      onChange={e => updateVoluntariado(idx, 'anio', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Organization</label>
+                      <input
+                        type="text"
+                        value={item.organizacion || ''}
+                        onChange={e => updateVoluntariado(idx, 'organizacion', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                      <input
+                        type="text"
+                        value={item.rol || ''}
+                        onChange={e => updateVoluntariado(idx, 'rol', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description of Activities</label>
+                      <textarea
+                        value={item.descripcion || ''}
+                        onChange={e => updateVoluntariado(idx, 'descripcion', e.target.value)}
+                        rows="3"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                      <input
+                        type="text"
+                        value={item.anio || ''}
+                        onChange={e => updateVoluntariado(idx, 'anio', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
                     <button
                       onClick={() => removeVoluntariado(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Eliminar
+                      <Trash2 size={18} /> Delete
                     </button>
                   </div>
                 ))}
@@ -1023,7 +1150,7 @@ export default function ProfilePage() {
                   onClick={addVoluntariado}
                   className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
                 >
-                  <Plus size={20} /> Agregar voluntariado
+                  <Plus size={20} /> Add Volunteering
                 </button>
               </div>
             )}
@@ -1038,7 +1165,7 @@ export default function ProfilePage() {
             className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
           >
             <Save size={20} />
-            {saving ? 'Guardando...' : 'Guardar perfil'}
+            {saving ? 'Saving...' : 'Save Profile'}
           </button>
         </div>
       </div>

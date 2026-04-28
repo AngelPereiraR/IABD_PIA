@@ -138,7 +138,7 @@ class TelegramNotifier:
 
             def make_cv_request():
                 return requests.post(
-                    f"{base_url}/api/generate/{offer_id}",
+                    f"{base_url}/generate/{offer_id}",
                     timeout=300
                 )
 
@@ -168,7 +168,7 @@ class TelegramNotifier:
                 await sent_message.edit_text("❌ Datos inválidos en botón.", parse_mode="HTML")
             else:
                 await query.message.reply_text("❌ Datos inválidos en botón.")
-        except httpx.TimeoutException:
+        except requests.exceptions.Timeout:
             if sent_message:
                 await sent_message.edit_text("⏱️ Timeout: La compilación LaTeX tardó demasiado.", parse_mode="HTML")
             else:

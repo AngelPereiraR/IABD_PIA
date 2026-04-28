@@ -19,11 +19,16 @@ export function LoginForm({ onSuccess }) {
 
   const onSubmit = async (data) => {
     setApiError(null);
-    const result = await login(data.email, data.password);
-    if (result.success) {
-      onSuccess?.();
-    } else {
-      setApiError(result.error);
+    try {
+      const result = await login(data.email, data.password);
+      if (result.success) {
+        onSuccess?.();
+      } else {
+        setApiError(result.error || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      setApiError('An unexpected error occurred. Please try again.');
+      console.error('Login error:', err);
     }
   };
 

@@ -1,8 +1,8 @@
-\documentclass[10pt,a4paper]{article}
+\documentclass[9pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{geometry}
-\geometry{margin=1.2cm}
+\geometry{margin=0.8cm, top=0.9cm, bottom=0.8cm}
 \usepackage{hyperref}
 \usepackage{enumitem}
 \usepackage{titlesec}
@@ -10,6 +10,8 @@
 \usepackage{graphicx}
 \usepackage{wrapfig}
 \usepackage{multicol}
+\usepackage{lato}
+\renewcommand{\familydefault}{\sfdefault}
 
 % ---- Colores ----
 \definecolor{darkblue}{RGB}{0, 51, 102}
@@ -28,19 +30,17 @@
 \begin{document}
 
 % ---- CABECERA CON FOTO ----
-\begin{minipage}[t]{0.75\textwidth}
+\begin{minipage}[c]{0.65\textwidth}
+  \centering
   {\fontsize{18}{22}\selectfont \textbf{{{NOMBRE}}}} \\[2pt]
-  {\small {{CONTACTO}}}
-  {{CONTACTO_EXTRA}}
+  {\normalsize {{CONTACTO}}{{CONTACTO_EXTRA}}}
 \end{minipage}%
-\begin{minipage}[t]{0.25\textwidth}
+\begin{minipage}[c]{0.35\textwidth}
   \raggedleft
   {{FOTO}}
 \end{minipage}
 
-\vspace{5pt}
-\hrule
-\vspace{5pt}
+\vspace{4pt}
 
 % ---- RESUMEN PROFESIONAL ----
 {{RESUMEN_SECCION}}
@@ -49,19 +49,19 @@
 \section*{Habilidades Técnicas}
 {{HABILIDADES}}
 
-\vspace{3pt}
+\vspace{1pt}
 
 % ---- EXPERIENCIA PROFESIONAL ----
 \section*{Experiencia Profesional}
 {{EXPERIENCIA}}
 
-\vspace{3pt}
+\vspace{1pt}
 
 % ---- FORMACIÓN ACADÉMICA ----
 \section*{Formación Académica}
 {{FORMACION}}
 
-\vspace{2pt}
+\vspace{1pt}
 
 % ---- CERTIFICACIONES (condicional) ----
 {{CERTIFICACIONES_SECCION}}

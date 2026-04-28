@@ -67,6 +67,10 @@ class AdaptationService:
             "adapted_cv_html": None,
             "adapted_cv_url": adapted_cv_url,
             "created_at": adaptation.created_at,
+            "analysis_id": offer.id,
+            "job_title": offer.job_title,
+            "company": offer.company,
+            "score": offer.score,
         }
 
     @staticmethod
@@ -86,11 +90,21 @@ class AdaptationService:
         if not adaptation:
             return None
 
+        # Fetch related job offer for metadata
+        offer_result = await db.execute(
+            select(JobOffer).where(JobOffer.id == adaptation.job_offer_id)
+        )
+        offer = offer_result.scalar_one_or_none()
+
         return {
             "id": adaptation.id,
             "adapted_cv_html": adaptation.adapted_cv_html,
             "adapted_cv_url": adaptation.adapted_cv_url,
             "created_at": adaptation.created_at,
+            "analysis_id": offer.id if offer else None,
+            "job_title": offer.job_title if offer else None,
+            "company": offer.company if offer else None,
+            "score": offer.score if offer else None,
         }
 
     @staticmethod
@@ -117,17 +131,26 @@ class AdaptationService:
         )
         adaptations = result.scalars().all()
 
+        items = []
+        for a in adaptations:
+            offer_result = await db.execute(
+                select(JobOffer).where(JobOffer.id == a.job_offer_id)
+            )
+            offer = offer_result.scalar_one_or_none()
+
+            items.append({
+                "id": a.id,
+                "created_at": a.created_at,
+                "job_offer_id": a.job_offer_id,
+                "adapted_cv_url": a.adapted_cv_url,
+                "job_title": offer.job_title if offer else None,
+                "company": offer.company if offer else None,
+                "score": offer.score if offer else None,
+            })
+
         return {
             "total": total,
             "limit": limit,
             "offset": offset,
-            "items": [
-                {
-                    "id": a.id,
-                    "created_at": a.created_at,
-                    "job_offer_id": a.job_offer_id,
-                    "adapted_cv_url": a.adapted_cv_url,
-                }
-                for a in adaptations
-            ],
+            "items": items,
         }

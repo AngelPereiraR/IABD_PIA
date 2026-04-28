@@ -22,7 +22,7 @@ target_metadata = Base.metadata
 def run_migrations_offline() -> None:
     url = os.getenv("DATABASE_URL", "postgresql://localhost/opticv")
     if url.startswith("postgresql://"):
-        url = url.replace("postgresql://", "postgresql+asyncpg://")
+        url = url.replace("postgresql://", "postgresql+psycopg2://")
     if "?" in url:
         url = url.split("?")[0]
 
@@ -39,7 +39,7 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     url = os.getenv("DATABASE_URL", "postgresql://localhost/opticv")
     if url.startswith("postgresql://"):
-        url = url.replace("postgresql://", "postgresql+asyncpg://")
+        url = url.replace("postgresql://", "postgresql+psycopg2://")
     if "?" in url:
         url = url.split("?")[0]
 

@@ -5,7 +5,7 @@ export const adaptationService = {
     apiClient.post('/adaptations/create', { analysis_id: analysisId }),
 
   getAdaptationHistory: (limit = 10, offset = 0) =>
-    apiClient.get('/adaptations/history', {
+    apiClient.get('/adaptations/list', {
       params: { limit, offset },
     }),
 
@@ -13,7 +13,7 @@ export const adaptationService = {
     apiClient.get(`/adaptations/${id}`),
 
   downloadPDF: (id) =>
-    apiClient.get(`/adaptations/${id}/download-pdf`, {
+    apiClient.get(`/adaptations/${id}/download`, {
       responseType: 'arraybuffer',
     }),
 };

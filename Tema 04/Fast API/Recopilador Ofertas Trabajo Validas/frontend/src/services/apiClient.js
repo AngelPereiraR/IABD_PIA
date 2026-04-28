@@ -21,10 +21,14 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired, clear storage and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/auth/login';
+      // Only redirect if not already on login/register pages (avoid reload during auth attempts)
+      const path = window.location.pathname;
+      if (!path.includes('/auth/login') && !path.includes('/auth/register')) {
+        // Token expired, clear storage and redirect to login
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/auth/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -3,20 +3,20 @@ import { Layout, Spinner } from '../../../shared/components';
 import { CardItem } from '../../../shared/components/CardItem';
 import useStore from '../../../stores/globalStore';
 import { useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 
-export function HistoryPage() {
+export function AdaptationsHistoryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get('page') || '1', 10);
-  const { analyses, isLoadingHistory, totalAnalyses, loadAnalysisHistory } = useStore((state) => ({
-    analyses: state.analysis.analyses,
-    isLoadingHistory: state.analysis.isLoadingHistory,
-    totalAnalyses: state.analysis.totalAnalyses,
-    loadAnalysisHistory: state.analysisActions.loadAnalysisHistory,
+  const { adaptations, isLoadingHistory, total, loadAdaptationHistory } = useStore((state) => ({
+    adaptations: state.adaptations.adaptations,
+    isLoadingHistory: state.adaptations.isLoadingHistory,
+    total: state.adaptations.total,
+    loadAdaptationHistory: state.adaptationActions.loadAdaptationHistory,
   }));
 
   const itemsPerPage = 10;
-  const maxPages = Math.ceil(totalAnalyses / itemsPerPage);
+  const maxPages = Math.ceil(total / itemsPerPage);
   const isLastPage = page >= maxPages;
 
   const handlePreviousPage = () => {
@@ -33,53 +33,49 @@ export function HistoryPage() {
 
   useEffect(() => {
     const loadPage = async () => {
-      const result = await loadAnalysisHistory(10, (page - 1) * 10);
-      // If this page returned no items and we're not on page 1, redirect to previous
-      if (result.success && result.itemsCount === 0 && page > 1) {
-        setSearchParams({ page: page - 1 });
-      }
+      await loadAdaptationHistory(itemsPerPage, (page - 1) * itemsPerPage);
     };
     loadPage();
-  }, [page, loadAnalysisHistory, setSearchParams]);
+  }, [page, loadAdaptationHistory]);
+
 
   return (
     <Layout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Analysis History</h1>
-          {totalAnalyses > 0 && (
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">My Adaptations</h1>
+          {total > 0 && (
             <p className="text-gray-600">
-              Total analyses: <span className="font-semibold text-indigo-600">{totalAnalyses}</span>
+              Total adaptations: <span className="font-semibold text-indigo-600">{total}</span>
             </p>
           )}
         </div>
 
         {isLoadingHistory ? (
-          <Spinner message="Loading analyses..." />
-        ) : analyses.length === 0 ? (
+          <Spinner message="Loading adaptations..." />
+        ) : adaptations.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600">No analyses yet. Start by analyzing a job offer.</p>
+            <p className="text-gray-600">No adapted CVs yet. Generate one from an analysis.</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {analyses.map((analysis) => (
+            {adaptations.map((adaptation) => (
               <CardItem
-                key={analysis.id}
-                linkPath={`/dashboard/analysis/${analysis.id}`}
-                icon={BarChart3}
-                title={analysis.title}
-                company={analysis.company}
-                score={analysis.score}
-                createdAt={analysis.created_at}
-                isValid={analysis.is_valid}
-                badgeColor="bg-purple-100 text-purple-700"
-                searchParams={{ from: 'history' }}
+                key={adaptation.id}
+                linkPath={`/dashboard/adaptations/${adaptation.id}`}
+                icon={FileText}
+                title={adaptation.job_title}
+                company={adaptation.company}
+                score={adaptation.score}
+                createdAt={adaptation.created_at}
+                badgeColor="bg-indigo-100 text-indigo-700"
+                searchParams={{ from: 'adaptations' }}
               />
             ))}
           </div>
         )}
 
-        {totalAnalyses > 0 && (
+        {total > 0 && (
           <div className="flex gap-2 justify-center mt-8">
             <button
               onClick={handlePreviousPage}

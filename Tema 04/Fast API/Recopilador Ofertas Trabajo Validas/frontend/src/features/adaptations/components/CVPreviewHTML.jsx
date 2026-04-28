@@ -1,4 +1,4 @@
-import { Loader } from 'lucide-react';
+import { Spinner } from '../../../shared/components';
 
 export function CVPreviewHTML({ html, isLoading }) {
   return (
@@ -8,10 +8,7 @@ export function CVPreviewHTML({ html, isLoading }) {
       </div>
       <div className="p-6">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader size={32} className="text-indigo-600 animate-spin mb-2" />
-            <p className="text-gray-600">Generating adapted CV...</p>
-          </div>
+          <Spinner message="Generating adapted CV..." size={32} />
         ) : html ? (
           <div
             className="prose prose-sm max-w-none"

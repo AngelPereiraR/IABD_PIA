@@ -60,22 +60,15 @@ class AnalysisService:
         extracted_title = decision.get("job_title", "")
         extracted_company = decision.get("company", "")
 
-        scoring_details = {
-            "ats_score": decision.get("ats_score"),
-            "recruiter_score": decision.get("recruiter_score"),
-            "reasoning": decision.get("summary", ""),
-        }
-
         # 5. Store in database
         job_offer = JobOffer(
             user_id=user_id,
-            offer_text=offer_markdown[:5000] if offer_markdown else None,  # Limit size
+            raw_text=offer_markdown[:5000] if offer_markdown else None,  # Limit size
             offer_url=offer_url,
             job_title=extracted_title,
             company=extracted_company,
             score=score,
             is_valid=is_valid,
-            scoring_details=scoring_details,
             analysis_result=decision,
             status="done",
         )
@@ -88,9 +81,14 @@ class AnalysisService:
             "id": job_offer.id,
             "score": score,
             "is_valid": is_valid,
-            "extracted_title": extracted_title,
-            "extracted_company": extracted_company,
-            "scoring_details": scoring_details,
+            "title": extracted_title,
+            "company": extracted_company,
+            "salary": decision.get("salary"),
+            "job_type": decision.get("job_type"),
+            "location": decision.get("location"),
+            "benefits": decision.get("benefits"),
+            "key_skills": decision.get("key_skills"),
+            "summary": decision.get("summary"),
         }
 
     @staticmethod
@@ -110,15 +108,20 @@ class AnalysisService:
         if not offer:
             return None
 
+        analysis_result = offer.analysis_result or {}
         return {
             "id": offer.id,
             "score": offer.score,
             "is_valid": offer.is_valid,
-            "extracted_title": offer.job_title,
-            "extracted_company": offer.company,
+            "title": offer.job_title,
+            "company": offer.company,
             "offer_url": offer.offer_url,
-            "scoring_details": offer.scoring_details,
-            "analysis_result": offer.analysis_result,
+            "salary": analysis_result.get("salary"),
+            "job_type": analysis_result.get("job_type"),
+            "location": analysis_result.get("location"),
+            "benefits": analysis_result.get("benefits"),
+            "key_skills": analysis_result.get("key_skills"),
+            "summary": analysis_result.get("summary"),
             "created_at": offer.created_at,
         }
 
@@ -156,8 +159,8 @@ class AnalysisService:
                     "id": o.id,
                     "score": o.score,
                     "is_valid": o.is_valid,
-                    "extracted_title": o.job_title,
-                    "extracted_company": o.company,
+                    "title": o.job_title,
+                    "company": o.company,
                     "created_at": o.created_at,
                 }
                 for o in offers

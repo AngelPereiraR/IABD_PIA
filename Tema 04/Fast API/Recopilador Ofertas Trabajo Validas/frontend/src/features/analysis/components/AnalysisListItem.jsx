@@ -24,7 +24,7 @@ export function AnalysisListItem({ analysis }) {
         </div>
       </div>
       <Link
-        to={`/dashboard/analysis/${analysis.id}`}
+        to={`/dashboard/analysis/${analysis.id}?from=history`}
         className="flex items-center gap-2 px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded transition"
       >
         View <ArrowRight size={16} />

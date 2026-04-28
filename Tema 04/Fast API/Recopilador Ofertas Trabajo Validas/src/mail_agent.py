@@ -6,7 +6,7 @@ import asyncio
 from typing import List
 from dotenv import load_dotenv
 
-from src.database import JobOffer, AsyncSessionLocal
+from src.database import JobOffer, SessionLocal
 from src.token_manager import TokenManager
 
 load_dotenv()
@@ -230,9 +230,9 @@ class GmailJobCollector:
         return ""
 
 
-async def save_offer_to_db(analysis: dict, offer_url: str, raw_text: str, user_id: str) -> int:
+def save_offer_to_db(analysis: dict, offer_url: str, raw_text: str, user_id: str) -> int:
     """
-    Persists an analyzed offer to Neon PostgreSQL.
+    Persists an analyzed offer to Neon PostgreSQL (synchronous version for bot thread).
 
     Args:
         analysis: Dict from brain.analyze_offer() with keys: is_relevant, score, job_title, company, etc.
@@ -243,7 +243,7 @@ async def save_offer_to_db(analysis: dict, offer_url: str, raw_text: str, user_i
     Returns:
         ID of inserted JobOffer record
     """
-    async with AsyncSessionLocal() as session:
+    with SessionLocal() as session:
         # Calculate is_valid based on score threshold
         score = analysis.get('score', 0)
         is_valid = score >= 60
@@ -261,8 +261,8 @@ async def save_offer_to_db(analysis: dict, offer_url: str, raw_text: str, user_i
             status="pending"  # Will be updated to "processing" when CV generation starts
         )
         session.add(offer)
-        await session.commit()
-        await session.refresh(offer)
+        session.commit()
+        session.refresh(offer)
         return offer.id
 
 

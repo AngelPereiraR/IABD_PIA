@@ -20,6 +20,7 @@ load_dotenv()
 
 CV_PATH = Path(__file__).parent / "data" / "cv_usuario.pdf"
 CV_DATA_PATH = Path(__file__).parent / "data" / "cv_master_data.json"
+AVATAR_PATH = Path(__file__).parent / "data" / "imagen_cv.jpg"
 
 
 def _upload_master_cv() -> str | None:
@@ -30,6 +31,17 @@ def _upload_master_cv() -> str | None:
     print(f"[UPLOAD] Subiendo CV maestro desde {CV_PATH}...")
     url = upload_pdf(str(CV_PATH), public_id="cv/master")
     print(f"   CV subido: {url}")
+    return url
+
+
+def _upload_avatar() -> str | None:
+    """Sube imagen_cv.jpg a Cloudinary y retorna la URL, o None si no existe."""
+    if not AVATAR_PATH.exists():
+        print(f"[WARNING] Imagen no encontrada en {AVATAR_PATH} — se omite subida")
+        return None
+    print(f"[UPLOAD] Subiendo imagen de perfil desde {AVATAR_PATH}...")
+    url = upload_pdf(str(AVATAR_PATH), public_id="avatar/bot_profile")
+    print(f"   Avatar subido: {url}")
     return url
 
 
@@ -77,7 +89,7 @@ def _save_cv_data_local(cv_data: dict) -> None:
 
 
 async def seed_user():
-    """Insert or update base user in database, including CV data extraction."""
+    """Insert or update base user in database, including CV data extraction and avatar upload."""
     from src.api.auth_service import AuthService
 
     user_id = os.getenv("USER_ID")
@@ -90,6 +102,7 @@ async def seed_user():
         return
 
     master_cv_url = _upload_master_cv()
+    avatar_url = _upload_avatar()
     cv_data = await _extract_cv_data()
 
     async with AsyncSessionLocal() as session:
@@ -108,6 +121,8 @@ async def seed_user():
             }
             if master_cv_url:
                 update_data["master_cv_url"] = master_cv_url
+            if avatar_url:
+                update_data["avatar_url"] = avatar_url
             if cv_data:
                 update_data["cv_data"] = cv_data
 
@@ -118,6 +133,8 @@ async def seed_user():
             print(f"   telegram_id actualizado: {telegram_id}")
             if master_cv_url:
                 print(f"   master_cv_url actualizado: {master_cv_url}")
+            if avatar_url:
+                print(f"   avatar_url actualizado: {avatar_url}")
             if cv_data:
                 print(f"   cv_data actualizado: nombre={cv_data.get('nombre', '?')}")
             return
@@ -133,6 +150,7 @@ async def seed_user():
             role="admin",  # Este usuario es el propietario del CV maestro
             telegram_id=telegram_id,
             master_cv_url=master_cv_url,
+            avatar_url=avatar_url,
             cv_data=cv_data
         )
         await session.execute(stmt)
@@ -143,6 +161,7 @@ async def seed_user():
         print(f"   Password: {'Set' if user_password else 'Not set'}")
         print(f"   Telegram ID: {telegram_id}")
         print(f"   master_cv_url: {master_cv_url}")
+        print(f"   avatar_url: {avatar_url}")
         if cv_data:
             print(f"   cv_data: nombre={cv_data.get('nombre', '?')}")
 

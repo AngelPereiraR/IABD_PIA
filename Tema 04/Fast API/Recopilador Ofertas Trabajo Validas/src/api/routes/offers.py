@@ -14,7 +14,7 @@ from src.api.analysis_service import AnalysisService
 from src.api.adaptation_service import AdaptationService
 from src.database import AsyncSessionLocal, JobOffer, User, get_db
 
-router = APIRouter(prefix="/api", tags=["offers"])
+router = APIRouter(tags=["offers"])
 limiter = get_limiter()
 
 
@@ -135,6 +135,23 @@ async def create_analysis(
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
+@router.get("/analysis/list", response_model=AnalysisListResponse)
+@limiter.limit("60/minute")
+async def list_analyses(
+    request: Request,
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_db),
+):
+    """List all analyses for current user with pagination"""
+    try:
+        result = await AnalysisService.list_analyses(db, current_user.id, limit, offset)
+        return AnalysisListResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/analysis/{analysis_id}", response_model=AnalysisResponse)
 @limiter.limit("60/minute")
 async def get_analysis(
@@ -149,23 +166,6 @@ async def get_analysis(
         if not result:
             raise HTTPException(status_code=404, detail="Analysis not found")
         return AnalysisResponse(**result)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/analysis/list", response_model=AnalysisListResponse)
-@limiter.limit("60/minute")
-async def list_analyses(
-    request: Request,
-    limit: int = Query(10, ge=1, le=100),
-    offset: int = Query(0, ge=0),
-    current_user: User = Depends(get_current_user),
-    db = Depends(get_db),
-):
-    """List all analyses for current user with pagination"""
-    try:
-        result = await AnalysisService.list_analyses(db, current_user.id, limit, offset)
-        return AnalysisListResponse(**result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -172,13 +172,13 @@ def run_bot_logic():
                             continue
 
                         try:
-                            # Use bot_loop to run async operations (avoids "different loop" error)
-                            offer_id = bot_loop.run_until_complete(save_offer_to_db(
+                            # Call sync function directly (no event loop needed)
+                            offer_id = save_offer_to_db(
                                 analysis=decision,
                                 offer_url=url,
                                 raw_text=offer_markdown,
                                 user_id=user_id
-                            ))
+                            )
                             print(f"       [DB] Oferta persistida con ID: {offer_id}")
 
                             # Send Telegram notification with offer_id embedded

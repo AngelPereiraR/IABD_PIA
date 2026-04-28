@@ -9,6 +9,8 @@ import json
 import tempfile
 import asyncio
 import urllib.request
+import unicodedata
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -35,6 +37,24 @@ class CVGenerator:
     """
     Generates optimized CV PDFs by compiling LaTeX templates.
     """
+
+    @staticmethod
+    def normalize_filename(text: str) -> str:
+        """
+        Normaliza un texto para usar como nombre de archivo.
+        Elimina tildes, espacios, caracteres especiales.
+        Ej: "Ángel Pereira" -> "Angel_Pereira"
+        """
+        if not text:
+            return ""
+        # Eliminar tildes y acentos
+        nfkd = unicodedata.normalize('NFKD', text)
+        normalized = ''.join([c for c in nfkd if not unicodedata.combining(c)])
+        # Reemplazar espacios y caracteres especiales por guiones bajos
+        normalized = re.sub(r'[^a-zA-Z0-9]+', '_', normalized)
+        # Eliminar guiones bajos al inicio y final
+        normalized = normalized.strip('_')
+        return normalized
 
     @staticmethod
     def escape_latex(text: str) -> str:
@@ -126,10 +146,17 @@ class CVGenerator:
                 user=user
             )
 
+            # Generate normalized filename: NombreOferta_NombreCandidato
+            job_title_normalized = CVGenerator.normalize_filename(offer.job_title or "oferta")
+            candidate_name_normalized = CVGenerator.normalize_filename(
+                user.cv_data.get("nombre") if user.cv_data and isinstance(user.cv_data, dict) else user.email.split("@")[0]
+            )
+            normalized_filename = f"{job_title_normalized}_{candidate_name_normalized}"
+
             # Upload to Cloudinary
             cv_url = await upload_pdf_async(
                 file_path=pdf_path,
-                public_id=f"cv_optimizados/offer_{offer_id}_cv"
+                public_id=f"cv_optimizados/{normalized_filename}"
             )
 
             # Update database with URL and mark as done
@@ -187,8 +214,8 @@ class CVGenerator:
         llm = ChatOpenAI(
             api_key=os.environ.get("DEEPSEEK_API_KEY"),
             base_url="https://api.deepseek.com",
-            model="deepseek-chat",
-            temperature=0.3
+            model="deepseek-v4-flash",
+            temperature=0
         )
         parser = JsonOutputParser(pydantic_object=AdaptedCVSections)
 
@@ -207,7 +234,7 @@ class CVGenerator:
              "  ▪ Si la oferta pide Python, FastAPI, Docker, PostgreSQL:\n"
              "    - Incluye Python, FastAPI, PostgreSQL si existen en base\n"
              "    - OMITE Docker si no está en habilidades_base\n"
-             "  ▪ Máximo 5-8 items. Si tienes 20, devuelve solo las 5-8 más relevantes.\n\n"
+             "  ▪ Máximo 5-12 items. Si tienes 20, devuelve solo las 5-12 más relevantes.\n\n"
              "- experiencia: Lista de logros CON ETIQUETAS de experiencia: [\"[EXP0] logro1\", \"[EXP0] logro2\", \"[EXP1] logro3\"]\n"
              "  ▪ Prefija cada logro con [EXP0], [EXP1], [EXP2], etc indicando a qué experiencia pertenece.\n"
              "  ▪ El índice (0, 1, 2...) corresponde al orden en experiencia_base.\n"
@@ -370,7 +397,7 @@ class CVGenerator:
             contacto_parts.append(f"\\href{{https://github.com/{github_user}}}{{github.com/{github_user}}}")
 
         # Unir con separador si hay múltiples
-        replacements["{{CONTACTO}}"] = " $|$ ".join(contacto_parts) if contacto_parts else ""
+        replacements["{{CONTACTO}}"] = "  $|$  ".join(contacto_parts) if contacto_parts else ""
 
         # Contacto extra (teléfono, ubicación, web) - solo si existen
         contacto_extra_parts = []
@@ -383,7 +410,9 @@ class CVGenerator:
             contacto_extra_parts.append(f"\\href{{{web_url}}}{{{web_url}}}")
 
         if contacto_extra_parts:
-            replacements["{{CONTACTO_EXTRA}}"] = f"\\\\ {{\n  \\small {' $|$ '.join(contacto_extra_parts)}\n}}"
+            # Envolver cada parte en \mbox para evitar que se corte
+            mboxed_parts = [f"\\mbox{{{part}}}" for part in contacto_extra_parts]
+            replacements["{{CONTACTO_EXTRA}}"] = f"  $|$  {'  $|$  '.join(mboxed_parts)}"
         else:
             replacements["{{CONTACTO_EXTRA}}"] = ""
 
@@ -395,10 +424,8 @@ class CVGenerator:
                 # Escapar ruta Windows a formato LaTeX (convertir \ a /)
                 latex_path = avatar_path.replace('\\', '/')
                 replacements["{{FOTO}}"] = (
-                    f"\\begin{{wrapfigure}}{{r}}{{0.2\\textwidth}}\n"
-                    f"  \\centering\n"
-                    f"  \\includegraphics[width=0.18\\textwidth]{{{latex_path}}}\n"
-                    f"\\end{{wrapfigure}}"
+                    f"\\centering\n"
+                    f"\\includegraphics[width=0.275\\textwidth]{{{latex_path}}}"
                 )
             else:
                 replacements["{{FOTO}}"] = ""
@@ -753,7 +780,7 @@ class CVGenerator:
                     items.append(nombre)
 
         if items:
-            return " $|$ ".join(items)
+            return "  $|$  ".join(items)
         return ""
 
     @staticmethod
@@ -817,7 +844,7 @@ class CVGenerator:
 
 \begin{center}
 {\Large \textbf{{{NOMBRE}}}}\\
-{{EMAIL}} $|$ \href{https://linkedin.com/in/{{LINKEDIN}}}{LinkedIn} $|$ \href{https://github.com/{{GITHUB}}}{GitHub}
+{{EMAIL}}  $|$\href{https://linkedin.com/in/{{LINKEDIN}}}{LinkedIn}  $|$\href{https://github.com/{{GITHUB}}}{GitHub}
 \end{center}
 
 \hrule\vspace{10pt}
