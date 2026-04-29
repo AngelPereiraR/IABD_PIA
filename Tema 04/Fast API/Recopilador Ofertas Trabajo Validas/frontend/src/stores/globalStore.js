@@ -3,6 +3,7 @@ import { authService } from '../services/authService';
 import { cvService } from '../services/cvService';
 import { analysisService } from '../services/analysisService';
 import { adaptationService } from '../services/adaptationService';
+import { profileService } from '../services/profileService';
 
 const useStore = create((set, get) => ({
   // ===== AUTH SLICE =====
@@ -41,6 +42,7 @@ const useStore = create((set, get) => ({
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         console.log('Login successful, token stored');
+        get().profileActions.loadProfile();
         return { success: true };
       } catch (error) {
         console.error('Login error:', error);
@@ -64,6 +66,7 @@ const useStore = create((set, get) => ({
         }));
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+        get().profileActions.loadProfile();
         return { success: true };
       } catch (error) {
         const message = error.response?.data?.detail || 'Registration failed';
@@ -86,6 +89,7 @@ const useStore = create((set, get) => ({
         }));
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+        get().profileActions.loadProfile();
         return { success: true };
       } catch (error) {
         const message = error.response?.data?.detail || 'Google auth failed';
@@ -112,12 +116,62 @@ const useStore = create((set, get) => ({
           set((state) => ({ auth: { ...state.auth, user, token } }));
           const response = await authService.getMe();
           set((state) => ({ auth: { ...state.auth, user: response.data } }));
+          get().profileActions.loadProfile();
         } catch {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
         }
       }
     },
+  },
+
+  // ===== PROFILE SLICE =====
+  profile: {
+    data: null,
+    isLoading: false,
+    error: null,
+  },
+
+  profileActions: {
+    loadProfile: async () => {
+      set((state) => ({ profile: { ...state.profile, isLoading: true, error: null } }));
+      try {
+        const response = await profileService.getProfile();
+        set((state) => ({ profile: { ...state.profile, data: response, isLoading: false, error: null } }));
+        return { success: true };
+      } catch (error) {
+        const message = error.response?.data?.detail || 'Failed to load profile';
+        set((state) => ({ profile: { ...state.profile, isLoading: false, error: message } }));
+        return { success: false, error: message };
+      }
+    },
+  },
+
+  // ===== LOCALE SLICE =====
+  locale: {
+    current: 'es',
+    available: ['es', 'en'],
+    isSyncing: false,
+    syncError: null,
+    isInitialized: false,
+  },
+
+  localeActions: {
+    setLocale: (locale) => set((state) => ({
+      locale: { ...state.locale, current: locale }
+    })),
+
+    setSyncing: (isSyncing) => set((state) => ({
+      locale: { ...state.locale, isSyncing }
+    })),
+
+    setSyncError: (error) => set((state) => ({
+      locale: { ...state.locale, syncError: error }
+    })),
+
+    setInitialized: (initialized) => set((state) => ({
+      locale: { ...state.locale, isInitialized: initialized }
+    })),
   },
 
   // ===== CV SLICE =====
@@ -316,12 +370,41 @@ const useStore = create((set, get) => ({
 
     downloadPDF: async (adaptationId) => {
       try {
+        const state = get();
+        const adaptation = state.adaptations.currentAdaptation;
+        const profile = state.profile.data;
+
+        let filename = `cv_adaptation_${adaptationId}.pdf`;
+
+        if (adaptation && profile?.cv_data?.nombre) {
+          const normalizeFilename = (text) => {
+            if (!text) return '';
+            const nfkd = text.normalize('NFKD');
+            let normalized = '';
+            for (let i = 0; i < nfkd.length; i++) {
+              const code = nfkd.charCodeAt(i);
+              if (code < 0x0300 || code > 0x036F) {
+                normalized += nfkd[i];
+              }
+            }
+            normalized = normalized.replace(/[^a-zA-Z0-9]+/g, '_');
+            normalized = normalized.replace(/^_+|_+$/g, '');
+            return normalized;
+          };
+
+          const jobTitle = normalizeFilename(adaptation.job_title || 'Oferta');
+          const company = normalizeFilename(adaptation.company || 'Empresa');
+          const candidateName = normalizeFilename(profile.cv_data.nombre);
+
+          filename = `${jobTitle}_${company}_${candidateName}.pdf`;
+        }
+
         const response = await adaptationService.downloadPDF(adaptationId);
         const blob = new Blob([response.data], { type: 'application/pdf' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `cv_adaptation_${adaptationId}.pdf`;
+        a.download = filename;
         a.click();
         return { success: true };
       } catch (error) {

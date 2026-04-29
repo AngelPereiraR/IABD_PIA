@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Spinner } from './shared/components';
 import useStore from './stores/globalStore';
+import { initLocale } from './services/localeService';
 
 // Pages & Components
 import { LandingPage } from './features/landing/pages/LandingPage';
@@ -29,6 +30,23 @@ function App() {
     restoreSession: state.authActions.restoreSession,
     fetchCurrentCV: state.cvActions.fetchCurrentCV,
   }));
+
+  useEffect(() => {
+    // Initialize locale on first app load
+    const initializeLocale = async () => {
+      const { profile, localeActions } = useStore.getState();
+      const userProfile = profile.data;
+
+      try {
+        await initLocale(userProfile);
+        localeActions.setInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize locale:', error);
+      }
+    };
+
+    initializeLocale();
+  }, []);
 
   useEffect(() => {
     restoreSession().then(() => {

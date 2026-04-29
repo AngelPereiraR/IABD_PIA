@@ -44,8 +44,8 @@ class CVProyecto(PydanticModel):
 
 
 class CVIdioma(PydanticModel):
-    idioma: str = Field(description="Nombre del idioma")
-    nivel: str = Field(description="Nivel de dominio (nativo, fluido, intermedio, básico)")
+    idioma: str = Field(description="Language name")
+    nivel: str = Field(description="Language proficiency level")
 
 
 class CVCertificacion(PydanticModel):
@@ -113,7 +113,8 @@ class CVService:
         prompt = ChatPromptTemplate.from_messages([
             ("system",
              "Eres experto en extracción de datos de CVs en PDF.\n"
-             "Extrae SOLO información EXISTENTE en el CV. NUNCA inventes datos.\n\n"
+             "Extrae SOLO información EXISTENTE en el CV. NUNCA inventes datos.\n"
+             "Mantén el contenido del CV en su idioma original.\n\n"
              "CAMPOS REQUERIDOS:\n"
              "- nombre: Nombre completo del candidato\n"
              "- email: Email de contacto\n"
@@ -128,7 +129,7 @@ class CVService:
              "- telefono: Teléfono de contacto\n"
              "- ubicacion: Ciudad/País\n"
              "- web: Website personal o portfolio\n"
-             "- idiomas: Array [idioma, nivel(nativo/fluido/intermedio/básico)]\n"
+             "- idiomas: Array [idioma, nivel] donde nivel es el texto original del CV\n"
              "- certificaciones: Array [nombre, emisor, anio]\n"
              "- cursos: Array [nombre, plataforma, anio]\n"
              "- voluntariado: Array [organizacion, rol, descripcion, anio]\n\n"

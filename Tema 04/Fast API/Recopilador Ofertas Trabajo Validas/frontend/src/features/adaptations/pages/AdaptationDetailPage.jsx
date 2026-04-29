@@ -12,7 +12,7 @@ export function AdaptationDetailPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const fromParam = searchParams.get('from') || 'adaptations';
+  const fromParam = searchParams.get('from');
   const analysisId = searchParams.get('analysisId');
 
   const { currentAdaptation, loadAdaptation } = useStore((state) => ({
@@ -42,11 +42,14 @@ export function AdaptationDetailPage() {
     };
 
     fetch();
-  }, [adaptationId, currentAdaptation, loadAdaptation, navigate]);
+  }, [adaptationId]);
 
   const handleBack = () => {
-    if (fromParam === 'analysis' && analysisId) {
-      navigate(`/dashboard/analysis/${analysisId}`);
+    if (analysisId) {
+      const backUrl = fromParam
+        ? `/dashboard/analysis/${analysisId}?from=${fromParam}`
+        : `/dashboard/analysis/${analysisId}`;
+      navigate(backUrl);
     } else {
       navigate('/dashboard/adaptations');
     }

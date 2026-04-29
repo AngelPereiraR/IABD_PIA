@@ -146,12 +146,13 @@ class CVGenerator:
                 user=user
             )
 
-            # Generate normalized filename: NombreOferta_NombreCandidato
-            job_title_normalized = CVGenerator.normalize_filename(offer.job_title or "oferta")
+            # Generate normalized filename: Puesto_Empresa_Nombre_Candidato
+            job_title_normalized = CVGenerator.normalize_filename(offer.job_title or "Oferta")
+            company_normalized = CVGenerator.normalize_filename(offer.company or "Empresa")
             candidate_name_normalized = CVGenerator.normalize_filename(
                 user.cv_data.get("nombre") if user.cv_data and isinstance(user.cv_data, dict) else user.email.split("@")[0]
             )
-            normalized_filename = f"{job_title_normalized}_{candidate_name_normalized}"
+            normalized_filename = f"{job_title_normalized}_{company_normalized}_{candidate_name_normalized}"
 
             # Upload to Cloudinary
             cv_url = await upload_pdf_async(
@@ -224,6 +225,16 @@ class CVGenerator:
              "Eres experto en filtrar CVs para ofertas específicas.\n"
              "REGLA: Solo usa datos que EXISTEN en el perfil base. NO inventar nunca.\n"
              "PERO: Sí debes FILTRAR - incluir SOLO lo relevante para esta oferta.\n\n"
+             "DETECCIÓN Y NORMALIZACIÓN DE IDIOMA:\n"
+             "1. PRIMERO: Detecta el idioma PRINCIPAL del perfil base (master_data).\n"
+             "2. LUEGO: Genera TODO el contenido adaptado en ESE MISMO IDIOMA.\n"
+             "3. Esto incluye TODAS las secciones: resumen, habilidades, experiencia, idiomas, etc.\n"
+             "4. Ejemplo:\n"
+             "   - Si master_data está en ESPAÑOL → devuelve TODA la adaptación en ESPAÑOL\n"
+             "   - Si master_data está en INGLÉS → devuelve TODA la adaptación en INGLÉS\n"
+             "5. Para idiomas en la sección: mantén los nombres de idiomas en el mismo idioma del CV.\n"
+             "   Ej: Si CV en español, devuelve 'Inglés', 'Francés', etc.\n"
+             "       Si CV en inglés, devuelve 'Spanish', 'French', etc.\n\n"
              "CAMPOS A GENERAR:\n"
              "- resumen: 2-3 frases. Reescribe el resumen_base integrando keywords de la oferta.\n"
              "  ▪ Usa contenido REAL del base, no inventes skills nuevas.\n"
@@ -238,10 +249,6 @@ class CVGenerator:
              "- experiencia: Lista de logros CON ETIQUETAS de experiencia: [\"[EXP0] logro1\", \"[EXP0] logro2\", \"[EXP1] logro3\"]\n"
              "  ▪ Prefija cada logro con [EXP0], [EXP1], [EXP2], etc indicando a qué experiencia pertenece.\n"
              "  ▪ El índice (0, 1, 2...) corresponde al orden en experiencia_base.\n"
-             "  ▪ Ej: Si base tiene 2 trabajos:\n"
-             "       exp[0]: Full Stack Dev en Pikotea\n"
-             "       exp[1]: Software Dev en MERCANZA\n"
-             "    Devuelve: [\"[EXP0] Desarrollé API REST\", \"[EXP0] Soporte en BD\", \"[EXP1] Desarrollo web\"]\n"
              "  ▪ CADA logro debe tener EXACTAMENTE la etiqueta [EXPN].\n"
              "  ▪ NO DUPLICAR logros entre experiencias. Cada logro va en su experiencia.\n"
              "  ▪ SIEMPRE incluye al menos 1-2 logros totales si hay algo relevante.\n\n"
@@ -252,9 +259,9 @@ class CVGenerator:
              "- keywords_ats: Términos CLAVE de la oferta (no del CV).\n"
              "  ▪ Extrae de offer_text. Máximo 5-8.\n\n"
              "🎯 FILOSOFÍA: Filtra para relevancia pero usa SOLO datos REALES del base.\n"
-             "Formato: texto plano español, sin LaTeX.\n"
+             "⚠️ IMPORTANTE: TODO el contenido generado debe estar en el idioma del perfil base (master_data).\n"
              "{format_instructions}"),
-            ("human", "PERFIL BASE:\n{master_data}\n\nOFERTA:\n{offer_text}\n\nFiltra datos REALES del base. Incluye SOLO lo relevante para esta oferta.")
+            ("human", "PERFIL BASE:\n{master_data}\n\nOFERTA:\n{offer_text}\n\nFiltra datos REALES del base. Incluye SOLO lo relevante para esta oferta. GENERA TODO EN EL IDIOMA DEL PERFIL BASE.")
         ])
 
         chain = prompt | llm | parser

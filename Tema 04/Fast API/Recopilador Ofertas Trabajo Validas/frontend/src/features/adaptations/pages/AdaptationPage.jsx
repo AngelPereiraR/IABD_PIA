@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Layout, Spinner } from '../../../shared/components';
 import { AdaptationPreview } from '../components/AdaptationPreview';
 import { PDFDownloadButton } from '../components/PDFDownloadButton';
@@ -10,13 +10,22 @@ import { ArrowLeft, Zap } from 'lucide-react';
 
 export function AdaptationPage() {
   const { analysisId } = useParams();
+  const [searchParams] = useSearchParams();
   const analysisIdAsNumber = parseInt(analysisId, 10);
   const navigate = useNavigate();
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const [analysisError, setAnalysisError] = useState(null);
 
   const handleBack = () => {
-    navigate('/dashboard/analysis');
+    const fromParam = searchParams.get('from');
+    if (analysisId) {
+      const backUrl = fromParam
+        ? `/dashboard/analysis/${analysisId}?from=${fromParam}`
+        : `/dashboard/analysis/${analysisId}`;
+      navigate(backUrl);
+    } else {
+      navigate('/dashboard/analysis');
+    }
   };
 
   const { currentAnalysis, currentAdaptation, isGenerating, setCurrentAnalysis, setCurrentAdaptation, createAdaptation } = useStore((state) => ({

@@ -1,0 +1,69 @@
+{
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "logout": "Logout",
+    "language": "Language"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "name": "Name",
+    "loginError": "Invalid email or password",
+    "registerError": "Registration failed",
+    "submit": "Submit",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "submit": "Submit"
+  },
+  "cv": {
+    "upload": "Upload CV",
+    "delete": "Delete CV",
+    "uploading": "Uploading CV...",
+    "uploadSuccess": "CV uploaded successfully",
+    "uploadError": "Error uploading CV",
+    "deleteSuccess": "CV deleted successfully",
+    "deleteError": "Error deleting CV",
+    "preview": "CV Preview",
+    "required": "CV is required to continue"
+  },
+  "analysis": {
+    "create": "Create Analysis",
+    "analyzing": "Analyzing...",
+    "title": "Offer Analysis",
+    "description": "Analyze a job offer by comparing it with your CV",
+    "analyze": "Analyze",
+    "history": "Analysis History",
+    "noResults": "No analyses found",
+    "error": "Error creating analysis"
+  },
+  "adaptations": {
+    "generate": "Generate Adaptation",
+    "generating": "Generating adaptation...",
+    "download": "Download PDF",
+    "title": "Adaptations",
+    "history": "Adaptation History",
+    "noResults": "No adaptations found",
+    "error": "Error generating adaptation"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "recentAnalyses": "Recent Analyses",
+    "recentAdaptations": "Recent Adaptations",
+    "noData": "No data available"
+  }
+}

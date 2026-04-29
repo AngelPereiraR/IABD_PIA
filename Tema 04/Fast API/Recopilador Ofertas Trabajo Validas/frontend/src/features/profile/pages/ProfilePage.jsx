@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Upload, Plus, Trash2, Save, AlertCircle, CheckCircle } from 'lucide-react'
 import { profileService } from '../../../services/profileService'
-import { Layout } from '../../../shared/components'
+import { Layout, Spinner } from '../../../shared/components'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
@@ -66,7 +66,7 @@ export default function ProfilePage() {
     } catch (error) {
       setMessage({
         type: 'error',
-        text: 'Error al cargar el perfil: ' + (error.response?.data?.detail || error.message)
+        text: 'Error loading profile: ' + (error.response?.data?.detail || error.message)
       })
     } finally {
       setLoading(false)
@@ -87,12 +87,12 @@ export default function ProfilePage() {
     try {
       const result = await profileService.uploadAvatar(file)
       setProfile(prev => ({ ...prev, avatar_url: result.avatar_url }))
-      setMessage({ type: 'success', text: 'Foto de perfil actualizada' })
+      setMessage({ type: 'success', text: 'Profile picture updated' })
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     } catch (error) {
       setMessage({
         type: 'error',
-        text: 'Error al subir foto: ' + (error.response?.data?.detail || error.message)
+        text: 'Error uploading photo: ' + (error.response?.data?.detail || error.message)
       })
     }
   }
@@ -367,20 +367,20 @@ export default function ProfilePage() {
       setSaving(true)
       const updateData = { cv_data: profile.cv_data }
 
-      // Solo agregar telegram_id si es admin y cambió
+      // Only add telegram_id if admin and changed
       if (isAdmin && profile.telegram_id) {
         updateData.telegram_id = profile.telegram_id
       }
 
       await profileService.updateProfile(updateData)
-      setMessage({ type: 'success', text: 'Perfil guardado correctamente' })
+      setMessage({ type: 'success', text: 'Profile saved successfully' })
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     } catch (error) {
       const detail = error.response?.data?.detail
       if (detail && detail.includes('admin')) {
-        setMessage({ type: 'error', text: 'No tienes permiso para actualizar telegram_id' })
+        setMessage({ type: 'error', text: 'You do not have permission to update telegram_id' })
       } else {
-        setMessage({ type: 'error', text: 'Error al guardar: ' + (detail || error.message) })
+        setMessage({ type: 'error', text: 'Error saving profile: ' + (detail || error.message) })
       }
     } finally {
       setSaving(false)
@@ -390,9 +390,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <Layout>
-        <div className="flex justify-center items-center h-64">
-          <div className="text-gray-500">Cargando perfil...</div>
-        </div>
+        <Spinner message="Loading profile..." fullHeight />
       </Layout>
     )
   }
@@ -927,17 +925,13 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
-                      <select
+                      <input
+                        type="text"
                         value={item.nivel || ''}
                         onChange={e => updateIdioma(idx, 'nivel', e.target.value)}
+                        placeholder="e.g. Nativo, C1, Profesional..."
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                      >
-                        <option value="">Select level</option>
-                        <option value="nativo">Native</option>
-                        <option value="fluido">Fluent</option>
-                        <option value="intermedio">Intermediate</option>
-                        <option value="básico">Basic</option>
-                      </select>
+                      />
                     </div>
                     <button
                       onClick={() => removeIdioma(idx)}

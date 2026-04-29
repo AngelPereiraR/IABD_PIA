@@ -69,7 +69,7 @@ export function ResultPage() {
     };
 
     fetchData();
-  }, [id, idAsNumber, currentAnalysis, navigate, setCurrentAnalysis]);
+  }, [id, idAsNumber]);
 
   const handleGenerateAdaptation = async () => {
     setIsGenerating(true);
@@ -77,7 +77,7 @@ export function ResultPage() {
     setIsGenerating(false);
     if (result.success && result.data) {
       setAdaptations([result.data, ...adaptations]);
-      navigate(`/dashboard/adaptations/${result.data.id}?from=analysis&analysisId=${idAsNumber}`);
+      navigate(`/dashboard/adaptations/generate/${idAsNumber}?from=${fromParam}`);
     }
   };
 
@@ -155,7 +155,7 @@ export function ResultPage() {
                   score={adaptation.score}
                   createdAt={adaptation.created_at}
                   badgeColor="bg-indigo-100 text-indigo-700"
-                  searchParams={{ from: 'analysis', analysisId: currentAnalysis.id }}
+                  searchParams={{ from: fromParam, analysisId: currentAnalysis.id }}
                 />
               ))}
             </div>

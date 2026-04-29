@@ -1,0 +1,69 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "dashboard": "Panel",
+    "profile": "Perfil",
+    "logout": "Cerrar sesión",
+    "language": "Idioma"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "name": "Nombre",
+    "loginError": "Correo o contraseña incorrectos",
+    "registerError": "Error en el registro",
+    "submit": "Enviar",
+    "termsOfService": "Términos de servicio",
+    "privacyPolicy": "Política de privacidad"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "submit": "Enviar"
+  },
+  "cv": {
+    "upload": "Subir CV",
+    "delete": "Eliminar CV",
+    "uploading": "Subiendo CV...",
+    "uploadSuccess": "CV subido correctamente",
+    "uploadError": "Error al subir CV",
+    "deleteSuccess": "CV eliminado correctamente",
+    "deleteError": "Error al eliminar CV",
+    "preview": "Vista previa del CV",
+    "required": "El CV es obligatorio para continuar"
+  },
+  "analysis": {
+    "create": "Crear análisis",
+    "analyzing": "Analizando...",
+    "title": "Análisis de ofertas",
+    "description": "Analiza una oferta de trabajo comparándola con tu CV",
+    "analyze": "Analizar",
+    "history": "Historial de análisis",
+    "noResults": "No hay análisis registrados",
+    "error": "Error al crear análisis"
+  },
+  "adaptations": {
+    "generate": "Generar adaptación",
+    "generating": "Generando adaptación...",
+    "download": "Descargar PDF",
+    "title": "Adaptaciones",
+    "history": "Historial de adaptaciones",
+    "noResults": "No hay adaptaciones registradas",
+    "error": "Error al generar adaptación"
+  },
+  "dashboard": {
+    "welcome": "Bienvenido",
+    "recentAnalyses": "Análisis recientes",
+    "recentAdaptations": "Adaptaciones recientes",
+    "noData": "Sin datos disponibles"
+  }
+}

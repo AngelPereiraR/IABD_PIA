@@ -96,6 +96,7 @@ class User(Base):
     cv_data = Column(JSONB, nullable=True)  # Datos estructurados del CV extraídos del PDF con DeepSeek
     avatar_url = Column(Text, nullable=True)  # URL Cloudinary de la foto de perfil
     telegram_id = Column(String(50), nullable=True)  # Solo para admin
+    preferred_language = Column(String(5), default="es", nullable=False)  # User's language preference: 'es' or 'en'
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
