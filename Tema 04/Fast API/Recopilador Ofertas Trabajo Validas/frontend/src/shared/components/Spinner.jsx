@@ -3,7 +3,7 @@ export function Spinner({
   size = 48,
   fullHeight = false,
   inline = false,
-  color = 'text-indigo-600',
+  color = 'text-brand-gold',
   containerClassName = '',
 }) {
   const sizeMap = {
@@ -49,7 +49,7 @@ export function Spinner({
   return (
     <div className={finalClassName}>
       {spinnerSvg}
-      {message && <p className="text-gray-600 text-lg mt-4">{message}</p>}
+      {message && <p className="text-brand-white/70 text-lg mt-4 font-mono">{message}</p>}
     </div>
   );
 }

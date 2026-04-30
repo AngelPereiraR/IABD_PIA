@@ -21,9 +21,13 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Only redirect if not already on login/register pages (avoid reload during auth attempts)
       const path = window.location.pathname;
-      if (!path.includes('/auth/login') && !path.includes('/auth/register')) {
+      // Only redirect if not on public pages and not already on auth pages
+      if (
+        !path.includes('/auth/login') &&
+        !path.includes('/auth/register') &&
+        path !== '/' // Don't redirect from LandingPage
+      ) {
         // Token expired, clear storage and redirect to login
         localStorage.removeItem('token');
         localStorage.removeItem('user');

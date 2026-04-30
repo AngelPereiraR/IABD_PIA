@@ -7,3 +7,4 @@ export { CVRequiredRoute } from './CVRequiredRoute';
 export { Toast, ToastContainer } from './Toast';
 export { Spinner } from './Spinner';
 export { Modal } from './Modal';
+export { LanguageSwitcher } from './LanguageSwitcher';

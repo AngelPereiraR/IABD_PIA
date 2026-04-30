@@ -1,62 +1,65 @@
 import { CheckCircle, XCircle, DollarSign, Briefcase, Building2, AlertCircle, ThumbsUp, Brain, ExternalLink, Zap } from 'lucide-react';
+import { useLocale } from '../../../hooks/useLocale';
 
 export function ResultCard({ result }) {
+  const { t } = useLocale();
   const score = result.score || 0;
-  const scoreColor = score >= 70 ? 'text-green-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600';
-  const bgColor = score >= 70 ? 'bg-green-50' : score >= 50 ? 'bg-yellow-50' : 'bg-red-50';
+  const scoreColor = score >= 70 ? 'text-green-500' : score >= 50 ? 'text-yellow-500' : 'text-red-500';
+  const bgColor = score >= 70 ? 'bg-green-950/40' : score >= 50 ? 'bg-yellow-950/40' : 'bg-red-950/40';
+  const borderColor = score >= 70 ? 'border-green-800/50' : score >= 50 ? 'border-yellow-800/50' : 'border-red-800/50';
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-200 space-y-6">
+    <div className="bg-brand-gray p-6 border-2 border-brand-gray-light space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">{result.title || 'N/A'}</h2>
-          <p className="text-gray-600">{result.company || 'Company'}</p>
+          <h2 className="text-2xl font-display font-bold text-brand-white">{result.title || 'N/A'}</h2>
+          <p className="text-brand-white/70 font-mono">{result.company || t('pages.analysis.company')}</p>
         </div>
         <div className="text-right">
-          <div className={`text-4xl font-bold ${scoreColor}`}>{score}</div>
-          <p className="text-sm text-gray-600">Match Score</p>
+          <div className={`text-4xl font-display font-bold ${scoreColor}`}>{score}</div>
+          <p className="text-sm text-brand-white/70 font-mono">{t('pages.analysis.matchScore')}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
         {result.is_valid ? (
           <>
-            <CheckCircle size={20} className="text-green-600" />
-            <span className="text-green-700 font-medium">Valid Offer</span>
+            <CheckCircle size={20} className="text-green-500" />
+            <span className="text-green-500 font-medium font-mono">{t('pages.analysis.validOffer')}</span>
           </>
         ) : (
           <>
-            <XCircle size={20} className="text-red-600" />
-            <span className="text-red-700 font-medium">Not Suitable</span>
+            <XCircle size={20} className="text-red-500" />
+            <span className="text-red-500 font-medium font-mono">{t('pages.analysis.notSuitable')}</span>
           </>
         )}
       </div>
 
       {(result.summary || result.benefits || (result.key_skills && result.key_skills.length > 0)) && (
-        <div className={`p-4 rounded-lg border-2 space-y-4 ${bgColor} ${score >= 70 ? 'border-green-200' : score >= 50 ? 'border-yellow-200' : 'border-red-200'}`}>
+        <div className={`p-4 border-2 space-y-4 ${bgColor} ${borderColor}`}>
           <div className="flex items-start gap-3">
-            <Brain size={20} className={`flex-shrink-0 mt-0.5 ${score >= 70 ? 'text-green-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600'}`} />
+            <Brain size={20} className={`flex-shrink-0 mt-0.5 ${scoreColor}`} />
             <div className="flex-1">
-              <p className="font-semibold text-gray-800 mb-2">AI Analysis Summary</p>
+              <p className="font-display font-bold text-brand-white mb-2">{t('pages.analysis.summary')}</p>
               {result.summary && (
-                <p className="text-gray-700 leading-relaxed mb-4">{result.summary}</p>
+                <p className="text-brand-white/70 leading-relaxed mb-4 font-mono text-sm">{result.summary}</p>
               )}
 
               {result.benefits && (
                 <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Benefits</p>
-                  <p className="text-gray-700 text-sm">{result.benefits}</p>
+                  <p className="text-sm font-medium text-brand-white/70 mb-2 font-mono">{t('pages.analysis.benefits')}</p>
+                  <p className="text-brand-white/70 text-sm font-mono">{result.benefits}</p>
                 </div>
               )}
 
               {result.key_skills && result.key_skills.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">Required Skills</p>
+                  <p className="text-sm font-medium text-brand-white/70 mb-2 font-mono">{t('pages.analysis.requiredSkills')}</p>
                   <div className="flex flex-wrap gap-2">
                     {result.key_skills.map((skill, idx) => (
                       <span
                         key={idx}
-                        className="px-3 py-1 bg-white bg-opacity-50 text-gray-700 rounded-full text-sm font-medium"
+                        className="px-3 py-1 bg-brand-gold/20 text-brand-gold text-sm font-medium font-mono"
                       >
                         {skill}
                       </span>
@@ -70,11 +73,19 @@ export function ResultCard({ result }) {
       )}
 
       {result.salary && (
-        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <DollarSign size={20} className="text-indigo-600 flex-shrink-0" />
+        <div className="flex items-center gap-2 p-3 bg-brand-gray-light border-2 border-brand-gray-light">
+          <DollarSign size={20} className="text-brand-gold flex-shrink-0" />
           <div>
-            <p className="text-sm text-gray-600">Salary</p>
-            <p className="font-semibold text-gray-800">{result.salary}</p>
+            <p className="text-sm text-brand-white/70 font-mono">{t('pages.analysis.salary')}</p>
+            <p className="font-semibold text-brand-white font-mono">
+              {result.salary.split(/([€$£¥₹₽¢₩₪₨₦₱₡₵])/).map((part, idx) =>
+                /[€$£¥₹₽¢₩₪₨₦₱₡₵]/.test(part) ? (
+                  <span key={idx} className="font-sans">{part}</span>
+                ) : (
+                  <span key={idx}>{part}</span>
+                )
+              )}
+            </p>
           </div>
         </div>
       )}
@@ -82,34 +93,34 @@ export function ResultCard({ result }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {result.job_type && (
           <div className="flex items-center gap-2">
-            <Briefcase size={18} className="text-indigo-600 flex-shrink-0" />
+            <Briefcase size={18} className="text-brand-gold flex-shrink-0" />
             <div>
-              <p className="text-sm text-gray-600">Type</p>
-              <p className="font-medium text-gray-800">{result.job_type}</p>
+              <p className="text-sm text-brand-white/70 font-mono">{t('pages.analysis.type')}</p>
+              <p className="font-medium text-brand-white font-mono">{result.job_type}</p>
             </div>
           </div>
         )}
         {result.location && (
           <div className="flex items-center gap-2">
-            <Building2 size={18} className="text-indigo-600 flex-shrink-0" />
+            <Building2 size={18} className="text-brand-gold flex-shrink-0" />
             <div>
-              <p className="text-sm text-gray-600">Location</p>
-              <p className="font-medium text-gray-800">{result.location}</p>
+              <p className="text-sm text-brand-white/70 font-mono">{t('pages.analysis.location')}</p>
+              <p className="font-medium text-brand-white font-mono">{result.location}</p>
             </div>
           </div>
         )}
       </div>
 
       {result.offer_url && (
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t-2 border-brand-gray-light">
           <a
             href={result.offer_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded font-medium transition"
+            className="inline-flex items-center gap-2 px-4 py-2 text-brand-gold hover:border-b-2 hover:border-brand-gold font-medium transition font-mono"
           >
             <ExternalLink size={16} />
-            View Original Offer
+            {t('pages.analysis.viewOriginal')}
           </a>
         </div>
       )}

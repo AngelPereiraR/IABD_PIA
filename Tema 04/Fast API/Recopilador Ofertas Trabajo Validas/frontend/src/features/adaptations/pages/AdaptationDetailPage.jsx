@@ -5,8 +5,10 @@ import { AdaptationPreview } from '../components/AdaptationPreview';
 import { PDFDownloadButton } from '../components/PDFDownloadButton';
 import useStore from '../../../stores/globalStore';
 import { ArrowLeft } from 'lucide-react';
+import { useLocale } from '../../../hooks/useLocale';
 
 export function AdaptationDetailPage() {
+  const { t } = useLocale();
   const { adaptationId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -58,7 +60,7 @@ export function AdaptationDetailPage() {
   if (isLoading) {
     return (
       <Layout>
-        <Spinner message="Loading adaptation..." fullHeight />
+        <Spinner message={t('adaptations.generating')} fullHeight />
       </Layout>
     );
   }
@@ -67,7 +69,7 @@ export function AdaptationDetailPage() {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-red-600">{error} Redirecting...</p>
+          <p className="text-red-400 font-mono">{error} {t('nav.back')}...</p>
         </div>
       </Layout>
     );
@@ -77,7 +79,7 @@ export function AdaptationDetailPage() {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-brand-white/70 font-mono">{t('common.loading')}</p>
         </div>
       </Layout>
     );
@@ -88,12 +90,12 @@ export function AdaptationDetailPage() {
       <div className="max-w-4xl mx-auto">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-6"
+          className="flex items-center gap-2 text-brand-gold hover:text-brand-white font-mono mb-6 transition"
         >
-          <ArrowLeft size={18} /> Back
+          <ArrowLeft size={18} /> {t('nav.back')}
         </button>
 
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Adapted CV</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-white mb-8">{t('pages.adaptations.yourAdapted')}</h1>
 
         <div className="space-y-6">
           <AdaptationPreview

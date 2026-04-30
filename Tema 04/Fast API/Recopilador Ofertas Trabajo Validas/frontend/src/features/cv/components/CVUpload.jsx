@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react';
 import useStore from '../../../stores/globalStore';
 import { Upload, CheckCircle } from 'lucide-react';
+import { useLocale } from '../../../hooks/useLocale';
 
 export function CVUpload() {
+  const { t } = useLocale();
   const fileInputRef = useRef(null);
   const { uploadCV, isUploading, error } = useStore((state) => ({
     uploadCV: state.cvActions.uploadCV,
@@ -37,20 +39,20 @@ export function CVUpload() {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Upload Your CV</h3>
+      <h3 className="text-lg font-semibold text-brand-white mb-4">{t('pages.cv.uploadCV')}</h3>
       <div
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
-          dragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:border-gray-400'
+        className={`border-2 border-dashed p-8 text-center cursor-pointer transition ${
+          dragActive ? 'border-brand-gold bg-brand-gold/10' : 'border-brand-gold hover:bg-brand-gray/50'
         }`}
         onClick={() => fileInputRef.current?.click()}
       >
-        <Upload size={32} className="mx-auto text-gray-400 mb-2" />
-        <p className="text-gray-700 font-medium">Drag and drop your PDF here</p>
-        <p className="text-sm text-gray-500">or click to select a file</p>
+        <Upload size={32} className="mx-auto text-brand-gold mb-2" />
+        <p className="text-brand-white font-medium">{t('pages.cv.dragDrop')}</p>
+        <p className="text-sm text-brand-white/70 font-mono">{t('pages.cv.selectFile')}</p>
         <input
           ref={fileInputRef}
           type="file"
@@ -60,8 +62,8 @@ export function CVUpload() {
           className="hidden"
         />
       </div>
-      {error && <div className="mt-4 p-3 bg-red-50 text-red-700 text-sm rounded">{error}</div>}
-      {isUploading && <div className="mt-4 p-3 bg-blue-50 text-blue-700 text-sm rounded">Uploading...</div>}
+      {error && <div className="mt-4 p-3 bg-red-950/40 text-red-400 text-sm border border-red-800/50 font-mono">{error}</div>}
+      {isUploading && <div className="mt-4 p-3 bg-blue-950/40 text-blue-400 text-sm border border-blue-800/50 font-mono">{t('cv.uploading')}</div>}
     </div>
   );
 }

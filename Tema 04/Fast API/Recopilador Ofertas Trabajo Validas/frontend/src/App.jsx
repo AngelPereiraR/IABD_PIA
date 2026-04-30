@@ -49,11 +49,17 @@ function App() {
   }, []);
 
   useEffect(() => {
-    restoreSession().then(() => {
-      // Load current CV after session is restored
-      fetchCurrentCV();
-      setSessionRestored(true);
-    });
+    restoreSession()
+      .then(() => {
+        // Load current CV after session is restored
+        fetchCurrentCV();
+      })
+      .catch(() => {
+        // Session restore failed, continue anyway
+      })
+      .finally(() => {
+        setSessionRestored(true);
+      });
   }, [restoreSession, fetchCurrentCV]);
 
   if (!sessionRestored) {

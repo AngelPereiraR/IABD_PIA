@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import useStore from '../../../stores/globalStore';
 import { Link, Search } from 'lucide-react';
+import { useLocale } from '../../../hooks/useLocale';
 
 const schema = z.object({
   type: z.enum(['url', 'text']),
@@ -11,6 +12,7 @@ const schema = z.object({
 });
 
 export function AnalysisForm({ onSuccess }) {
+  const { t } = useLocale();
   const [activeTab, setActiveTab] = useState('url');
   const { createAnalysis, isAnalyzing } = useStore((state) => ({
     createAnalysis: state.analysisActions.createAnalysis,
@@ -38,8 +40,8 @@ export function AnalysisForm({ onSuccess }) {
         <button
           type="button"
           onClick={() => setActiveTab('url')}
-          className={`px-4 py-2 rounded font-medium ${
-            activeTab === 'url' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-800'
+          className={`px-4 py-2 font-medium border-2 transition ${
+            activeTab === 'url' ? 'bg-brand-gold text-brand-black border-brand-gold' : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
           }`}
         >
           <Link size={16} className="inline mr-2" /> URL
@@ -47,11 +49,11 @@ export function AnalysisForm({ onSuccess }) {
         <button
           type="button"
           onClick={() => setActiveTab('text')}
-          className={`px-4 py-2 rounded font-medium ${
-            activeTab === 'text' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-800'
+          className={`px-4 py-2 font-medium border-2 transition ${
+            activeTab === 'text' ? 'bg-brand-gold text-brand-black border-brand-gold' : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
           }`}
         >
-          <Search size={16} className="inline mr-2" /> Text
+          <Search size={16} className="inline mr-2" /> {t('pages.analysis.paste')}
         </button>
       </div>
 
@@ -60,35 +62,35 @@ export function AnalysisForm({ onSuccess }) {
       <div>
         {activeTab === 'url' && (
           <>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Job Offer URL</label>
+            <label className="block text-sm font-medium text-brand-white/70 mb-2 font-mono">{t('pages.analysis.jobOfferUrl')}</label>
             <input
               {...register('content')}
               type="url"
               placeholder="https://linkedin.com/jobs/..."
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 border-2 border-brand-gray-light bg-brand-black text-brand-white placeholder-brand-white/40 focus:outline-none focus:border-brand-gold transition font-mono"
             />
           </>
         )}
         {activeTab === 'text' && (
           <>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Offer Description</label>
+            <label className="block text-sm font-medium text-brand-white/70 mb-2 font-mono">{t('pages.analysis.offerDescription')}</label>
             <textarea
               {...register('content')}
-              placeholder="Paste the job offer text here..."
+              placeholder={t('pages.analysis.pasteText')}
               rows="6"
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 border-2 border-brand-gray-light bg-brand-black text-brand-white placeholder-brand-white/40 focus:outline-none focus:border-brand-gold transition font-mono"
             />
           </>
         )}
-        {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>}
+        {errors.content && <p className="text-red-400 text-sm mt-1 font-mono">{errors.content.message}</p>}
       </div>
 
       <button
         type="submit"
         disabled={isAnalyzing}
-        className="w-full px-4 py-2 bg-indigo-600 text-white rounded font-medium hover:bg-indigo-700 disabled:bg-gray-400"
+        className="w-full px-4 py-2 bg-brand-gold text-brand-black border-2 border-brand-gold font-medium hover:bg-brand-black hover:text-brand-gold transition disabled:opacity-50 font-display font-bold"
       >
-        {isAnalyzing ? 'Analyzing...' : 'Analyze Offer'}
+        {isAnalyzing ? t('analysis.analyzing') : t('pages.analysis.analyze')}
       </button>
     </form>
   );

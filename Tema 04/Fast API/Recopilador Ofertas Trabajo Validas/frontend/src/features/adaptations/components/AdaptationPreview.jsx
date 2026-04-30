@@ -30,33 +30,33 @@ export function AdaptationPreview({ adaptation, isLoading }) {
   const filename = `${adaptation.job_title} - Adapted CV`;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="p-6 border-b border-gray-200 flex items-start justify-between">
+    <div className="bg-brand-gray border-2 border-brand-gray-light overflow-hidden">
+      <div className="p-6 border-b-2 border-brand-gray-light flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <FileText size={32} className="text-indigo-600" />
+          <FileText size={32} className="text-brand-gold" />
           <div>
-            <h3 className="text-lg font-semibold text-gray-800">{filename}</h3>
-            <p className="text-sm text-gray-500">Adapted CV - {adaptation.company}</p>
+            <h3 className="text-lg font-display font-semibold text-brand-white">{filename}</h3>
+            <p className="text-sm text-brand-white/70 font-mono">Adapted CV - {adaptation.company}</p>
           </div>
         </div>
       </div>
 
       {isLoading ? (
         <div className="p-12 text-center">
-          <p className="text-gray-600">Generating preview...</p>
+          <p className="text-brand-white/70 font-mono">Generating preview...</p>
         </div>
       ) : (
-        <div className="bg-gray-50 p-4 space-y-4">
+        <div className="bg-brand-black/20 p-4 space-y-4">
           {/* Height Controls */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex gap-2">
-              <label className="text-sm font-medium text-gray-700">Height:</label>
+              <label className="text-sm font-mono font-medium text-brand-white/70">Height:</label>
               <button
                 onClick={() => setPreviewHeight(400)}
                 className={`px-3 py-1 rounded text-sm transition ${
                   previewHeight === 400
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 S
@@ -65,8 +65,8 @@ export function AdaptationPreview({ adaptation, isLoading }) {
                 onClick={() => setPreviewHeight(600)}
                 className={`px-3 py-1 rounded text-sm transition ${
                   previewHeight === 600
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 M
@@ -75,8 +75,8 @@ export function AdaptationPreview({ adaptation, isLoading }) {
                 onClick={() => setPreviewHeight(800)}
                 className={`px-3 py-1 rounded text-sm transition ${
                   previewHeight === 800
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 L
@@ -85,8 +85,8 @@ export function AdaptationPreview({ adaptation, isLoading }) {
                 onClick={() => setPreviewHeight(1200)}
                 className={`px-3 py-1 rounded text-sm transition ${
                   previewHeight === 1200
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 XL
@@ -102,20 +102,20 @@ export function AdaptationPreview({ adaptation, isLoading }) {
                 onChange={(e) => setPreviewHeight(parseInt(e.target.value))}
                 className="w-32"
               />
-              <span className="text-sm text-gray-600 w-14">{previewHeight}px</span>
+              <span className="text-sm text-brand-white/70 font-mono w-14">{previewHeight}px</span>
             </div>
           </div>
 
           {/* Width Controls */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex gap-2">
-              <label className="text-sm font-medium text-gray-700">Width:</label>
+              <label className="text-sm font-mono font-medium text-brand-white/70">Width:</label>
               <button
                 onClick={() => setPreviewWidth(75)}
                 className={`px-3 py-1 rounded text-sm transition ${
                   previewWidth === 75
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 75%
@@ -124,8 +124,8 @@ export function AdaptationPreview({ adaptation, isLoading }) {
                 onClick={() => setPreviewWidth(90)}
                 className={`px-3 py-1 rounded text-sm transition ${
                   previewWidth === 90
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 90%
@@ -134,8 +134,8 @@ export function AdaptationPreview({ adaptation, isLoading }) {
                 onClick={() => setPreviewWidth(100)}
                 className={`px-3 py-1 rounded text-sm transition ${
                   previewWidth === 100
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 100%
@@ -151,7 +151,7 @@ export function AdaptationPreview({ adaptation, isLoading }) {
                 onChange={(e) => setPreviewWidth(parseInt(e.target.value))}
                 className="w-32"
               />
-              <span className="text-sm text-gray-600 w-14">{previewWidth}%</span>
+              <span className="text-sm text-brand-white/70 font-mono w-14">{previewWidth}%</span>
             </div>
           </div>
 
@@ -160,7 +160,7 @@ export function AdaptationPreview({ adaptation, isLoading }) {
             <iframe
               src={cvUrl}
               title="Adapted CV Preview"
-              className="w-full border border-gray-300 rounded"
+              className="w-full border-2 border-brand-gold"
               style={{ height: `${previewHeight}px` }}
             />
           </div>

@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { Upload, Plus, Trash2, Save, AlertCircle, CheckCircle } from 'lucide-react'
 import { profileService } from '../../../services/profileService'
 import { Layout, Spinner } from '../../../shared/components'
+import { useLocale } from '../../../hooks/useLocale'
 
 export default function ProfilePage() {
+  const { t } = useLocale()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -66,7 +68,7 @@ export default function ProfilePage() {
     } catch (error) {
       setMessage({
         type: 'error',
-        text: 'Error loading profile: ' + (error.response?.data?.detail || error.message)
+        text: t('pages.profile.errorLoadingProfile') + ': ' + (error.response?.data?.detail || error.message)
       })
     } finally {
       setLoading(false)
@@ -87,12 +89,12 @@ export default function ProfilePage() {
     try {
       const result = await profileService.uploadAvatar(file)
       setProfile(prev => ({ ...prev, avatar_url: result.avatar_url }))
-      setMessage({ type: 'success', text: 'Profile picture updated' })
+      setMessage({ type: 'success', text: t('pages.profile.profilePictureUpdated') })
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     } catch (error) {
       setMessage({
         type: 'error',
-        text: 'Error uploading photo: ' + (error.response?.data?.detail || error.message)
+        text: t('pages.profile.errorUploadingPhoto') + ': ' + (error.response?.data?.detail || error.message)
       })
     }
   }
@@ -373,14 +375,14 @@ export default function ProfilePage() {
       }
 
       await profileService.updateProfile(updateData)
-      setMessage({ type: 'success', text: 'Profile saved successfully' })
+      setMessage({ type: 'success', text: t('pages.profile.profileSavedSuccessfully') })
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     } catch (error) {
       const detail = error.response?.data?.detail
       if (detail && detail.includes('admin')) {
-        setMessage({ type: 'error', text: 'You do not have permission to update telegram_id' })
+        setMessage({ type: 'error', text: t('pages.profile.noPermissionTelegramId') })
       } else {
-        setMessage({ type: 'error', text: 'Error saving profile: ' + (detail || error.message) })
+        setMessage({ type: 'error', text: t('pages.profile.errorSavingProfile') + ': ' + (detail || error.message) })
       }
     } finally {
       setSaving(false)
@@ -390,7 +392,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <Layout>
-        <Spinner message="Loading profile..." fullHeight />
+        <Spinner message={t('common.loading')} fullHeight />
       </Layout>
     )
   }
@@ -399,11 +401,11 @@ export default function ProfilePage() {
     <Layout>
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+        <div className="bg-brand-gray border-2 border-brand-gray-light p-8 mb-8">
           <div className="flex items-start gap-8">
             {/* Avatar */}
             <div className="relative">
-              <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+              <div className="w-32 h-32 border-2 border-brand-gold bg-brand-black flex items-center justify-center overflow-hidden">
                 {preview || profile.avatar_url ? (
                   <img
                     src={preview || profile.avatar_url}
@@ -411,10 +413,10 @@ export default function ProfilePage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="text-gray-400 text-4xl">👤</div>
+                  <div className="text-brand-gold text-4xl">👤</div>
                 )}
               </div>
-              <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700">
+              <label className="absolute bottom-0 right-0 bg-brand-gold text-brand-black p-2 cursor-pointer hover:bg-brand-white border-2 border-brand-gold transition">
                 <Upload size={20} />
                 <input
                   type="file"
@@ -427,17 +429,17 @@ export default function ProfilePage() {
 
             {/* Info */}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {profile.cv_data.nombre || 'No name'}
+              <h1 className="text-3xl font-display font-bold text-brand-white mb-2">
+                {profile.cv_data.nombre || t('pages.profile.noName')}
               </h1>
-              <p className="text-gray-600 mb-4">{profile.email}</p>
+              <p className="text-brand-white/70 font-mono mb-4">{profile.email}</p>
               <div className="flex gap-4">
                 {profile.cv_data.linkedin && (
                   <a
                     href={`https://linkedin.com/in/${profile.cv_data.linkedin}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-brand-gold hover:underline font-mono"
                   >
                     LinkedIn
                   </a>
@@ -447,15 +449,15 @@ export default function ProfilePage() {
                     href={`https://github.com/${profile.cv_data.github}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-700 hover:underline"
+                    className="text-brand-gold hover:underline font-mono"
                   >
                     GitHub
                   </a>
                 )}
               </div>
               {isAdmin && (
-                <div className="mt-4 inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                  👑 Administrator
+                <div className="mt-4 inline-block bg-purple-900/40 text-purple-400 px-3 py-1 border-2 border-purple-900 text-sm font-medium font-mono">
+                  👑 {t('pages.profile.administrator')}
                 </div>
               )}
             </div>
@@ -465,10 +467,10 @@ export default function ProfilePage() {
         {/* Messages */}
         {message.text && (
           <div
-            className={`mb-6 p-4 rounded-lg flex gap-3 ${
+            className={`mb-6 p-4 border-2 flex gap-3 font-mono ${
               message.type === 'success'
-                ? 'bg-green-50 text-green-800'
-                : 'bg-red-50 text-red-800'
+                ? 'bg-green-950/40 text-green-400 border-green-900'
+                : 'bg-red-950/40 text-red-400 border-red-900'
             }`}
           >
             {message.type === 'success' ? (
@@ -483,7 +485,7 @@ export default function ProfilePage() {
         {/* Form Sections */}
         <div className="space-y-6">
           {/* Personal Data */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-brand-gray border-2 border-brand-gray-light">
             <button
               onClick={() =>
                 setExpandedSections(prev => ({
@@ -491,56 +493,56 @@ export default function ProfilePage() {
                   datosPersonales: !prev.datosPersonales
                 }))
               }
-              className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
+              className="w-full px-6 py-4 font-semibold font-display text-brand-white hover:bg-brand-gray-light/20 flex justify-between items-center border-b-2 border-brand-gray-light transition"
             >
-              Personal Data
+              {t('pages.profile.personalData')}
               <span>{expandedSections.datosPersonales ? '▼' : '▶'}</span>
             </button>
             {expandedSections.datosPersonales && (
-              <div className="px-6 py-4 border-t border-gray-200 space-y-4">
+              <div className="px-6 py-4 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.fullName')}</label>
                     <input
                       type="text"
                       value={profile.cv_data.nombre || ''}
                       onChange={e => updateCVData('nombre', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.email')}</label>
                     <input
                       type="email"
                       value={profile.cv_data.email || ''}
                       onChange={e => updateCVData('email', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
-                    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                      <span className="px-3 py-2 bg-gray-100 text-gray-600 text-sm whitespace-nowrap">linkedin.com/in/</span>
+                    <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.linkedin')}</label>
+                    <div className="flex items-center border-2 border-brand-gold overflow-hidden">
+                      <span className="px-3 py-2 bg-brand-gray-light text-brand-white/70 text-sm whitespace-nowrap font-mono">linkedin.com/in/</span>
                       <input
                         type="text"
                         value={profile.cv_data.linkedin || ''}
                         onChange={e => updateCVData('linkedin', e.target.value)}
-                        className="flex-1 px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="flex-1 px-4 py-2 bg-brand-black text-brand-white font-mono focus:outline-none"
                         placeholder="username"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
-                    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                      <span className="px-3 py-2 bg-gray-100 text-gray-600 text-sm whitespace-nowrap">github.com/</span>
+                    <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.github')}</label>
+                    <div className="flex items-center border-2 border-brand-gold overflow-hidden">
+                      <span className="px-3 py-2 bg-brand-gray-light text-brand-white/70 text-sm whitespace-nowrap font-mono">github.com/</span>
                       <input
                         type="text"
                         value={profile.cv_data.github || ''}
                         onChange={e => updateCVData('github', e.target.value)}
-                        className="flex-1 px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="flex-1 px-4 py-2 bg-brand-black text-brand-white font-mono focus:outline-none"
                         placeholder="username"
                       />
                     </div>
@@ -548,41 +550,41 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.phone')}</label>
                     <input
                       type="tel"
                       value={profile.cv_data.telefono || ''}
                       onChange={e => updateCVData('telefono', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.location')}</label>
                     <input
                       type="text"
                       value={profile.cv_data.ubicacion || ''}
                       onChange={e => updateCVData('ubicacion', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Website/Portfolio</label>
+                    <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.website')}</label>
                     <input
                       type="url"
                       value={profile.cv_data.web || ''}
                       onChange={e => updateCVData('web', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                     />
                   </div>
                 </div>
                 {isAdmin && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Telegram Chat ID (Admin only)</label>
+                    <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.telegramId')}</label>
                     <input
                       type="text"
                       value={profile.telegram_id || ''}
                       onChange={e => setProfile(prev => ({ ...prev, telegram_id: e.target.value }))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                     />
                   </div>
                 )}
@@ -591,7 +593,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Professional Summary */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-brand-gray border-2 border-brand-gray-light">
             <button
               onClick={() =>
                 setExpandedSections(prev => ({
@@ -599,26 +601,26 @@ export default function ProfilePage() {
                   resumen: !prev.resumen
                 }))
               }
-              className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
+              className="w-full px-6 py-4 font-semibold font-display text-brand-white hover:bg-brand-gray-light/20 flex justify-between items-center border-b-2 border-brand-gray-light transition"
             >
-              Professional Summary
+              {t('pages.profile.professionalSummary')}
               <span>{expandedSections.resumen ? '▼' : '▶'}</span>
             </button>
             {expandedSections.resumen && (
-              <div className="px-6 py-4 border-t border-gray-200">
+              <div className="px-6 py-4">
                 <textarea
-                  placeholder="Write your professional profile summary"
+                  placeholder={t('pages.profile.summaryPlaceholder')}
                   value={profile.cv_data.resumen_base || ''}
                   onChange={e => updateCVData('resumen_base', e.target.value)}
                   rows="5"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                 />
               </div>
             )}
           </div>
 
           {/* Skills */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-brand-gray border-2 border-brand-gray-light">
             <button
               onClick={() =>
                 setExpandedSections(prev => ({
@@ -626,21 +628,21 @@ export default function ProfilePage() {
                   habilidades: !prev.habilidades
                 }))
               }
-              className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
+              className="w-full px-6 py-4 font-semibold font-display text-brand-white hover:bg-brand-gray-light/20 flex justify-between items-center border-b-2 border-brand-gray-light transition"
             >
-              Skills
+              {t('pages.profile.skills')}
               <span>{expandedSections.habilidades ? '▼' : '▶'}</span>
             </button>
             {expandedSections.habilidades && (
-              <div className="px-6 py-4 border-t border-gray-200 space-y-6">
+              <div className="px-6 py-4 space-y-6">
                 {Object.entries(profile.cv_data.habilidades_base || {}).map(([categoria, skills]) => (
                   <div key={categoria}>
-                    <h4 className="font-medium text-gray-900 mb-2">{categoria}</h4>
+                    <h4 className="font-medium font-display text-brand-white mb-2">{categoria}</h4>
                     <div className="flex flex-wrap gap-2 mb-3">
                       {skills.map((skill, idx) => (
                         <div
                           key={idx}
-                          className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                          className="bg-brand-gold/20 text-brand-gold px-3 py-1 border border-brand-gold text-sm flex items-center gap-2 font-mono"
                         >
                           {skill}
                           <button
@@ -654,18 +656,18 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 ))}
-                <div className="border-t border-gray-200 pt-4 space-y-3">
-                  <h4 className="font-medium text-gray-900">Add New Skill</h4>
+                <div className="border-t-2 border-brand-gray-light pt-4 space-y-3">
+                  <h4 className="font-medium font-display text-brand-white">{t('pages.profile.addNewSkill')}</h4>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.category')}</label>
                       <input
                         type="text"
                         value={newSkillCategory}
                         onChange={(e) => setNewSkillCategory(e.target.value)}
                         placeholder="e.g., Programming"
                         list="skill-categories"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                       <datalist id="skill-categories">
                         {Object.keys(profile.cv_data.habilidades_base || {}).map((cat) => (
@@ -674,13 +676,13 @@ export default function ProfilePage() {
                       </datalist>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Skill Name</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.skillName')}</label>
                       <input
                         type="text"
                         value={newSkillName}
                         onChange={(e) => setNewSkillName(e.target.value)}
                         placeholder="e.g., React"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div className="flex items-end">
@@ -693,10 +695,10 @@ export default function ProfilePage() {
                           }
                         }}
                         disabled={!newSkillCategory || !newSkillName}
-                        className="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400"
+                        className="w-full bg-brand-gold text-brand-black py-2 border-2 border-brand-gold font-mono font-bold hover:bg-brand-white transition disabled:opacity-50"
                       >
                         <Plus size={18} className="inline mr-1" />
-                        Add
+                        {t('pages.profile.add')}
                       </button>
                     </div>
                   </div>
@@ -706,7 +708,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Academic Education */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-brand-gray border-2 border-brand-gray-light">
             <button
               onClick={() =>
                 setExpandedSections(prev => ({
@@ -714,62 +716,62 @@ export default function ProfilePage() {
                   formacion: !prev.formacion
                 }))
               }
-              className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
+              className="w-full px-6 py-4 font-semibold font-display text-brand-white hover:bg-brand-gray-light/20 flex justify-between items-center border-b-2 border-brand-gray-light transition"
             >
-              Academic Education
+              {t('pages.profile.academicEducation')}
               <span>{expandedSections.formacion ? '▼' : '▶'}</span>
             </button>
             {expandedSections.formacion && (
-              <div className="px-6 py-4 border-t border-gray-200 space-y-4">
+              <div className="px-6 py-4 space-y-4">
                 {profile.cv_data.formacion.map((item, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div key={idx} className="border-2 border-brand-gold bg-brand-black/40 p-4 space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Degree/Title</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.degreeTitle')}</label>
                       <input
                         type="text"
                         value={item.titulo || ''}
                         onChange={e => updateFormacion(idx, 'titulo', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Institution/School</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.institution')}</label>
                       <input
                         type="text"
                         value={item.centro || ''}
                         onChange={e => updateFormacion(idx, 'centro', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.year')}</label>
                       <input
                         type="text"
                         value={item.anio || ''}
                         onChange={e => updateFormacion(idx, 'anio', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <button
                       onClick={() => removeFormacion(idx)}
-                      className="text-red-600 hover:text-red-800 flex items-center gap-2"
+                      className="text-red-400 hover:text-red-300 flex items-center gap-2 font-mono"
                     >
-                      <Trash2 size={18} /> Delete
+                      <Trash2 size={18} /> {t('pages.profile.delete')}
                     </button>
                   </div>
                 ))}
                 <button
                   onClick={addFormacion}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-brand-gold py-3 text-brand-gold hover:text-brand-white hover:bg-brand-gold/10 flex items-center justify-center gap-2 font-mono transition"
                 >
-                  <Plus size={20} /> Add Education
+                  <Plus size={20} /> {t('pages.profile.addEducation')}
                 </button>
               </div>
             )}
           </div>
 
           {/* Professional Experience */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-brand-gray border-2 border-brand-gray-light">
             <button
               onClick={() =>
                 setExpandedSections(prev => ({
@@ -777,73 +779,73 @@ export default function ProfilePage() {
                   experiencia: !prev.experiencia
                 }))
               }
-              className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
+              className="w-full px-6 py-4 font-semibold font-display text-brand-white hover:bg-brand-gray-light/20 flex justify-between items-center border-b-2 border-brand-gray-light transition"
             >
-              Professional Experience
+              {t('pages.profile.professionalExperience')}
               <span>{expandedSections.experiencia ? '▼' : '▶'}</span>
             </button>
             {expandedSections.experiencia && (
-              <div className="px-6 py-4 border-t border-gray-200 space-y-4">
+              <div className="px-6 py-4 space-y-4">
                 {profile.cv_data.experiencia_base.map((item, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div key={idx} className="border-2 border-brand-gold bg-brand-black/40 p-4 space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.jobTitle')}</label>
                       <input
                         type="text"
                         value={item.puesto || ''}
                         onChange={e => updateExperiencia(idx, 'puesto', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.company')}</label>
                       <input
                         type="text"
                         value={item.empresa || ''}
                         onChange={e => updateExperiencia(idx, 'empresa', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.duration')}</label>
                       <input
                         type="text"
                         value={item.duracion || ''}
                         onChange={e => updateExperiencia(idx, 'duracion', e.target.value)}
                         placeholder="e.g., 2023-2024"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Quantifiable Impact</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.quantifiableImpact')}</label>
                       <input
                         type="text"
                         value={item.impacto || ''}
                         onChange={e => updateExperiencia(idx, 'impacto', e.target.value)}
                         placeholder="e.g., Reduced time by 40%"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <button
                       onClick={() => removeExperiencia(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Delete
+                      <Trash2 size={18} /> {t('pages.profile.delete')}
                     </button>
                   </div>
                 ))}
                 <button
                   onClick={addExperiencia}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-brand-gold py-3 text-brand-gold hover:text-brand-white hover:bg-brand-gold/10 flex items-center justify-center gap-2 font-mono transition"
                 >
-                  <Plus size={20} /> Add Experience
+                  <Plus size={20} /> {t('pages.profile.addExperience')}
                 </button>
               </div>
             )}
           </div>
 
           {/* Featured Projects */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-brand-gray border-2 border-brand-gray-light">
             <button
               onClick={() =>
                 setExpandedSections(prev => ({
@@ -851,53 +853,53 @@ export default function ProfilePage() {
                   proyectos: !prev.proyectos
                 }))
               }
-              className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
+              className="w-full px-6 py-4 font-semibold font-display text-brand-white hover:bg-brand-gray-light/20 flex justify-between items-center border-b-2 border-brand-gray-light transition"
             >
-              Featured Projects
+              {t('pages.profile.featuredProjects')}
               <span>{expandedSections.proyectos ? '▼' : '▶'}</span>
             </button>
             {expandedSections.proyectos && (
-              <div className="px-6 py-4 border-t border-gray-200 space-y-4">
+              <div className="px-6 py-4 space-y-4">
                 {profile.cv_data.proyectos.map((item, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div key={idx} className="border-2 border-brand-gold bg-brand-black/40 p-4 space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.projectName')}</label>
                       <input
                         type="text"
                         value={item.nombre || ''}
                         onChange={e => updateProyecto(idx, 'nombre', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.description')}</label>
                       <textarea
                         value={item.descripcion || ''}
                         onChange={e => updateProyecto(idx, 'descripcion', e.target.value)}
                         rows="3"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <button
                       onClick={() => removeProyecto(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Delete
+                      <Trash2 size={18} /> {t('pages.profile.delete')}
                     </button>
                   </div>
                 ))}
                 <button
                   onClick={addProyecto}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-brand-gold py-3 text-brand-gold hover:text-brand-white hover:bg-brand-gold/10 flex items-center justify-center gap-2 font-mono transition"
                 >
-                  <Plus size={20} /> Add Project
+                  <Plus size={20} /> {t('pages.profile.addProject')}
                 </button>
               </div>
             )}
           </div>
 
           {/* Languages */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-brand-gray border-2 border-brand-gray-light">
             <button
               onClick={() =>
                 setExpandedSections(prev => ({
@@ -905,54 +907,54 @@ export default function ProfilePage() {
                   idiomas: !prev.idiomas
                 }))
               }
-              className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
+              className="w-full px-6 py-4 font-semibold font-display text-brand-white hover:bg-brand-gray-light/20 flex justify-between items-center border-b-2 border-brand-gray-light transition"
             >
-              Languages
+              {t('pages.profile.languages')}
               <span>{expandedSections.idiomas ? '▼' : '▶'}</span>
             </button>
             {expandedSections.idiomas && (
-              <div className="px-6 py-4 border-t border-gray-200 space-y-4">
+              <div className="px-6 py-4 space-y-4">
                 {profile.cv_data.idiomas.map((item, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div key={idx} className="border-2 border-brand-gold bg-brand-black/40 p-4 space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.language')}</label>
                       <input
                         type="text"
                         value={item.idioma || ''}
                         onChange={e => updateIdioma(idx, 'idioma', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.level')}</label>
                       <input
                         type="text"
                         value={item.nivel || ''}
                         onChange={e => updateIdioma(idx, 'nivel', e.target.value)}
                         placeholder="e.g. Nativo, C1, Profesional..."
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <button
                       onClick={() => removeIdioma(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Delete
+                      <Trash2 size={18} /> {t('pages.profile.delete')}
                     </button>
                   </div>
                 ))}
                 <button
                   onClick={addIdioma}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-brand-gold py-3 text-brand-gold hover:text-brand-white hover:bg-brand-gold/10 flex items-center justify-center gap-2 font-mono transition"
                 >
-                  <Plus size={20} /> Add Language
+                  <Plus size={20} /> {t('pages.profile.addLanguage')}
                 </button>
               </div>
             )}
           </div>
 
           {/* Certifications */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-brand-gray border-2 border-brand-gray-light">
             <button
               onClick={() =>
                 setExpandedSections(prev => ({
@@ -960,62 +962,62 @@ export default function ProfilePage() {
                   certificaciones: !prev.certificaciones
                 }))
               }
-              className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
+              className="w-full px-6 py-4 font-semibold font-display text-brand-white hover:bg-brand-gray-light/20 flex justify-between items-center border-b-2 border-brand-gray-light transition"
             >
-              Certifications
+              {t('pages.profile.certifications')}
               <span>{expandedSections.certificaciones ? '▼' : '▶'}</span>
             </button>
             {expandedSections.certificaciones && (
-              <div className="px-6 py-4 border-t border-gray-200 space-y-4">
+              <div className="px-6 py-4 space-y-4">
                 {profile.cv_data.certificaciones.map((item, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div key={idx} className="border-2 border-brand-gold bg-brand-black/40 p-4 space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Certification Name</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.certificationName')}</label>
                       <input
                         type="text"
                         value={item.nombre || ''}
                         onChange={e => updateCertificacion(idx, 'nombre', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Issuing Organization</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.issuingOrganization')}</label>
                       <input
                         type="text"
                         value={item.emisor || ''}
                         onChange={e => updateCertificacion(idx, 'emisor', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.year')}</label>
                       <input
                         type="text"
                         value={item.anio || ''}
                         onChange={e => updateCertificacion(idx, 'anio', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <button
                       onClick={() => removeCertificacion(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Delete
+                      <Trash2 size={18} /> {t('pages.profile.delete')}
                     </button>
                   </div>
                 ))}
                 <button
                   onClick={addCertificacion}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-brand-gold py-3 text-brand-gold hover:text-brand-white hover:bg-brand-gold/10 flex items-center justify-center gap-2 font-mono transition"
                 >
-                  <Plus size={20} /> Add Certification
+                  <Plus size={20} /> {t('pages.profile.addCertification')}
                 </button>
               </div>
             )}
           </div>
 
           {/* Courses */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-brand-gray border-2 border-brand-gray-light">
             <button
               onClick={() =>
                 setExpandedSections(prev => ({
@@ -1023,63 +1025,63 @@ export default function ProfilePage() {
                   cursos: !prev.cursos
                 }))
               }
-              className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
+              className="w-full px-6 py-4 font-semibold font-display text-brand-white hover:bg-brand-gray-light/20 flex justify-between items-center border-b-2 border-brand-gray-light transition"
             >
-              Courses
+              {t('pages.profile.courses')}
               <span>{expandedSections.cursos ? '▼' : '▶'}</span>
             </button>
             {expandedSections.cursos && (
-              <div className="px-6 py-4 border-t border-gray-200 space-y-4">
+              <div className="px-6 py-4 space-y-4">
                 {profile.cv_data.cursos.map((item, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div key={idx} className="border-2 border-brand-gold bg-brand-black/40 p-4 space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.courseName')}</label>
                       <input
                         type="text"
                         value={item.nombre || ''}
                         onChange={e => updateCurso(idx, 'nombre', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.platform')}</label>
                       <input
                         type="text"
                         value={item.plataforma || ''}
                         onChange={e => updateCurso(idx, 'plataforma', e.target.value)}
                         placeholder="e.g., Coursera, Udemy"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.year')}</label>
                       <input
                         type="text"
                         value={item.anio || ''}
                         onChange={e => updateCurso(idx, 'anio', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <button
                       onClick={() => removeCurso(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Delete
+                      <Trash2 size={18} /> {t('pages.profile.delete')}
                     </button>
                   </div>
                 ))}
                 <button
                   onClick={addCurso}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-brand-gold py-3 text-brand-gold hover:text-brand-white hover:bg-brand-gold/10 flex items-center justify-center gap-2 font-mono transition"
                 >
-                  <Plus size={20} /> Add Course
+                  <Plus size={20} /> {t('pages.profile.addCourse')}
                 </button>
               </div>
             )}
           </div>
 
           {/* Volunteering */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-brand-gray border-2 border-brand-gray-light">
             <button
               onClick={() =>
                 setExpandedSections(prev => ({
@@ -1087,64 +1089,64 @@ export default function ProfilePage() {
                   voluntariado: !prev.voluntariado
                 }))
               }
-              className="w-full px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
+              className="w-full px-6 py-4 font-semibold font-display text-brand-white hover:bg-brand-gray-light/20 flex justify-between items-center border-b-2 border-brand-gray-light transition"
             >
-              Volunteering
+              {t('pages.profile.volunteering')}
               <span>{expandedSections.voluntariado ? '▼' : '▶'}</span>
             </button>
             {expandedSections.voluntariado && (
-              <div className="px-6 py-4 border-t border-gray-200 space-y-4">
+              <div className="px-6 py-4 space-y-4">
                 {profile.cv_data.voluntariado.map((item, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div key={idx} className="border-2 border-brand-gold bg-brand-black/40 p-4 space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Organization</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.organization')}</label>
                       <input
                         type="text"
                         value={item.organizacion || ''}
                         onChange={e => updateVoluntariado(idx, 'organizacion', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.role')}</label>
                       <input
                         type="text"
                         value={item.rol || ''}
                         onChange={e => updateVoluntariado(idx, 'rol', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Description of Activities</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.activitiesDescription')}</label>
                       <textarea
                         value={item.descripcion || ''}
                         onChange={e => updateVoluntariado(idx, 'descripcion', e.target.value)}
                         rows="3"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                      <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.year')}</label>
                       <input
                         type="text"
                         value={item.anio || ''}
                         onChange={e => updateVoluntariado(idx, 'anio', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
                     <button
                       onClick={() => removeVoluntariado(idx)}
                       className="text-red-600 hover:text-red-800 flex items-center gap-2"
                     >
-                      <Trash2 size={18} /> Delete
+                      <Trash2 size={18} /> {t('pages.profile.delete')}
                     </button>
                   </div>
                 ))}
                 <button
                   onClick={addVoluntariado}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-600 hover:text-gray-900 hover:border-gray-400 flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-brand-gold py-3 text-brand-gold hover:text-brand-white hover:bg-brand-gold/10 flex items-center justify-center gap-2 font-mono transition"
                 >
-                  <Plus size={20} /> Add Volunteering
+                  <Plus size={20} /> {t('pages.profile.addVolunteering')}
                 </button>
               </div>
             )}
@@ -1156,10 +1158,10 @@ export default function ProfilePage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
+            className="flex-1 bg-brand-gold text-brand-black py-3 border-2 border-brand-gold font-semibold font-mono hover:bg-brand-white transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <Save size={20} />
-            {saving ? 'Saving...' : 'Save Profile'}
+            {saving ? t('pages.profile.saving') : t('pages.profile.saveProfile')}
           </button>
         </div>
       </div>

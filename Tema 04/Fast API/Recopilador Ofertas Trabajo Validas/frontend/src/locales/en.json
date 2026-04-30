@@ -1,6 +1,7 @@
 {
   "nav": {
     "home": "Home",
+    "back": "Back",
     "dashboard": "Dashboard",
     "profile": "Profile",
     "logout": "Logout",
@@ -8,13 +9,25 @@
   },
   "auth": {
     "login": "Sign In",
+    "loggingIn": "Signing in...",
     "register": "Sign Up",
+    "registering": "Signing up...",
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "name": "Name",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "invalidEmail": "Invalid email",
+    "minPassword": "Minimum 8 characters",
+    "passwordsMismatch": "Passwords do not match",
+    "acceptTerms": "I accept the",
+    "acceptPrivacy": "I accept the",
+    "termsTitle": "Terms and Conditions",
+    "privacyTitle": "Privacy Policy",
     "loginError": "Invalid email or password",
     "registerError": "Registration failed",
+    "unexpectedError": "An unexpected error occurred. Please try again.",
     "submit": "Submit",
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy"
@@ -28,7 +41,9 @@
     "delete": "Delete",
     "edit": "Edit",
     "close": "Close",
-    "submit": "Submit"
+    "submit": "Submit",
+    "of": "of",
+    "next": "Next"
   },
   "cv": {
     "upload": "Upload CV",
@@ -39,7 +54,8 @@
     "deleteSuccess": "CV deleted successfully",
     "deleteError": "Error deleting CV",
     "preview": "CV Preview",
-    "required": "CV is required to continue"
+    "required": "CV is required to continue",
+    "deleteConfirm": "Are you sure you want to delete your CV?"
   },
   "analysis": {
     "create": "Create Analysis",
@@ -49,7 +65,9 @@
     "analyze": "Analyze",
     "history": "Analysis History",
     "noResults": "No analyses found",
-    "error": "Error creating analysis"
+    "error": "Error creating analysis",
+    "notRecommended": "This offer does not meet the minimum",
+    "minScore": "required score (60%)"
   },
   "adaptations": {
     "generate": "Generate Adaptation",
@@ -58,12 +76,188 @@
     "title": "Adaptations",
     "history": "Adaptation History",
     "noResults": "No adaptations found",
-    "error": "Error generating adaptation"
+    "error": "Error generating adaptation",
+    "description": "Download your tailored CVs"
   },
   "dashboard": {
     "welcome": "Welcome",
     "recentAnalyses": "Recent Analyses",
     "recentAdaptations": "Recent Adaptations",
     "noData": "No data available"
+  },
+  "landing": {
+    "title": "Intelligent Job Offer Analysis",
+    "subtitle": "Upload your CV once, analyze any job offer instantly, and receive perfectly tailored versions for positions that truly match your profile.",
+    "getStarted": "Get Started Free",
+    "whyOptiCV": "Why OptiCV?",
+    "dashboard": "Dashboard",
+    "features": {
+      "uploadCV": {
+        "title": "Upload Your CV",
+        "desc": "Securely store your resume for instant analysis"
+      },
+      "smartAnalysis": {
+        "title": "Smart Analysis",
+        "desc": "AI-powered evaluation of job offers against your profile"
+      },
+      "quickScreening": {
+        "title": "Quick Screening",
+        "desc": "Intelligent filtering to find truly relevant opportunities"
+      },
+      "adaptedCVs": {
+        "title": "Adapted CVs",
+        "desc": "Tailored versions for each promising offer"
+      }
+    }
+  },
+  "shared": {
+    "close": "Close",
+    "footer": "Intelligent job offer analysis for professionals."
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "myCV": "My CV",
+    "analysis": "Analysis",
+    "analysisHistory": "Analysis History",
+    "myAdaptations": "My Adaptations",
+    "myProfile": "My Profile",
+    "cvUploaded": "CV Uploaded",
+    "noCV": "No CV"
+  },
+  "pages": {
+    "dashboard": {
+      "myCv": "My CV",
+      "analyzeOffer": "Analyze Offer",
+      "analysisHistory": "Analysis History",
+      "myAdaptations": "My Adaptations",
+      "manage": "Manage",
+      "getStarted": "Get Started"
+    },
+    "cv": {
+      "myCV": "My CV",
+      "uploadCV": "Upload CV",
+      "uploadDescription": "Upload your CV to start analyzing",
+      "selectFile": "or click to select",
+      "dragDrop": "Drag your CV here",
+      "noCV": "You haven't uploaded a CV yet",
+      "preview": "Preview",
+      "fileName": "File name",
+      "uploadedAt": "Uploaded on",
+      "height": "Height",
+      "width": "Width"
+    },
+    "analysis": {
+      "analyzeJobOffer": "Analyze Job Offer",
+      "jobOfferUrl": "Job offer URL",
+      "paste": "Paste text",
+      "offerDescription": "Offer description",
+      "enterUrl": "Enter the job offer URL",
+      "pasteText": "Paste the job offer text here...",
+      "analyze": "Analyze",
+      "matchScore": "Match Score",
+      "relevance": "Relevance",
+      "rating": "Rating",
+      "recommendation": "Recommendation",
+      "notRecommended": "Not Recommended",
+      "maybeWorth": "Maybe Worth It",
+      "recommended": "Recommended",
+      "highly": "Highly Recommended",
+      "validOffer": "Valid Offer",
+      "notSuitable": "Not Suitable",
+      "summary": "AI Analysis Summary",
+      "benefits": "Benefits",
+      "requiredSkills": "Required Skills",
+      "salary": "Salary",
+      "type": "Type",
+      "location": "Location",
+      "viewOriginal": "View Original Offer",
+      "company": "Company"
+    },
+    "adaptations": {
+      "myAdaptations": "My Adaptations",
+      "generate": "Generate",
+      "generating": "Generating...",
+      "details": "Details",
+      "view": "View",
+      "download": "Download",
+      "noAdaptations": "No adaptations yet",
+      "generateNew": "Generate new adaptation",
+      "patience": "This may take a moment",
+      "yourAdapted": "Your Adapted CV",
+      "updating": "Updating...",
+      "regenerate": "Regenerate",
+      "generateAdapted": "Generate Adapted CV"
+    },
+    "profile": {
+      "myProfile": "My Profile",
+      "update": "Update",
+      "updating": "Updating...",
+      "changePassword": "Change Password",
+      "preferences": "Preferences",
+      "successUpdate": "Profile updated successfully",
+      "errorUpdate": "Error updating profile",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmNewPassword": "Confirm new password",
+      "personalData": "Personal Data",
+      "fullName": "Full Name",
+      "email": "Email",
+      "linkedin": "LinkedIn",
+      "github": "GitHub",
+      "phone": "Phone",
+      "location": "Location",
+      "website": "Website/Portfolio",
+      "telegramId": "Telegram Chat ID (Admin only)",
+      "professionalSummary": "Professional Summary",
+      "summaryPlaceholder": "Write your professional profile summary",
+      "skills": "Skills",
+      "addNewSkill": "Add New Skill",
+      "category": "Category",
+      "skillName": "Skill Name",
+      "add": "Add",
+      "academicEducation": "Academic Education",
+      "degreeTitle": "Degree/Title",
+      "institution": "Institution/School",
+      "year": "Year",
+      "delete": "Delete",
+      "addEducation": "Add Education",
+      "professionalExperience": "Professional Experience",
+      "jobTitle": "Job Title",
+      "company": "Company",
+      "duration": "Duration",
+      "quantifiableImpact": "Quantifiable Impact",
+      "addExperience": "Add Experience",
+      "featuredProjects": "Featured Projects",
+      "projectName": "Project Name",
+      "description": "Description",
+      "addProject": "Add Project",
+      "languages": "Languages",
+      "language": "Language",
+      "level": "Level",
+      "addLanguage": "Add Language",
+      "certifications": "Certifications",
+      "certificationName": "Certification Name",
+      "issuingOrganization": "Issuing Organization",
+      "addCertification": "Add Certification",
+      "courses": "Courses",
+      "courseName": "Course Name",
+      "platform": "Platform",
+      "addCourse": "Add Course",
+      "volunteering": "Volunteering",
+      "organization": "Organization",
+      "role": "Role",
+      "activitiesDescription": "Description of Activities",
+      "addVolunteering": "Add Volunteering",
+      "saveProfile": "Save Profile",
+      "saving": "Saving...",
+      "noName": "No name",
+      "profilePictureUpdated": "Profile picture updated",
+      "errorUploadingPhoto": "Error uploading photo",
+      "profileSavedSuccessfully": "Profile saved successfully",
+      "errorSavingProfile": "Error saving profile",
+      "noPermissionTelegramId": "You do not have permission to update telegram_id",
+      "errorLoadingProfile": "Error loading profile",
+      "administrator": "Administrator"
+    }
   }
 }

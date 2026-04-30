@@ -7,8 +7,10 @@ import useStore from '../../../stores/globalStore';
 import { analysisService } from '../../../services/analysisService';
 import { adaptationService } from '../../../services/adaptationService';
 import { ArrowLeft, Zap, FileText } from 'lucide-react';
+import { useLocale } from '../../../hooks/useLocale';
 
 export function ResultPage() {
+  const { t } = useLocale();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const idAsNumber = parseInt(id, 10);
@@ -84,7 +86,7 @@ export function ResultPage() {
   if (isLoading) {
     return (
       <Layout>
-        <Spinner message="Loading analysis..." fullHeight />
+        <Spinner message={t('common.loading')} fullHeight />
       </Layout>
     );
   }
@@ -93,7 +95,7 @@ export function ResultPage() {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto text-center py-12">
-          <p className="text-red-600 mb-4">Error loading analysis. Redirecting...</p>
+          <p className="text-red-400 mb-4 font-mono">{t('common.error')} {t('analysis.error')} {t('nav.back')}...</p>
         </div>
       </Layout>
     );
@@ -102,7 +104,7 @@ export function ResultPage() {
   if (!currentAnalysis) {
     return (
       <Layout>
-        <Spinner message="Loading..." fullHeight />
+        <Spinner message={t('common.loading')} fullHeight />
       </Layout>
     );
   }
@@ -112,9 +114,9 @@ export function ResultPage() {
       <div className="max-w-4xl mx-auto">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-6"
+          className="flex items-center gap-2 text-brand-gold hover:border-b-2 hover:border-brand-gold mb-6 font-mono transition"
         >
-          <ArrowLeft size={18} /> Back
+          <ArrowLeft size={18} /> {t('nav.back')}
         </button>
 
         <ResultCard result={currentAnalysis} />
@@ -123,27 +125,27 @@ export function ResultPage() {
           <button
             onClick={handleGenerateAdaptation}
             disabled={isGenerating}
-            className="inline-flex items-center justify-center gap-2 mt-6 px-6 py-3 w-full bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 transition"
+            className="inline-flex items-center justify-center gap-2 mt-6 px-6 py-3 w-full bg-brand-gold text-brand-black border-2 border-brand-gold font-bold hover:bg-brand-black hover:text-brand-gold transition disabled:opacity-50 font-display"
           >
             {isGenerating ? (
               <>
-                <Spinner size={18} inline color="text-white" /> Generating...
+                <Spinner size={18} inline color="text-brand-black" /> {t('adaptations.generating')}
               </>
             ) : (
               <>
-                <Zap size={18} /> Generate CV Adaptation
+                <Zap size={18} /> {t('pages.adaptations.generate')}
               </>
             )}
           </button>
         ) : (
-          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700">This offer does not meet the minimum match score (60%). Cannot generate adaptation.</p>
+          <div className="mt-6 p-4 bg-red-950/40 border-2 border-red-800/50">
+            <p className="text-red-400 font-mono">{t('analysis.notRecommended')} - {t('analysis.minScore')}</p>
           </div>
         )}
 
         {adaptations.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Generated Adaptations</h2>
+            <h2 className="text-xl font-display font-bold text-brand-white mb-4">{t('pages.adaptations.generate')} {t('adaptations.title')}</h2>
             <div className="space-y-3">
               {adaptations.map((adaptation) => (
                 <CardItem
@@ -154,7 +156,7 @@ export function ResultPage() {
                   company={adaptation.company}
                   score={adaptation.score}
                   createdAt={adaptation.created_at}
-                  badgeColor="bg-indigo-100 text-indigo-700"
+                  badgeColor="bg-indigo-900/40 text-indigo-400"
                   searchParams={{ from: fromParam, analysisId: currentAnalysis.id }}
                 />
               ))}

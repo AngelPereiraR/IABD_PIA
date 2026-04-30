@@ -21,7 +21,7 @@ export function PDFDownloadButton({ adaptationId }) {
     <button
       onClick={handleDownload}
       disabled={isDownloading}
-      className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 transition"
+      className="flex items-center gap-2 px-6 py-3 bg-transparent text-brand-gold border-2 border-brand-gold font-mono font-bold hover:bg-brand-gold/10 transition disabled:opacity-50"
     >
       {isDownloading ? (
         <>

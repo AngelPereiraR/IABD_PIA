@@ -28,20 +28,20 @@ export function Layout({ children }) {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-brand-black">
       <Navbar onMenuClick={toggleSidebar} sidebarOpen={sidebarOpen} />
       <div className="flex flex-1 relative">
         {/* Overlay para mobile */}
         {!isDesktop && sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black/70 z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
         {/* Sidebar */}
         <Sidebar isOpen={sidebarOpen} isDesktop={isDesktop} />
         {/* Main content */}
-        <main className="flex-1 overflow-auto bg-gray-100">
+        <main className="flex-1 overflow-auto bg-brand-black">
           <div className="p-8">
             {children}
           </div>

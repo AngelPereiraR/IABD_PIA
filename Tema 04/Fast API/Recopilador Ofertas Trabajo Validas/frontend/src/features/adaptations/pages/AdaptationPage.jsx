@@ -7,8 +7,10 @@ import { ResultCard } from '../../analysis/components/ResultCard';
 import useStore from '../../../stores/globalStore';
 import { analysisService } from '../../../services/analysisService';
 import { ArrowLeft, Zap } from 'lucide-react';
+import { useLocale } from '../../../hooks/useLocale';
 
 export function AdaptationPage() {
+  const { t } = useLocale();
   const { analysisId } = useParams();
   const [searchParams] = useSearchParams();
   const analysisIdAsNumber = parseInt(analysisId, 10);
@@ -81,7 +83,7 @@ export function AdaptationPage() {
   if (isLoadingAnalysis) {
     return (
       <Layout>
-        <Spinner message="Loading analysis..." fullHeight />
+        <Spinner message={t('common.loading')} fullHeight />
       </Layout>
     );
   }
@@ -91,7 +93,7 @@ export function AdaptationPage() {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-red-600">Error loading analysis. Redirecting...</p>
+          <p className="text-red-400 font-mono">{t('common.error')} {t('analysis.error')} {t('nav.back')}...</p>
         </div>
       </Layout>
     );
@@ -102,7 +104,7 @@ export function AdaptationPage() {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-brand-white/70 font-mono">{t('common.loading')}</p>
         </div>
       </Layout>
     );
@@ -112,8 +114,8 @@ export function AdaptationPage() {
   if (isGenerating && !currentAdaptation) {
     return (
       <Layout>
-        <Spinner message="Generating your adapted CV..." fullHeight />
-        <p className="text-gray-500 text-sm text-center mt-2">This may take a moment</p>
+        <Spinner message={t('adaptations.generating')} fullHeight />
+        <p className="text-brand-white/70 text-sm text-center mt-2 font-mono">{t('pages.adaptations.patience')}</p>
       </Layout>
     );
   }
@@ -125,18 +127,18 @@ export function AdaptationPage() {
         <div className="max-w-4xl mx-auto">
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-6"
+            className="flex items-center gap-2 text-brand-gold hover:text-brand-white font-mono mb-6 transition"
           >
-            <ArrowLeft size={18} /> Back
+            <ArrowLeft size={18} /> {t('nav.back')}
           </button>
 
-          <h1 className="text-3xl font-bold text-gray-800 mb-8">Your Adapted CV</h1>
+          <h1 className="text-3xl font-display font-bold text-brand-white mb-8">{t('pages.adaptations.yourAdapted')}</h1>
 
           <div className="relative space-y-6">
             {isGenerating && (
               <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
                 <div className="flex flex-col items-center gap-2">
-                  <Spinner size={32} text="Updating..." />
+                  <Spinner size={32} text={t('pages.adaptations.updating')} />
                 </div>
               </div>
             )}
@@ -152,9 +154,9 @@ export function AdaptationPage() {
                 <button
                   onClick={handleRegenerateAdaptation}
                   disabled={isGenerating}
-                  className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 transition"
+                  className="flex items-center gap-2 px-6 py-3 bg-brand-gold text-brand-black border-2 border-brand-gold font-mono font-bold hover:bg-brand-white transition disabled:opacity-50"
                 >
-                  <Zap size={18} /> Regenerate
+                  <Zap size={18} /> {t('pages.adaptations.regenerate')}
                 </button>
               </div>
             )}
@@ -172,14 +174,14 @@ export function AdaptationPage() {
           onClick={handleBack}
           className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-6"
         >
-          <ArrowLeft size={18} /> Back
+          <ArrowLeft size={18} /> {t('nav.back')}
         </button>
 
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Generate Adapted CV</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-white mb-8">{t('pages.adaptations.generateAdapted')}</h1>
 
         <div className="space-y-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Job Analysis</h2>
+            <h2 className="text-xl font-display font-semibold text-brand-white mb-4">{t('pages.analysis.analyzeJobOffer')}</h2>
             <ResultCard result={currentAnalysis} />
           </div>
 
@@ -188,15 +190,15 @@ export function AdaptationPage() {
               <button
                 onClick={handleGenerateAdaptation}
                 disabled={isGenerating}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 transition"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-gold text-brand-black border-2 border-brand-gold font-mono font-bold hover:bg-brand-white transition disabled:opacity-50"
               >
                 {isGenerating ? (
                   <>
-                    <Spinner size={18} inline color="text-white" /> Generating...
+                    <Spinner size={18} inline color="text-white" /> {t('adaptations.generating')}
                   </>
                 ) : (
                   <>
-                    <Zap size={18} /> Generate Adapted CV
+                    <Zap size={18} /> {t('pages.adaptations.generateAdapted')}
                   </>
                 )}
               </button>
@@ -204,8 +206,8 @@ export function AdaptationPage() {
           )}
 
           {!currentAnalysis.is_valid && (
-            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-              <p className="text-red-700">This offer does not meet the minimum match score (60%). Cannot generate adaptation.</p>
+            <div className="bg-red-950/40 p-4 border-2 border-red-900">
+              <p className="text-red-400 font-mono">{t('analysis.notRecommended')} - {t('analysis.minScore')}</p>
             </div>
           )}
         </div>

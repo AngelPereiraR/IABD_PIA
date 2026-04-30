@@ -120,6 +120,7 @@ const useStore = create((set, get) => ({
         } catch {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          set({ auth: { user: null, token: null, isLoading: false, error: null } });
         }
       }
     },
@@ -215,6 +216,10 @@ const useStore = create((set, get) => ({
     },
 
     fetchCurrentCV: async () => {
+      const { auth } = get();
+      if (!auth.token) {
+        return { success: false };
+      }
       set((state) => ({ cv: { ...state.cv, isLoading: true, error: null } }));
       try {
         const response = await cvService.getCV();

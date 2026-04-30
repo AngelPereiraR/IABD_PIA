@@ -1,6 +1,7 @@
 {
   "nav": {
     "home": "Inicio",
+    "back": "Volver",
     "dashboard": "Panel",
     "profile": "Perfil",
     "logout": "Cerrar sesión",
@@ -8,13 +9,25 @@
   },
   "auth": {
     "login": "Iniciar sesión",
+    "loggingIn": "Iniciando sesión...",
     "register": "Registrarse",
+    "registering": "Registrándose...",
     "email": "Correo electrónico",
     "password": "Contraseña",
     "confirmPassword": "Confirmar contraseña",
     "name": "Nombre",
+    "noAccount": "¿No tienes cuenta?",
+    "haveAccount": "¿Ya tienes cuenta?",
+    "invalidEmail": "Correo inválido",
+    "minPassword": "Mínimo 8 caracteres",
+    "passwordsMismatch": "Las contraseñas no coinciden",
+    "acceptTerms": "Acepto los",
+    "acceptPrivacy": "Acepto la",
+    "termsTitle": "Términos y Condiciones",
+    "privacyTitle": "Política de Privacidad",
     "loginError": "Correo o contraseña incorrectos",
     "registerError": "Error en el registro",
+    "unexpectedError": "Ocurrió un error inesperado. Por favor intenta de nuevo.",
     "submit": "Enviar",
     "termsOfService": "Términos de servicio",
     "privacyPolicy": "Política de privacidad"
@@ -28,7 +41,9 @@
     "delete": "Eliminar",
     "edit": "Editar",
     "close": "Cerrar",
-    "submit": "Enviar"
+    "submit": "Enviar",
+    "of": "de",
+    "next": "Siguiente"
   },
   "cv": {
     "upload": "Subir CV",
@@ -39,7 +54,8 @@
     "deleteSuccess": "CV eliminado correctamente",
     "deleteError": "Error al eliminar CV",
     "preview": "Vista previa del CV",
-    "required": "El CV es obligatorio para continuar"
+    "required": "El CV es obligatorio para continuar",
+    "deleteConfirm": "¿Estás seguro de que deseas eliminar tu CV?"
   },
   "analysis": {
     "create": "Crear análisis",
@@ -49,7 +65,9 @@
     "analyze": "Analizar",
     "history": "Historial de análisis",
     "noResults": "No hay análisis registrados",
-    "error": "Error al crear análisis"
+    "error": "Error al crear análisis",
+    "notRecommended": "Esta oferta no cumple el mínimo",
+    "minScore": "puntuación requerida (60%)"
   },
   "adaptations": {
     "generate": "Generar adaptación",
@@ -58,12 +76,188 @@
     "title": "Adaptaciones",
     "history": "Historial de adaptaciones",
     "noResults": "No hay adaptaciones registradas",
-    "error": "Error al generar adaptación"
+    "error": "Error al generar adaptación",
+    "description": "Descarga tus CVs personalizados"
   },
   "dashboard": {
     "welcome": "Bienvenido",
     "recentAnalyses": "Análisis recientes",
     "recentAdaptations": "Adaptaciones recientes",
     "noData": "Sin datos disponibles"
+  },
+  "landing": {
+    "title": "Análisis Inteligente de Ofertas de Trabajo",
+    "subtitle": "Sube tu CV una vez, analiza cualquier oferta de trabajo al instante y recibe versiones perfectamente personalizadas para posiciones que realmente se ajusten a tu perfil.",
+    "getStarted": "Comenzar Gratis",
+    "whyOptiCV": "¿Por qué OptiCV?",
+    "dashboard": "Panel",
+    "features": {
+      "uploadCV": {
+        "title": "Sube tu CV",
+        "desc": "Almacena tu currículum de forma segura para análisis instantáneo"
+      },
+      "smartAnalysis": {
+        "title": "Análisis Inteligente",
+        "desc": "Evaluación impulsada por IA de ofertas de trabajo contra tu perfil"
+      },
+      "quickScreening": {
+        "title": "Filtrado Rápido",
+        "desc": "Filtrado inteligente para encontrar oportunidades realmente relevantes"
+      },
+      "adaptedCVs": {
+        "title": "CVs Adaptados",
+        "desc": "Versiones personalizadas para cada oferta prometedora"
+      }
+    }
+  },
+  "shared": {
+    "close": "Cerrar",
+    "footer": "Análisis inteligente de ofertas de trabajo para profesionales."
+  },
+  "sidebar": {
+    "dashboard": "Panel",
+    "myCV": "Mi CV",
+    "analysis": "Análisis",
+    "analysisHistory": "Historial de Análisis",
+    "myAdaptations": "Mis Adaptaciones",
+    "myProfile": "Mi Perfil",
+    "cvUploaded": "CV Subido",
+    "noCV": "Sin CV"
+  },
+  "pages": {
+    "dashboard": {
+      "myCv": "Mi CV",
+      "analyzeOffer": "Analizar Oferta",
+      "analysisHistory": "Historial de Análisis",
+      "myAdaptations": "Mis Adaptaciones",
+      "manage": "Gestionar",
+      "getStarted": "Comenzar"
+    },
+    "cv": {
+      "myCV": "Mi CV",
+      "uploadCV": "Subir CV",
+      "uploadDescription": "Sube tu CV para comenzar el análisis",
+      "selectFile": "o haz clic para seleccionar",
+      "dragDrop": "Arrastra tu CV aquí",
+      "noCV": "No has subido un CV aún",
+      "preview": "Vista previa",
+      "fileName": "Nombre del archivo",
+      "uploadedAt": "Subido el",
+      "height": "Alto",
+      "width": "Ancho"
+    },
+    "analysis": {
+      "analyzeJobOffer": "Analizar Oferta de Trabajo",
+      "jobOfferUrl": "URL de la oferta",
+      "paste": "Pegar texto",
+      "offerDescription": "Descripción de la oferta",
+      "enterUrl": "Ingresa la URL de la oferta",
+      "pasteText": "Pega el texto de la oferta aquí...",
+      "analyze": "Analizar",
+      "matchScore": "Puntuación de coincidencia",
+      "relevance": "Relevancia",
+      "rating": "Calificación",
+      "recommendation": "Recomendación",
+      "notRecommended": "No recomendado",
+      "maybeWorth": "Posiblemente vale la pena",
+      "recommended": "Recomendado",
+      "highly": "Altamente recomendado",
+      "validOffer": "Oferta Válida",
+      "notSuitable": "No es Adecuada",
+      "summary": "Resumen del Análisis IA",
+      "benefits": "Beneficios",
+      "requiredSkills": "Habilidades Requeridas",
+      "salary": "Salario",
+      "type": "Tipo",
+      "location": "Ubicación",
+      "viewOriginal": "Ver Oferta Original",
+      "company": "Empresa"
+    },
+    "adaptations": {
+      "myAdaptations": "Mis Adaptaciones",
+      "generate": "Generar",
+      "generating": "Generando...",
+      "details": "Detalles",
+      "view": "Ver",
+      "download": "Descargar",
+      "noAdaptations": "No hay adaptaciones aún",
+      "generateNew": "Generar nueva adaptación",
+      "patience": "Esto puede tomar un momento",
+      "yourAdapted": "Tu CV Adaptado",
+      "updating": "Actualizando...",
+      "regenerate": "Regenerar",
+      "generateAdapted": "Generar CV Adaptado"
+    },
+    "profile": {
+      "myProfile": "Mi Perfil",
+      "update": "Actualizar",
+      "updating": "Actualizando...",
+      "changePassword": "Cambiar contraseña",
+      "preferences": "Preferencias",
+      "successUpdate": "Perfil actualizado correctamente",
+      "errorUpdate": "Error al actualizar el perfil",
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Nueva contraseña",
+      "confirmNewPassword": "Confirmar nueva contraseña",
+      "personalData": "Datos Personales",
+      "fullName": "Nombre Completo",
+      "email": "Correo electrónico",
+      "linkedin": "LinkedIn",
+      "github": "GitHub",
+      "phone": "Teléfono",
+      "location": "Ubicación",
+      "website": "Sitio Web/Portafolio",
+      "telegramId": "ID de Chat de Telegram (Solo admin)",
+      "professionalSummary": "Resumen Profesional",
+      "summaryPlaceholder": "Escribe tu resumen profesional",
+      "skills": "Habilidades",
+      "addNewSkill": "Añadir Nueva Habilidad",
+      "category": "Categoría",
+      "skillName": "Nombre de Habilidad",
+      "add": "Añadir",
+      "academicEducation": "Educación Académica",
+      "degreeTitle": "Título/Grado",
+      "institution": "Centro/Institución",
+      "year": "Año",
+      "delete": "Eliminar",
+      "addEducation": "Añadir Educación",
+      "professionalExperience": "Experiencia Profesional",
+      "jobTitle": "Puesto de Trabajo",
+      "company": "Empresa",
+      "duration": "Duración",
+      "quantifiableImpact": "Impacto Cuantificable",
+      "addExperience": "Añadir Experiencia",
+      "featuredProjects": "Proyectos Destacados",
+      "projectName": "Nombre del Proyecto",
+      "description": "Descripción",
+      "addProject": "Añadir Proyecto",
+      "languages": "Idiomas",
+      "language": "Idioma",
+      "level": "Nivel",
+      "addLanguage": "Añadir Idioma",
+      "certifications": "Certificaciones",
+      "certificationName": "Nombre de Certificación",
+      "issuingOrganization": "Organización Emisora",
+      "addCertification": "Añadir Certificación",
+      "courses": "Cursos",
+      "courseName": "Nombre del Curso",
+      "platform": "Plataforma",
+      "addCourse": "Añadir Curso",
+      "volunteering": "Voluntariado",
+      "organization": "Organización",
+      "role": "Rol",
+      "activitiesDescription": "Descripción de Actividades",
+      "addVolunteering": "Añadir Voluntariado",
+      "saveProfile": "Guardar Perfil",
+      "saving": "Guardando...",
+      "noName": "Sin nombre",
+      "profilePictureUpdated": "Foto de perfil actualizada",
+      "errorUploadingPhoto": "Error al subir la foto",
+      "profileSavedSuccessfully": "Perfil guardado correctamente",
+      "errorSavingProfile": "Error al guardar el perfil",
+      "noPermissionTelegramId": "No tienes permiso para actualizar el ID de Telegram",
+      "errorLoadingProfile": "Error al cargar el perfil",
+      "administrator": "Administrador"
+    }
   }
 }

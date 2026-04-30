@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import useStore from '../../../stores/globalStore';
 import { FileText, Trash2, Download } from 'lucide-react';
+import { useLocale } from '../../../hooks/useLocale';
 
 export function CVPreview() {
+  const { t } = useLocale();
   const [previewHeight, setPreviewHeight] = useState(800);
   const [previewWidth, setPreviewWidth] = useState(100);
   const [maxHeight, setMaxHeight] = useState(1200);
@@ -36,7 +38,7 @@ export function CVPreview() {
   const filename = currentCV.filename || 'CV Document';
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete your CV?')) {
+    if (window.confirm(t('cv.deleteConfirm'))) {
       await deleteCV();
     }
   };
@@ -56,14 +58,14 @@ export function CVPreview() {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="p-6 border-b border-gray-200 flex items-start justify-between">
+    <div className="bg-brand-gray border-2 border-brand-gray-light overflow-hidden">
+      <div className="p-6 border-b border-brand-gold/30 flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <FileText size={32} className="text-indigo-600" />
+          <FileText size={32} className="text-brand-gold" />
           <div>
-            <h3 className="text-lg font-semibold text-gray-800">{filename}</h3>
-            <p className="text-sm text-gray-500">
-              {currentCV.size ? `${(currentCV.size / 1024).toFixed(2)} KB` : 'Uploaded'}
+            <h3 className="text-lg font-semibold text-brand-white">{filename}</h3>
+            <p className="text-sm text-brand-white/70 font-mono">
+              {currentCV.size ? `${(currentCV.size / 1024).toFixed(2)} KB` : t('sidebar.cvUploaded')}
             </p>
           </div>
         </div>
@@ -71,64 +73,64 @@ export function CVPreview() {
           {cvUrl && (
             <button
               onClick={handleDownload}
-              className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded transition"
-              title="Download CV"
+              className="flex items-center gap-2 px-3 py-2 text-brand-gold border border-transparent hover:border-brand-gold transition"
+              title={t('adaptations.download')}
             >
               <Download size={18} />
             </button>
           )}
           <button
             onClick={handleDelete}
-            className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded transition"
+            className="flex items-center gap-2 px-3 py-2 text-brand-white border border-transparent hover:border-brand-gold hover:text-brand-gold transition"
           >
             <Trash2 size={18} />
-            Delete
+            {t('common.delete')}
           </button>
         </div>
       </div>
 
       {cvUrl && (
-        <div className="bg-gray-50 p-4 space-y-4">
+        <div className="bg-brand-gray p-4 space-y-4">
           {/* Height Controls */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex gap-2">
-              <label className="text-sm font-medium text-gray-700">Height:</label>
+              <label className="text-sm font-medium text-brand-white/70 font-mono">{t('pages.cv.height')}:</label>
               <button
                 onClick={() => setPreviewHeight(400)}
-                className={`px-3 py-1 rounded text-sm transition ${
+                className={`px-3 py-1 text-sm transition border-2 font-mono ${
                   previewHeight === 400
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black border-brand-gold'
+                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
                 }`}
               >
                 S
               </button>
               <button
                 onClick={() => setPreviewHeight(600)}
-                className={`px-3 py-1 rounded text-sm transition ${
+                className={`px-3 py-1 text-sm transition border-2 font-mono ${
                   previewHeight === 600
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black border-brand-gold'
+                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
                 }`}
               >
                 M
               </button>
               <button
                 onClick={() => setPreviewHeight(800)}
-                className={`px-3 py-1 rounded text-sm transition ${
+                className={`px-3 py-1 text-sm transition border-2 font-mono ${
                   previewHeight === 800
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black border-brand-gold'
+                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
                 }`}
               >
                 L
               </button>
               <button
                 onClick={() => setPreviewHeight(1200)}
-                className={`px-3 py-1 rounded text-sm transition ${
+                className={`px-3 py-1 text-sm transition border-2 font-mono ${
                   previewHeight === 1200
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black border-brand-gold'
+                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
                 }`}
               >
                 XL
@@ -142,42 +144,42 @@ export function CVPreview() {
                 step="50"
                 value={previewHeight}
                 onChange={(e) => setPreviewHeight(parseInt(e.target.value))}
-                className="w-32"
+                className="w-32 accent-brand-gold"
               />
-              <span className="text-sm text-gray-600 w-14">{previewHeight}px</span>
+              <span className="text-sm text-brand-white/70 w-14 font-mono">{previewHeight}px</span>
             </div>
           </div>
 
           {/* Width Controls */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex gap-2">
-              <label className="text-sm font-medium text-gray-700">Width:</label>
+              <label className="text-sm font-medium text-brand-white/70 font-mono">{t('pages.cv.width')}:</label>
               <button
                 onClick={() => setPreviewWidth(75)}
-                className={`px-3 py-1 rounded text-sm transition ${
+                className={`px-3 py-1 text-sm transition border-2 font-mono ${
                   previewWidth === 75
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black border-brand-gold'
+                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
                 }`}
               >
                 75%
               </button>
               <button
                 onClick={() => setPreviewWidth(90)}
-                className={`px-3 py-1 rounded text-sm transition ${
+                className={`px-3 py-1 text-sm transition border-2 font-mono ${
                   previewWidth === 90
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black border-brand-gold'
+                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
                 }`}
               >
                 90%
               </button>
               <button
                 onClick={() => setPreviewWidth(100)}
-                className={`px-3 py-1 rounded text-sm transition ${
+                className={`px-3 py-1 text-sm transition border-2 font-mono ${
                   previewWidth === 100
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white border border-gray-300 hover:bg-gray-100'
+                    ? 'bg-brand-gold text-brand-black border-brand-gold'
+                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
                 }`}
               >
                 100%
@@ -191,9 +193,9 @@ export function CVPreview() {
                 step="5"
                 value={previewWidth}
                 onChange={(e) => setPreviewWidth(parseInt(e.target.value))}
-                className="w-32"
+                className="w-32 accent-brand-gold"
               />
-              <span className="text-sm text-gray-600 w-14">{previewWidth}%</span>
+              <span className="text-sm text-brand-white/70 w-14 font-mono">{previewWidth}%</span>
             </div>
           </div>
 
@@ -201,8 +203,8 @@ export function CVPreview() {
           <div className="pt-6" style={{ width: `${previewWidth}%`, margin: '0 auto' }}>
             <iframe
               src={cvUrl}
-              title="CV Preview"
-              className="w-full border border-gray-300 rounded"
+              title={t('pages.cv.preview')}
+              className="w-full border-2 border-brand-gray-light"
               style={{ height: `${previewHeight}px` }}
             />
           </div>

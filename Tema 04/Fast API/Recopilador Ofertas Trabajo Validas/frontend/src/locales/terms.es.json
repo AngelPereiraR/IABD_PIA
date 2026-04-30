@@ -1,0 +1,63 @@
+{
+  "title": "Términos y Condiciones",
+  "sections": {
+    "acceptance": {
+      "title": "1. Aceptación de Términos",
+      "content": "Al acceder y utilizar OptiCV, acepta y se compromete a cumplir con los términos y disposiciones de este acuerdo. Si no está de acuerdo en cumplir con lo anterior, por favor no utilice este servicio."
+    },
+    "useLicense": {
+      "title": "2. Licencia de Uso",
+      "intro": "Se otorga permiso para descargar temporalmente una copia de los materiales (información o software) en OptiCV solo para visualización personal y no comercial. Esta es la concesión de una licencia, no una transferencia de título, y bajo esta licencia no puede:",
+      "items": [
+        "Modificar o copiar los materiales",
+        "Usar los materiales para cualquier propósito comercial o para cualquier visualización pública",
+        "Intentar descompilar o realizar ingeniería inversa de cualquier software contenido en OptiCV",
+        "Eliminar cualquier notación de derechos de autor u otra notación de propiedad de los materiales",
+        "Transferir los materiales a otra persona o 'reflejar' los materiales en cualquier otro servidor"
+      ]
+    },
+    "disclaimer": {
+      "title": "3. Descargo de Responsabilidad",
+      "content": "Los materiales en OptiCV se proporcionan 'tal cual'. OptiCV no hace garantías, expresas o implícitas, y por este medio renuncia y niega todas las demás garantías, incluyendo, sin limitación, garantías implícitas o condiciones de comerciabilidad, idoneidad para un propósito particular, o no infracción de derechos de propiedad intelectual u otra violación de derechos."
+    },
+    "limitations": {
+      "title": "4. Limitaciones",
+      "content": "En ningún caso OptiCV o sus proveedores serán responsables de ningún daño (incluyendo, sin limitación, daños por pérdida de datos o ganancias, o debido a interrupción del negocio) que surja del uso o incapacidad de usar los materiales en OptiCV, incluso si OptiCV o un representante autorizado ha sido notificado oralmente o por escrito de la posibilidad de tal daño."
+    },
+    "accuracy": {
+      "title": "5. Precisión de Materiales",
+      "content": "Los materiales que aparecen en OptiCV podrían incluir errores técnicos, tipográficos o fotográficos. OptiCV no garantiza que ninguno de los materiales en su sitio web sean precisos, completos o actuales. OptiCV puede hacer cambios en los materiales contenidos en su sitio web en cualquier momento sin previo aviso."
+    },
+    "userResponsibilities": {
+      "title": "6. Responsabilidades del Usuario",
+      "content": "Los usuarios son responsables de mantener la confidencialidad de su información de cuenta y contraseña. Los usuarios son responsables de todas las actividades que ocurran bajo su cuenta. Los usuarios aceptan notificar a OptiCV inmediatamente de cualquier uso no autorizado de su cuenta."
+    },
+    "governingLaw": {
+      "title": "7. Ley Aplicable",
+      "content": "Estos términos y condiciones se rigen por y se interpretan de conformidad con las leyes de España, y usted se somete irrevocablemente a la jurisdicción exclusiva de los tribunales en esa ubicación."
+    },
+    "privacyPolicy": {
+      "title": "8. Política de Privacidad",
+      "content": "Su uso de OptiCV también se rige por nuestra Política de Privacidad. Por favor revise nuestra Política de Privacidad para entender nuestras prácticas."
+    },
+    "thirdPartyServices": {
+      "title": "9. Servicios de Terceros y Análisis de IA",
+      "intro": "OptiCV utiliza servicios de IA de terceros para proporcionar características de análisis y optimización:",
+      "subsections": {
+        "deepseekUsage": {
+          "title": "Servicio DeepSeek:",
+          "content": "Su contenido de CV e información de perfil se transmitirán a los servidores de DeepSeek para análisis impulsado por IA, incluyendo optimización de CV, puntuación de compatibilidad y generación de información. Al cargar su CV y usar nuestro servicio, usted acepta explícitamente esta transferencia de datos. El uso que DeepSeek hace de sus datos se rige por su propia política de privacidad."
+        },
+        "userResponsibility": {
+          "title": "Su Responsabilidad:",
+          "content": "Usted reconoce que cargar su CV implica compartir información personal sensible con servicios de IA de terceros. Es su responsabilidad comprender y aceptar las prácticas de manejo de datos de estos servicios antes de usar OptiCV. Recomendamos revisar la política de privacidad y términos de servicio de DeepSeek en deepseek.com."
+        },
+        "noWarranty": {
+          "title": "Sin Garantía para Servicios de Terceros:",
+          "content": "Aunque nos esforzamos por utilizar servicios de IA confiables, OptiCV no ofrece garantías con respecto a la precisión, integridad o confiabilidad del análisis de IA de terceros. Usted utiliza estos servicios bajo su propio riesgo."
+        }
+      }
+    }
+  },
+  "lastUpdated": "Última actualización:"
+}

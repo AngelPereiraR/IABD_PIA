@@ -1,0 +1,76 @@
+{
+  "title": "Política de Privacidad",
+  "sections": {
+    "introduction": {
+      "title": "1. Introducción",
+      "content": "OptiCV (\"nosotros\" u \"nuestro\") opera el sitio web OptiCV. Esta página lo informa sobre nuestras políticas con respecto a la recopilación, uso y divulgación de datos personales cuando utiliza nuestro servicio y las opciones que tiene asociadas con esos datos."
+    },
+    "informationCollection": {
+      "title": "2. Recopilación y Uso de Información",
+      "intro": "Recopilamos varios tipos diferentes de información para varios propósitos para proporcionarle y mejorar nuestro servicio.",
+      "subsections": {
+        "personalData": {
+          "title": "Datos Personales:",
+          "intro": "Mientras utiliza nuestro servicio, podemos pedirle que nos proporcione cierta información de identificación personal que se puede utilizar para contactarlo o identificarlo (\"Datos Personales\"). Esto puede incluir:",
+          "items": [
+            "Dirección de correo electrónico",
+            "Nombre y apellido",
+            "Cookies y Datos de Uso"
+          ]
+        },
+        "cvData": {
+          "title": "Datos del CV:",
+          "content": "Cuando carga su CV, lo almacenamos de forma segura solo para fines de análisis."
+        }
+      }
+    },
+    "useOfData": {
+      "title": "3. Uso de Datos",
+      "intro": "OptiCV utiliza los datos recopilados para varios propósitos:",
+      "items": [
+        "Para proporcionar y mantener nuestro servicio",
+        "Para notificarle sobre cambios en nuestro servicio",
+        "Para permitirle participar en características interactivas",
+        "Para recopilar análisis o información valiosa para mejorar",
+        "Para monitorear el uso de nuestro servicio",
+        "Para detectar, prevenir y resolver problemas técnicos",
+        "Para analizar sus datos de CV y perfil utilizando servicios de IA (ver sección 9)"
+      ]
+    },
+    "aiAnalysis": {
+      "title": "9. Análisis de IA y Servicios de Terceros",
+      "intro": "Para proporcionar características de análisis y optimización de CV, sus datos se procesan mediante servicios de IA de terceros:",
+      "subsections": {
+        "deepseek": {
+          "title": "Análisis DeepSeek:",
+          "content": "Su contenido de CV e información de perfil se transmiten a los servidores de DeepSeek para análisis y optimización impulsada por IA. Esto incluye la extracción de información clave, puntuación de compatibilidad y generación de información. Al utilizar nuestro servicio, usted acepta esta transferencia de datos. Para obtener más información sobre las prácticas de manejo de datos de DeepSeek, consulte su política de privacidad en deepseek.com."
+        },
+        "dataProtection": {
+          "title": "Protección de Datos:",
+          "content": "Aunque utilizamos cifrado estándar de la industria para la transmisión de datos, no podemos garantizar la seguridad absoluta. Usted es responsable de entender que cargar su CV implica compartir información sensible con servicios de IA. Recomendamos revisar las políticas de privacidad de estos servicios de terceros antes de utilizar nuestra plataforma."
+        }
+      }
+    },
+    "securityOfData": {
+      "title": "4. Seguridad de los Datos",
+      "content": "La seguridad de sus datos es importante para nosotros, pero recuerde que ningún método de transmisión a través de Internet o método de almacenamiento electrónico es 100% seguro. Si bien nos esforzamos por utilizar medios comercialmente aceptables para proteger sus Datos Personales, no podemos garantizar su seguridad absoluta."
+    },
+    "childrenPrivacy": {
+      "title": "5. Privacidad de los Niños",
+      "content": "Nuestro servicio no se dirige a menores de 18 años (\"Niños\"). No recopilamos intencionalmente información de identificación personal de niños. Si se da cuenta de que un niño nos ha proporcionado datos personales, contáctenos inmediatamente."
+    },
+    "changesPolicy": {
+      "title": "6. Cambios en Esta Política de Privacidad",
+      "content": "Podemos actualizar nuestra política de privacidad de vez en cuando. Lo notificaremos de cualquier cambio publicando la nueva política de privacidad en esta página y actualizando la 'fecha efectiva' al final de esta política."
+    },
+    "contactUs": {
+      "title": "7. Contáctenos",
+      "content": "Si tiene preguntas sobre esta política de privacidad, comuníquese con nosotros en privacy@opticv.com"
+    },
+    "dataRetention": {
+      "title": "8. Retención de Datos",
+      "content": "Retendremos sus datos personales solo durante el tiempo necesario para los propósitos establecidos en esta política de privacidad. Retendremos y utilizaremos sus datos personales en la medida necesaria para cumplir con nuestras obligaciones legales."
+    }
+  },
+  "lastUpdated": "Última actualización:"
+}
