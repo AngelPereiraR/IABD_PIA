@@ -33,11 +33,11 @@ export function AdaptationDetailPage() {
       try {
         const result = await loadAdaptation(adaptationId);
         if (!result.success) {
-          setError('Could not load adaptation');
+          setError(t('pages.adaptations.errorLoadingAdaptation'));
           setTimeout(() => navigate('/dashboard/adaptations'), 2000);
         }
       } catch (err) {
-        setError('Error loading adaptation');
+        setError(t('pages.adaptations.errorLoadingAdaptation'));
       } finally {
         setIsLoading(false);
       }

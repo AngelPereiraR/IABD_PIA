@@ -5,7 +5,10 @@
     "dashboard": "Dashboard",
     "profile": "Profile",
     "logout": "Logout",
-    "language": "Language"
+    "language": "Language",
+    "toggleMenu": "Toggle menu",
+    "goHome": "Go to home",
+    "changeLanguage": "Change language"
   },
   "auth": {
     "login": "Sign In",
@@ -30,7 +33,15 @@
     "unexpectedError": "An unexpected error occurred. Please try again.",
     "submit": "Submit",
     "termsOfService": "Terms of Service",
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "nameMinChars": "Name must be at least 2 characters",
+    "acceptTermsError": "You must accept the Terms and Conditions",
+    "acceptPrivacyError": "You must accept the Privacy Policy",
+    "yourName": "Your name",
+    "authenticating": "Authenticating...",
+    "googleSignInWait": "Please wait while we complete your Google sign-in."
   },
   "common": {
     "loading": "Loading...",
@@ -43,7 +54,13 @@
     "close": "Close",
     "submit": "Submit",
     "of": "of",
-    "next": "Next"
+    "next": "Next",
+    "view": "View",
+    "valid": "Valid",
+    "downloading": "Downloading...",
+    "notAvailable": "N/A",
+    "contentTooShort": "Content too short",
+    "url": "URL"
   },
   "cv": {
     "upload": "Upload CV",
@@ -66,7 +83,7 @@
     "history": "Analysis History",
     "noResults": "No analyses found",
     "error": "Error creating analysis",
-    "notRecommended": "This offer does not meet the minimum",
+    "notRecommended": "Does not meet minimum score (60%)",
     "minScore": "required score (60%)"
   },
   "adaptations": {
@@ -87,10 +104,11 @@
   },
   "landing": {
     "title": "Intelligent Job Offer Analysis",
-    "subtitle": "Upload your CV once, analyze any job offer instantly, and receive perfectly tailored versions for positions that truly match your profile.",
+    "subtitle": "Upload your CV and analyze offers instantly. Get tailored versions that truly match your profile.",
     "getStarted": "Get Started Free",
     "whyOptiCV": "Why OptiCV?",
     "dashboard": "Dashboard",
+    "goToDashboard": "Go to Dashboard",
     "features": {
       "uploadCV": {
         "title": "Upload Your CV",
@@ -124,6 +142,10 @@
     "cvUploaded": "CV Uploaded",
     "noCV": "No CV"
   },
+  "languages": {
+    "spanish": "Español",
+    "english": "English"
+  },
   "pages": {
     "dashboard": {
       "myCv": "My CV",
@@ -131,7 +153,9 @@
       "analysisHistory": "Analysis History",
       "myAdaptations": "My Adaptations",
       "manage": "Manage",
-      "getStarted": "Get Started"
+      "getStarted": "Get Started",
+      "manageAndAnalyze": "Manage your CV and analyze offers",
+      "analysisHistoryDesc": "Review your analysis results"
     },
     "cv": {
       "myCV": "My CV",
@@ -144,7 +168,8 @@
       "fileName": "File name",
       "uploadedAt": "Uploaded on",
       "height": "Height",
-      "width": "Width"
+      "width": "Width",
+      "document": "CV Document"
     },
     "analysis": {
       "analyzeJobOffer": "Analyze Job Offer",
@@ -171,7 +196,8 @@
       "type": "Type",
       "location": "Location",
       "viewOriginal": "View Original Offer",
-      "company": "Company"
+      "company": "Company",
+      "untitled": "Untitled"
     },
     "adaptations": {
       "myAdaptations": "My Adaptations",
@@ -186,7 +212,16 @@
       "yourAdapted": "Your Adapted CV",
       "updating": "Updating...",
       "regenerate": "Regenerate",
-      "generateAdapted": "Generate Adapted CV"
+      "generateAdapted": "Generate Adapted CV",
+      "generatingPreview": "Generating preview...",
+      "adaptedCV": "Adapted CV",
+      "downloadPDF": "Download PDF",
+      "cvPreview": "CV Preview",
+      "generatingAdapted": "Generating adapted CV...",
+      "noPreviewAvailable": "No preview available",
+      "downloadError": "Error downloading PDF",
+      "errorLoadingAdaptation": "Could not load adaptation",
+      "adaptedCVPreview": "Adapted CV Preview"
     },
     "profile": {
       "myProfile": "My Profile",
@@ -257,7 +292,19 @@
       "errorSavingProfile": "Error saving profile",
       "noPermissionTelegramId": "You do not have permission to update telegram_id",
       "errorLoadingProfile": "Error loading profile",
-      "administrator": "Administrator"
+      "administrator": "Administrator",
+      "linkedinText": "LinkedIn",
+      "githubText": "GitHub",
+      "usernameHint": "username",
+      "linkedinPrefix": "linkedin.com/in/",
+      "githubPrefix": "github.com/",
+      "skillExample": "e.g., Programming",
+      "skillNameExample": "e.g., React",
+      "durationExample": "e.g., 2023-2024",
+      "impactExample": "e.g., Reduced time by 40%",
+      "levelExample": "e.g. Nativo, C1, Profesional...",
+      "platformExample": "e.g., Coursera, Udemy",
+      "avatar": "Avatar"
     }
   }
 }

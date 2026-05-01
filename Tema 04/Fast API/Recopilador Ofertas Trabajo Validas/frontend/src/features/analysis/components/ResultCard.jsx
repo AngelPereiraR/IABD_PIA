@@ -12,7 +12,7 @@ export function ResultCard({ result }) {
     <div className="bg-brand-gray p-6 border-2 border-brand-gray-light space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-2xl font-display font-bold text-brand-white">{result.title || 'N/A'}</h2>
+          <h2 className="text-2xl font-display font-bold text-brand-white">{result.title || t('common.notAvailable')}</h2>
           <p className="text-brand-white/70 font-mono">{result.company || t('pages.analysis.company')}</p>
         </div>
         <div className="text-right">

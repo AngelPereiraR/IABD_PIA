@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Calendar, Star, CheckCircle, XCircle } from 'lucide-react';
+import { useLocale } from '../../hooks/useLocale';
 
 export function CardItem({
   linkPath,
@@ -12,6 +13,8 @@ export function CardItem({
   badgeColor = 'bg-indigo-100 text-indigo-700',
   searchParams = {},
 }) {
+  const { t } = useLocale();
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -48,12 +51,12 @@ export function CardItem({
                   {isValid ? (
                     <>
                       <CheckCircle size={14} className="text-green-500" />
-                      <span className="text-xs text-green-500 font-medium">Valid</span>
+                      <span className="text-xs text-green-500 font-medium">{t('common.valid')}</span>
                     </>
                   ) : (
                     <>
                       <XCircle size={14} className="text-red-500" />
-                      <span className="text-xs text-red-500 font-medium">Not Suitable</span>
+                      <span className="text-xs text-red-500 font-medium">{t('pages.analysis.notSuitable')}</span>
                     </>
                   )}
                 </div>
@@ -69,7 +72,7 @@ export function CardItem({
             </div>
           )}
           <div className="inline-block px-3 py-1 text-sm font-medium bg-brand-gold text-brand-black">
-            View
+            {t('common.view')}
           </div>
         </div>
       </div>

@@ -1,13 +1,15 @@
 import { ES, GB } from 'country-flag-icons/react/3x2';
 import { useState, useRef, useEffect } from 'react';
+import { useLocale } from '../../hooks/useLocale';
 
 export function LanguageSwitcher({ locale, onChange, isSyncing = false, compact = false }) {
+  const { t } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
   const languages = [
-    { code: 'es', label: 'ES', name: 'Español', Flag: ES },
-    { code: 'en', label: 'EN', name: 'English', Flag: GB },
+    { code: 'es', label: 'ES', name: t('languages.spanish'), Flag: ES },
+    { code: 'en', label: 'EN', name: t('languages.english'), Flag: GB },
   ];
 
   const currentLang = languages.find((lang) => lang.code === locale);
@@ -47,7 +49,7 @@ export function LanguageSwitcher({ locale, onChange, isSyncing = false, compact 
         disabled={isSyncing}
         className={`flex items-center gap-2 px-3 py-2 border rounded-none font-mono text-sm transition-colors ${bgClass} ${textClass} ${!isSyncing && hoverClass} ${isSyncing ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
         title={currentLang?.name}
-        aria-label="Change language"
+        aria-label={t('nav.changeLanguage')}
       >
         <currentLang.Flag className="w-4 h-3 rounded-sm" />
         <span>{currentLang?.label}</span>

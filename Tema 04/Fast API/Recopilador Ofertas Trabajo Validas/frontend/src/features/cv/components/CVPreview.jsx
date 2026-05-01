@@ -35,7 +35,7 @@ export function CVPreview() {
   }
 
   const cvUrl = currentCV.cv_url || currentCV.master_cv_url || currentCV.url;
-  const filename = currentCV.filename || 'CV Document';
+  const filename = currentCV.filename || t('pages.cv.document');
 
   const handleDelete = async () => {
     if (window.confirm(t('cv.deleteConfirm'))) {
@@ -90,47 +90,47 @@ export function CVPreview() {
       </div>
 
       {cvUrl && (
-        <div className="bg-brand-gray p-4 space-y-4">
+        <div className="bg-brand-black/20 p-4 space-y-4">
           {/* Height Controls */}
           <div className="flex items-center justify-between gap-4">
-            <div className="flex gap-2">
-              <label className="text-sm font-medium text-brand-white/70 font-mono">{t('pages.cv.height')}:</label>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-mono font-medium text-brand-white/70">{t('pages.cv.height')}:</label>
               <button
                 onClick={() => setPreviewHeight(400)}
-                className={`px-3 py-1 text-sm transition border-2 font-mono ${
+                className={`px-3 py-1 rounded text-sm transition ${
                   previewHeight === 400
-                    ? 'bg-brand-gold text-brand-black border-brand-gold'
-                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 S
               </button>
               <button
                 onClick={() => setPreviewHeight(600)}
-                className={`px-3 py-1 text-sm transition border-2 font-mono ${
+                className={`px-3 py-1 rounded text-sm transition ${
                   previewHeight === 600
-                    ? 'bg-brand-gold text-brand-black border-brand-gold'
-                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 M
               </button>
               <button
                 onClick={() => setPreviewHeight(800)}
-                className={`px-3 py-1 text-sm transition border-2 font-mono ${
+                className={`px-3 py-1 rounded text-sm transition ${
                   previewHeight === 800
-                    ? 'bg-brand-gold text-brand-black border-brand-gold'
-                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 L
               </button>
               <button
                 onClick={() => setPreviewHeight(1200)}
-                className={`px-3 py-1 text-sm transition border-2 font-mono ${
+                className={`px-3 py-1 rounded text-sm transition ${
                   previewHeight === 1200
-                    ? 'bg-brand-gold text-brand-black border-brand-gold'
-                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 XL
@@ -146,40 +146,40 @@ export function CVPreview() {
                 onChange={(e) => setPreviewHeight(parseInt(e.target.value))}
                 className="w-32 accent-brand-gold"
               />
-              <span className="text-sm text-brand-white/70 w-14 font-mono">{previewHeight}px</span>
+              <span className="text-sm text-brand-white/70 font-mono w-14">{previewHeight}px</span>
             </div>
           </div>
 
           {/* Width Controls */}
           <div className="flex items-center justify-between gap-4">
-            <div className="flex gap-2">
-              <label className="text-sm font-medium text-brand-white/70 font-mono">{t('pages.cv.width')}:</label>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-mono font-medium text-brand-white/70">{t('pages.cv.width')}:</label>
               <button
                 onClick={() => setPreviewWidth(75)}
-                className={`px-3 py-1 text-sm transition border-2 font-mono ${
+                className={`px-3 py-1 rounded text-sm transition ${
                   previewWidth === 75
-                    ? 'bg-brand-gold text-brand-black border-brand-gold'
-                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 75%
               </button>
               <button
                 onClick={() => setPreviewWidth(90)}
-                className={`px-3 py-1 text-sm transition border-2 font-mono ${
+                className={`px-3 py-1 rounded text-sm transition ${
                   previewWidth === 90
-                    ? 'bg-brand-gold text-brand-black border-brand-gold'
-                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 90%
               </button>
               <button
                 onClick={() => setPreviewWidth(100)}
-                className={`px-3 py-1 text-sm transition border-2 font-mono ${
+                className={`px-3 py-1 rounded text-sm transition ${
                   previewWidth === 100
-                    ? 'bg-brand-gold text-brand-black border-brand-gold'
-                    : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
+                    ? 'bg-brand-gold text-brand-black font-bold'
+                    : 'bg-brand-black border-2 border-brand-gold text-brand-gold hover:bg-brand-black/50'
                 }`}
               >
                 100%
@@ -195,7 +195,7 @@ export function CVPreview() {
                 onChange={(e) => setPreviewWidth(parseInt(e.target.value))}
                 className="w-32 accent-brand-gold"
               />
-              <span className="text-sm text-brand-white/70 w-14 font-mono">{previewWidth}%</span>
+              <span className="text-sm text-brand-white/70 font-mono w-14">{previewWidth}%</span>
             </div>
           </div>
 
@@ -204,7 +204,7 @@ export function CVPreview() {
             <iframe
               src={cvUrl}
               title={t('pages.cv.preview')}
-              className="w-full border-2 border-brand-gray-light"
+              className="w-full border-2 border-brand-gold"
               style={{ height: `${previewHeight}px` }}
             />
           </div>

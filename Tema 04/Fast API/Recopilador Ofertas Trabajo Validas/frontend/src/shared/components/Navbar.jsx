@@ -10,7 +10,7 @@ export function Navbar({ onMenuClick, sidebarOpen }) {
     user: state.auth.user,
     logout: state.authActions.logout,
   }));
-  const { locale, changeLocale, isSyncing } = useLocale();
+  const { t, locale, changeLocale, isSyncing } = useLocale();
 
   const handleLogout = () => {
     logout();
@@ -27,7 +27,7 @@ export function Navbar({ onMenuClick, sidebarOpen }) {
         <button
           onClick={onMenuClick}
           className="lg:hidden flex items-center justify-center p-2 text-brand-gold hover:text-brand-white transition"
-          title="Toggle menu"
+          title={t('nav.toggleMenu')}
         >
           <Menu size={24} />
         </button>
@@ -46,7 +46,7 @@ export function Navbar({ onMenuClick, sidebarOpen }) {
         <button
           onClick={handleHome}
           className="flex items-center gap-2 px-3 py-2 text-sm border border-brand-gray-light text-brand-white hover:border-brand-gold hover:text-brand-gold transition font-mono"
-          title="Go to home page"
+          title={t('nav.goHome')}
         >
           <Home size={18} />
         </button>
@@ -55,7 +55,7 @@ export function Navbar({ onMenuClick, sidebarOpen }) {
           className="flex items-center gap-2 px-3 py-2 text-sm border border-brand-gray-light text-brand-white hover:border-brand-gold hover:text-brand-gold transition font-mono"
         >
           <LogOut size={18} />
-          <span className="hidden sm:inline">Logout</span>
+          <span className="hidden sm:inline">{t('nav.logout')}</span>
         </button>
       </div>
     </nav>

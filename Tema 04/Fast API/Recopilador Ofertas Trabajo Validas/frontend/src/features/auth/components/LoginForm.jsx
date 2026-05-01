@@ -7,8 +7,8 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useLocale } from '../../../hooks/useLocale';
 
 const schema = z.object({
-  email: z.string().email('Invalid email'),
-  password: z.string().min(8, 'Min 8 characters'),
+  email: z.string().email(),
+  password: z.string().min(8),
 });
 
 export function LoginForm({ onSuccess }) {
@@ -65,7 +65,7 @@ export function LoginForm({ onSuccess }) {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-white/60 hover:text-brand-gold transition flex-shrink-0"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>

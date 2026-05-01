@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Download, Loader } from 'lucide-react';
 import useStore from '../../../stores/globalStore';
+import { useLocale } from '../../../hooks/useLocale';
 
 export function PDFDownloadButton({ adaptationId }) {
+  const { t } = useLocale();
   const { downloadPDF } = useStore((state) => ({
     downloadPDF: state.adaptationActions.downloadPDF,
   }));
@@ -13,7 +15,7 @@ export function PDFDownloadButton({ adaptationId }) {
     const result = await downloadPDF(adaptationId);
     setIsDownloading(false);
     if (!result.success) {
-      alert(result.error || 'Failed to download PDF');
+      alert(result.error || t('pages.adaptations.downloadError'));
     }
   };
 
@@ -25,11 +27,11 @@ export function PDFDownloadButton({ adaptationId }) {
     >
       {isDownloading ? (
         <>
-          <Loader size={18} className="animate-spin" /> Downloading...
+          <Loader size={18} className="animate-spin" /> {t('common.downloading')}
         </>
       ) : (
         <>
-          <Download size={18} /> Download PDF
+          <Download size={18} /> {t('pages.adaptations.downloadPDF')}
         </>
       )}
     </button>

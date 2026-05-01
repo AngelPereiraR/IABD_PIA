@@ -15,7 +15,7 @@ export function DashboardPage() {
     <Layout>
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-display font-black text-brand-white mb-2">{t('dashboard.welcome')}, {user?.email}</h1>
-        <p className="text-brand-white/70 mb-8 font-mono">{t('pages.dashboard.manage')} {t('sidebar.myCV')} {t('pages.analysis.analyze')}</p>
+        <p className="text-brand-white/70 mb-8 font-mono">{t('pages.dashboard.manageAndAnalyze')}</p>
 
         <div className="grid md:grid-cols-2 gap-6">
           <Link
@@ -44,7 +44,7 @@ export function DashboardPage() {
           >
             <History size={32} className="text-brand-gold mb-4" />
             <h3 className="text-lg font-semibold text-brand-white mb-2">{t('sidebar.analysisHistory')}</h3>
-            <p className="text-sm text-brand-white/70 font-mono">{t('pages.dashboard.analysisHistory')}</p>
+            <p className="text-sm text-brand-white/70 font-mono">{t('pages.dashboard.analysisHistoryDesc')}</p>
           </Link>
 
           <Link

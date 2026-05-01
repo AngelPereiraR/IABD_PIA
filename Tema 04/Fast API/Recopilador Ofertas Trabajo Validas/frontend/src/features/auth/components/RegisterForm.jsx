@@ -10,16 +10,12 @@ import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useLocale } from '../../../hooks/useLocale';
 
 const schema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email'),
-  password: z.string().min(8, 'Min 8 characters'),
-  confirmPassword: z.string().min(8, 'Min 8 characters'),
-  acceptTerms: z.boolean().refine((val) => val === true, {
-    message: 'You must accept the Terms and Conditions',
-  }),
-  acceptPrivacy: z.boolean().refine((val) => val === true, {
-    message: 'You must accept the Privacy Policy',
-  }),
+  name: z.string().min(2),
+  email: z.string().email(),
+  password: z.string().min(8),
+  confirmPassword: z.string().min(8),
+  acceptTerms: z.boolean().refine((val) => val === true),
+  acceptPrivacy: z.boolean().refine((val) => val === true),
 });
 
 export function RegisterForm({ onSuccess }) {
@@ -68,7 +64,7 @@ export function RegisterForm({ onSuccess }) {
           {...register('name')}
           type="text"
           className="w-full px-4 py-3 bg-brand-black border-2 border-brand-gray-light text-brand-white placeholder-brand-white/40 focus:outline-none focus:border-brand-gold transition font-mono"
-          placeholder="Your name"
+          placeholder={t('auth.yourName')}
         />
         {errors.name && <p className="text-brand-rust text-sm mt-2 font-mono">{errors.name.message}</p>}
       </div>
@@ -101,7 +97,7 @@ export function RegisterForm({ onSuccess }) {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-white/60 hover:text-brand-gold transition flex-shrink-0"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -124,7 +120,7 @@ export function RegisterForm({ onSuccess }) {
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-white/60 hover:text-brand-gold transition flex-shrink-0"
-            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+            aria-label={showConfirmPassword ? t('auth.hidePassword') : t('auth.showPassword')}
           >
             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>

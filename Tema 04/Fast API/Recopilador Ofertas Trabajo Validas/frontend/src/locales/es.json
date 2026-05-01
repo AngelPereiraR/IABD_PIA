@@ -5,7 +5,10 @@
     "dashboard": "Panel",
     "profile": "Perfil",
     "logout": "Cerrar sesión",
-    "language": "Idioma"
+    "language": "Idioma",
+    "toggleMenu": "Alternar menú",
+    "goHome": "Ir a inicio",
+    "changeLanguage": "Cambiar idioma"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -30,7 +33,15 @@
     "unexpectedError": "Ocurrió un error inesperado. Por favor intenta de nuevo.",
     "submit": "Enviar",
     "termsOfService": "Términos de servicio",
-    "privacyPolicy": "Política de privacidad"
+    "privacyPolicy": "Política de privacidad",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "nameMinChars": "El nombre debe tener al menos 2 caracteres",
+    "acceptTermsError": "Debes aceptar los Términos y Condiciones",
+    "acceptPrivacyError": "Debes aceptar la Política de Privacidad",
+    "yourName": "Tu nombre",
+    "authenticating": "Autenticando...",
+    "googleSignInWait": "Por favor espera mientras completamos tu inicio de sesión con Google."
   },
   "common": {
     "loading": "Cargando...",
@@ -43,7 +54,13 @@
     "close": "Cerrar",
     "submit": "Enviar",
     "of": "de",
-    "next": "Siguiente"
+    "next": "Siguiente",
+    "view": "Ver",
+    "valid": "Válido",
+    "downloading": "Descargando...",
+    "notAvailable": "N/A",
+    "contentTooShort": "Contenido muy corto",
+    "url": "URL"
   },
   "cv": {
     "upload": "Subir CV",
@@ -66,7 +83,7 @@
     "history": "Historial de análisis",
     "noResults": "No hay análisis registrados",
     "error": "Error al crear análisis",
-    "notRecommended": "Esta oferta no cumple el mínimo",
+    "notRecommended": "No cumple puntuación mínima (60%)",
     "minScore": "puntuación requerida (60%)"
   },
   "adaptations": {
@@ -87,10 +104,11 @@
   },
   "landing": {
     "title": "Análisis Inteligente de Ofertas de Trabajo",
-    "subtitle": "Sube tu CV una vez, analiza cualquier oferta de trabajo al instante y recibe versiones perfectamente personalizadas para posiciones que realmente se ajusten a tu perfil.",
+    "subtitle": "Sube tu CV y analiza ofertas al instante. Recibe versiones personalizadas que realmente se ajusten a tu perfil.",
     "getStarted": "Comenzar Gratis",
     "whyOptiCV": "¿Por qué OptiCV?",
     "dashboard": "Panel",
+    "goToDashboard": "Ir al Panel",
     "features": {
       "uploadCV": {
         "title": "Sube tu CV",
@@ -124,6 +142,10 @@
     "cvUploaded": "CV Subido",
     "noCV": "Sin CV"
   },
+  "languages": {
+    "spanish": "Español",
+    "english": "English"
+  },
   "pages": {
     "dashboard": {
       "myCv": "Mi CV",
@@ -131,7 +153,9 @@
       "analysisHistory": "Historial de Análisis",
       "myAdaptations": "Mis Adaptaciones",
       "manage": "Gestionar",
-      "getStarted": "Comenzar"
+      "getStarted": "Comenzar",
+      "manageAndAnalyze": "Gestiona tu CV y analiza ofertas",
+      "analysisHistoryDesc": "Consulta los resultados de tus análisis"
     },
     "cv": {
       "myCV": "Mi CV",
@@ -144,7 +168,8 @@
       "fileName": "Nombre del archivo",
       "uploadedAt": "Subido el",
       "height": "Alto",
-      "width": "Ancho"
+      "width": "Ancho",
+      "document": "Documento CV"
     },
     "analysis": {
       "analyzeJobOffer": "Analizar Oferta de Trabajo",
@@ -154,7 +179,7 @@
       "enterUrl": "Ingresa la URL de la oferta",
       "pasteText": "Pega el texto de la oferta aquí...",
       "analyze": "Analizar",
-      "matchScore": "Puntuación de coincidencia",
+      "matchScore": "Compatibilidad",
       "relevance": "Relevancia",
       "rating": "Calificación",
       "recommendation": "Recomendación",
@@ -171,7 +196,8 @@
       "type": "Tipo",
       "location": "Ubicación",
       "viewOriginal": "Ver Oferta Original",
-      "company": "Empresa"
+      "company": "Empresa",
+      "untitled": "Sin título"
     },
     "adaptations": {
       "myAdaptations": "Mis Adaptaciones",
@@ -186,7 +212,16 @@
       "yourAdapted": "Tu CV Adaptado",
       "updating": "Actualizando...",
       "regenerate": "Regenerar",
-      "generateAdapted": "Generar CV Adaptado"
+      "generateAdapted": "Generar CV Adaptado",
+      "generatingPreview": "Generando vista previa...",
+      "adaptedCV": "CV Adaptado",
+      "downloadPDF": "Descargar PDF",
+      "cvPreview": "Vista previa del CV",
+      "generatingAdapted": "Generando CV adaptado...",
+      "noPreviewAvailable": "No hay vista previa disponible",
+      "downloadError": "Error al descargar PDF",
+      "errorLoadingAdaptation": "No se pudo cargar la adaptación",
+      "adaptedCVPreview": "Vista previa del CV Adaptado"
     },
     "profile": {
       "myProfile": "Mi Perfil",
@@ -257,7 +292,19 @@
       "errorSavingProfile": "Error al guardar el perfil",
       "noPermissionTelegramId": "No tienes permiso para actualizar el ID de Telegram",
       "errorLoadingProfile": "Error al cargar el perfil",
-      "administrator": "Administrador"
+      "administrator": "Administrador",
+      "linkedinText": "LinkedIn",
+      "githubText": "GitHub",
+      "usernameHint": "usuario",
+      "linkedinPrefix": "linkedin.com/in/",
+      "githubPrefix": "github.com/",
+      "skillExample": "ej., Programación",
+      "skillNameExample": "ej., React",
+      "durationExample": "ej., 2023-2024",
+      "impactExample": "ej., Reducción de tiempo en 40%",
+      "levelExample": "ej. Nativo, C1, Profesional...",
+      "platformExample": "ej., Coursera, Udemy",
+      "avatar": "Avatar"
     }
   }
 }

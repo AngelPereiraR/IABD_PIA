@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import { useLocale } from '../../hooks/useLocale';
 
 const scrollbarStyles = `
   .modal-content::-webkit-scrollbar {
@@ -22,6 +23,8 @@ const scrollbarStyles = `
 `;
 
 export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
+  const { t } = useLocale();
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -58,7 +61,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
             <button
               onClick={onClose}
               className="text-brand-white/70 hover:text-brand-gold transition-colors flex-shrink-0 ml-4"
-              aria-label="Close modal"
+              aria-label={t('common.close')}
             >
               <X size={24} />
             </button>

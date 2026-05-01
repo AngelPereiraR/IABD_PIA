@@ -8,7 +8,7 @@ import { useLocale } from '../../../hooks/useLocale';
 
 const schema = z.object({
   type: z.enum(['url', 'text']),
-  content: z.string().min(10, 'Content too short'),
+  content: z.string().min(10),
 });
 
 export function AnalysisForm({ onSuccess }) {
@@ -44,7 +44,7 @@ export function AnalysisForm({ onSuccess }) {
             activeTab === 'url' ? 'bg-brand-gold text-brand-black border-brand-gold' : 'bg-brand-black border-brand-gray-light text-brand-white hover:border-brand-gold'
           }`}
         >
-          <Link size={16} className="inline mr-2" /> URL
+          <Link size={16} className="inline mr-2" /> {t('common.url')}
         </button>
         <button
           type="button"
@@ -82,7 +82,7 @@ export function AnalysisForm({ onSuccess }) {
             />
           </>
         )}
-        {errors.content && <p className="text-red-400 text-sm mt-1 font-mono">{errors.content.message}</p>}
+        {errors.content && <p className="text-red-400 text-sm mt-1 font-mono">{errors.content.message || t('common.contentTooShort')}</p>}
       </div>
 
       <button

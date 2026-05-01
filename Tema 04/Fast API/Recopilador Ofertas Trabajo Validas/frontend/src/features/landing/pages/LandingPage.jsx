@@ -45,7 +45,7 @@ export function LandingPage() {
             <button
               onClick={() => navigate('/dashboard')}
               className="flex items-center justify-center gap-2 px-4 py-2 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-brand-black transition text-sm font-mono"
-              title="Go to Dashboard"
+              title={t('landing.goToDashboard')}
             >
               <BarChart3 size={16} />
               <span className="hidden sm:inline">{t('landing.dashboard')}</span>

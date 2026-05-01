@@ -409,7 +409,7 @@ export default function ProfilePage() {
                 {preview || profile.avatar_url ? (
                   <img
                     src={preview || profile.avatar_url}
-                    alt="Avatar"
+                    alt={t('pages.profile.avatar')}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -441,7 +441,7 @@ export default function ProfilePage() {
                     rel="noopener noreferrer"
                     className="text-brand-gold hover:underline font-mono"
                   >
-                    LinkedIn
+                    {t('pages.profile.linkedinText')}
                   </a>
                 )}
                 {profile.cv_data.github && (
@@ -451,7 +451,7 @@ export default function ProfilePage() {
                     rel="noopener noreferrer"
                     className="text-brand-gold hover:underline font-mono"
                   >
-                    GitHub
+                    {t('pages.profile.githubText')}
                   </a>
                 )}
               </div>
@@ -524,26 +524,26 @@ export default function ProfilePage() {
                   <div>
                     <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.linkedin')}</label>
                     <div className="flex items-center border-2 border-brand-gold overflow-hidden">
-                      <span className="px-3 py-2 bg-brand-gray-light text-brand-white/70 text-sm whitespace-nowrap font-mono">linkedin.com/in/</span>
+                      <span className="px-3 py-2 bg-brand-gray-light text-brand-white/70 text-sm whitespace-nowrap font-mono">{t('pages.profile.linkedinPrefix')}</span>
                       <input
                         type="text"
                         value={profile.cv_data.linkedin || ''}
                         onChange={e => updateCVData('linkedin', e.target.value)}
                         className="flex-1 px-4 py-2 bg-brand-black text-brand-white font-mono focus:outline-none"
-                        placeholder="username"
+                        placeholder={t('pages.profile.usernameHint')}
                       />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-mono font-medium text-brand-white/70 mb-1">{t('pages.profile.github')}</label>
                     <div className="flex items-center border-2 border-brand-gold overflow-hidden">
-                      <span className="px-3 py-2 bg-brand-gray-light text-brand-white/70 text-sm whitespace-nowrap font-mono">github.com/</span>
+                      <span className="px-3 py-2 bg-brand-gray-light text-brand-white/70 text-sm whitespace-nowrap font-mono">{t('pages.profile.githubPrefix')}</span>
                       <input
                         type="text"
                         value={profile.cv_data.github || ''}
                         onChange={e => updateCVData('github', e.target.value)}
                         className="flex-1 px-4 py-2 bg-brand-black text-brand-white font-mono focus:outline-none"
-                        placeholder="username"
+                        placeholder={t('pages.profile.usernameHint')}
                       />
                     </div>
                   </div>
@@ -665,7 +665,7 @@ export default function ProfilePage() {
                         type="text"
                         value={newSkillCategory}
                         onChange={(e) => setNewSkillCategory(e.target.value)}
-                        placeholder="e.g., Programming"
+                        placeholder={t('pages.profile.skillExample')}
                         list="skill-categories"
                         className="w-full px-3 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
@@ -681,7 +681,7 @@ export default function ProfilePage() {
                         type="text"
                         value={newSkillName}
                         onChange={(e) => setNewSkillName(e.target.value)}
-                        placeholder="e.g., React"
+                        placeholder={t('pages.profile.skillNameExample')}
                         className="w-full px-3 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
@@ -812,7 +812,7 @@ export default function ProfilePage() {
                         type="text"
                         value={item.duracion || ''}
                         onChange={e => updateExperiencia(idx, 'duracion', e.target.value)}
-                        placeholder="e.g., 2023-2024"
+                        placeholder={t('pages.profile.durationExample')}
                         className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
@@ -822,7 +822,7 @@ export default function ProfilePage() {
                         type="text"
                         value={item.impacto || ''}
                         onChange={e => updateExperiencia(idx, 'impacto', e.target.value)}
-                        placeholder="e.g., Reduced time by 40%"
+                        placeholder={t('pages.profile.impactExample')}
                         className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
@@ -931,7 +931,7 @@ export default function ProfilePage() {
                         type="text"
                         value={item.nivel || ''}
                         onChange={e => updateIdioma(idx, 'nivel', e.target.value)}
-                        placeholder="e.g. Nativo, C1, Profesional..."
+                        placeholder={t('pages.profile.levelExample')}
                         className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
@@ -1049,7 +1049,7 @@ export default function ProfilePage() {
                         type="text"
                         value={item.plataforma || ''}
                         onChange={e => updateCurso(idx, 'plataforma', e.target.value)}
-                        placeholder="e.g., Coursera, Udemy"
+                        placeholder={t('pages.profile.platformExample')}
                         className="w-full px-4 py-2 border-2 border-brand-gold bg-brand-black text-brand-white font-mono focus:outline-none"
                       />
                     </div>
