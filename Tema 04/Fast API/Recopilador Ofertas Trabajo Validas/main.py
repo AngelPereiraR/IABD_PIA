@@ -11,6 +11,7 @@ import os
 import threading
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from dotenv import load_dotenv
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -31,7 +32,25 @@ POLLING_INTERVAL = 600  # 10 minutos
 CV_PATH = os.path.join("data", "cv_usuario.pdf")
 
 # --- SERVIDOR WEB FAKE (Para engañar a Render) ---
-app = FastAPI()
+app = FastAPI(
+    title="Recopilador Inteligente de Ofertas de Trabajo",
+    description=(
+        "Automated job offer monitoring and intelligent filtering system. "
+        "Monitors job platforms, analyzes offers against user CV with AI, "
+        "and sends filtered alerts via Telegram. "
+        "Features: OAuth authentication, CV management, AI-powered compatibility scoring, "
+        "offer tracking, and CV adaptation for specific opportunities."
+    ),
+    version="1.0.0",
+    contact={
+        "name": "API Support",
+        "email": "ampr2003@gmail.com",
+        "url": "https://github.com/AngelPereiraR/IABD_PIA/tree/main/Tema%2004/Fast%20API/Recopilador%20Ofertas%20Trabajo%20Validas"
+    },
+    openapi_url="/openapi.json",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
 # Configure rate limiter
 limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
@@ -61,6 +80,33 @@ app.include_router(cv_router)
 app.include_router(offers_router)
 app.include_router(adaptations_router)
 app.include_router(profile_router)
+
+# Configure OpenAPI schema with Bearer token security
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+
+    # Add Bearer token security scheme
+    openapi_schema["components"]["securitySchemes"] = {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Enter JWT token (received after login or registration)"
+        }
+    }
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
 
 @app.get('/')
 def home():
