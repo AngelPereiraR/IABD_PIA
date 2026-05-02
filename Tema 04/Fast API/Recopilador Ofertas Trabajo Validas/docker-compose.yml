@@ -24,8 +24,6 @@ services:
     volumes:
       # Datos persistentes
       - ./data:/app/data
-      - ./credentials.json:/app/credentials.json:ro
-      - ./token.json:/app/token.json:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
       interval: 30s

@@ -32,8 +32,12 @@ class TokenManager:
             if 'expiry' not in token_data or 'refresh_token' not in token_data:
                 return False
 
-            # Convertir timestamp ISO a datetime
-            expiry = datetime.fromisoformat(token_data['expiry'])
+            # Convertir timestamp ISO a datetime (remove timezone para comparación)
+            expiry_str = token_data['expiry']
+            # Remover 'Z' si existe
+            if expiry_str.endswith('Z'):
+                expiry_str = expiry_str[:-1]
+            expiry = datetime.fromisoformat(expiry_str)
             now = datetime.utcnow()
 
             # Si el token expira en menos de EXPIRY_BUFFER segundos, considerarlo expirado
@@ -62,8 +66,6 @@ class TokenManager:
 
             # LangChain maneja todo: abre navegador, recibe código, guarda token.json
             creds = get_gmail_credentials(
-                token_file=TokenManager.TOKEN_FILE,
-                client_sercret_file=TokenManager.CREDENTIALS_FILE,
                 scopes=["https://mail.google.com/"],
             )
 
@@ -97,8 +99,6 @@ class TokenManager:
 
             # LangChain intenta refrescar automáticamente si el token está expirado
             creds = get_gmail_credentials(
-                token_file=TokenManager.TOKEN_FILE,
-                client_sercret_file=TokenManager.CREDENTIALS_FILE,
                 scopes=["https://mail.google.com/"],
             )
 
