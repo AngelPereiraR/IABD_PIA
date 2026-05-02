@@ -25,7 +25,6 @@ from src.brain import RecruitmentBrain
 from src.bot import TelegramNotifier
 from src.cv_generator import CVGenerator
 from src.api.limiter import set_limiter
-from telegram.ext import Application, CallbackQueryHandler
 
 # Configuracion
 POLLING_INTERVAL = 600  # 10 minutos
@@ -116,30 +115,6 @@ def home():
 def health():
     return "OK"
 
-# --- TELEGRAM POLLING SETUP ---
-def setup_telegram_polling():
-    """
-    Configures and runs Telegram polling with callback handlers.
-    Runs synchronously in its own thread — Application.run_polling() manages
-    its own event loop internally (python-telegram-bot v20+).
-
-    Handles inline button callbacks with pattern "gen_cv:offer_id"
-    """
-    try:
-        telegram_app = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
-
-        # Register handler for "gen_cv:offer_id" callbacks
-        telegram_app.add_handler(
-            CallbackQueryHandler(
-                TelegramNotifier().handle_generate_cv_callback,
-                pattern="^gen_cv:"
-            )
-        )
-
-        print(" [TELEGRAM] Iniciando polling de Telegram...", flush=True)
-        telegram_app.run_polling()
-    except Exception as e:
-        print(f" [TELEGRAM] Error en polling: {e}", flush=True)
 
 # --- LOGICA DEL BOT (Hilo Secundario) ---
 def run_bot_logic():
@@ -244,7 +219,6 @@ def run_bot_logic():
 # Arrancamos el hilo aqui, FUERA del bloque main, para que Uvicorn lo ejecute al importar
 # Usamos una variable global para evitar arrancar hilos duplicados si Uvicorn reinicia workers
 _bot_started = False
-_telegram_polling_started = False
 
 if not _bot_started:
     _bot_started = True
@@ -252,16 +226,10 @@ if not _bot_started:
     bot_thread.start()
     print(" [SYSTEM] Hilo de Bot lanzado en segundo plano.", flush=True)
 
-if not _telegram_polling_started:
-    _telegram_polling_started = True
-    telegram_thread = threading.Thread(target=setup_telegram_polling, daemon=True)
-    telegram_thread.start()
-    print(" [SYSTEM] Hilo de Telegram Polling lanzado en segundo plano.", flush=True)
-
 if __name__ == "__main__":
     # Esto solo se ejecuta si lanzas 'python main.py' localmente
     import uvicorn
-    port = int(os.environ.get("PORT", 7860))
+    port = int(os.environ.get("PORT", 7861))
 
     # On Windows, create a SelectorEventLoop explicitly BEFORE uvicorn touches it
     if sys.platform == "win32":

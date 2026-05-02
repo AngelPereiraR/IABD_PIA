@@ -12,9 +12,9 @@
     "source=${localEnv:USERPROFILE}/.git-credentials,target=/root/.git-credentials,readonly,type=bind"
   ],
 
-  "forwardPorts": [7860, 5173],
+  "forwardPorts": [7861, 5173],
   "portsAttributes": {
-    "7860": {
+    "7861": {
       "label": "FastAPI Backend",
       "onAutoForward": "notify"
     },

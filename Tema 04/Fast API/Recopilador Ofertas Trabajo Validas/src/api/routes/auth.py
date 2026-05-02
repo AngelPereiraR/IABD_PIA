@@ -21,10 +21,14 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
     }
 )
 async def register(
-    user: UserRegister = Body(..., example={
-        "email": "newuser@example.com",
-        "password": "SecurePass123!",
-        "auth_provider": "email"
+    user: UserRegister = Body(..., examples={
+        "example": {
+            "value": {
+                "email": "newuser@example.com",
+                "password": "SecurePass123!",
+                "auth_provider": "email"
+            }
+        }
     }),
     session: AsyncSession = Depends(get_async_session)
 ) -> TokenResponse:
@@ -71,9 +75,13 @@ async def register(
     }
 )
 async def login(
-    credentials: UserLogin = Body(..., example={
-        "email": "user@example.com",
-        "password": "SecurePass123!"
+    credentials: UserLogin = Body(..., examples={
+        "example": {
+            "value": {
+                "email": "user@example.com",
+                "password": "SecurePass123!"
+            }
+        }
     }),
     session: AsyncSession = Depends(get_async_session)
 ) -> TokenResponse:
