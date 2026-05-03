@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 from dotenv import load_dotenv
 
@@ -71,27 +72,42 @@ class TelegramNotifier:
 
         return self._send_message(message)
 
-    def _send_message(self, text: str) -> bool:
-        """Envía el payload final a la API de Telegram."""
-        try:
-            payload = {
-                "chat_id": self.chat_id,
-                "text": text,
-                "parse_mode": "HTML",
-                "disable_web_page_preview": False
-            }
+    def _send_message(self, text: str, max_retries: int = 3) -> bool:
+        """Envía el payload final a la API de Telegram con reintentos."""
+        payload = {
+            "chat_id": self.chat_id,
+            "text": text,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": False
+        }
 
-            response = requests.post(self.base_url, json=payload, timeout=10)
-            response.raise_for_status()
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(self.base_url, json=payload, timeout=30)
+                response.raise_for_status()
+                print("Notificación enviada a Telegram correctamente.")
+                return True
 
-            print("Notificación enviada a Telegram correctamente.")
-            return True
+            except requests.exceptions.Timeout:
+                wait_time = 2 ** attempt
+                print(f"Timeout enviando a Telegram (intento {attempt + 1}/{max_retries}). Esperando {wait_time}s...")
+                if attempt < max_retries - 1:
+                    time.sleep(wait_time)
+                else:
+                    print("Máximo de reintentos alcanzado. Mensaje no enviado.")
+                    return False
 
-        except requests.exceptions.RequestException as e:
-            print(f"Error al enviar mensaje a Telegram: {e}")
-            if hasattr(e, 'response') and e.response is not None:
-                print(f"   Detalle API: {e.response.text}")
-            return False
+            except requests.exceptions.RequestException as e:
+                print(f"Error al enviar mensaje a Telegram (intento {attempt + 1}/{max_retries}): {e}")
+                if hasattr(e, 'response') and e.response is not None:
+                    print(f"   Detalle API: {e.response.text}")
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    time.sleep(wait_time)
+                else:
+                    return False
+
+        return False
 
 if __name__ == "__main__":
     # --- PRUEBA UNITARIA ---
