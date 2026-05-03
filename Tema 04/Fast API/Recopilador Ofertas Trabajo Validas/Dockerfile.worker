@@ -1,12 +1,14 @@
 # ============================================================================
-# Telegram Worker - Minimal container for processing message queue
+# Telegram Worker - FastAPI service for processing message queue
+# Exposes HTTP endpoints for Render health checks + background worker thread
 # ============================================================================
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install only runtime dependencies (no LaTeX needed)
+# Install curl for healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
@@ -16,10 +18,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY src/ src/
 COPY telegram_worker.py .
+COPY entrypoint.worker.sh .
 
-# Health check (optional, for Render monitoring)
-HEALTHCHECK --interval=60s --timeout=10s --retries=3 \
-    CMD ps aux | grep telegram_worker.py || exit 1
+# Make entrypoint executable
+RUN chmod +x entrypoint.worker.sh
 
-# Run worker
-CMD ["python", "telegram_worker.py"]
+# Health check via HTTP (Render monitoring)
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
+
+# Expose port (default 8000, Render will override)
+EXPOSE ${PORT:-8000}
+
+# Run FastAPI worker service with entrypoint (injects secrets)
+ENTRYPOINT ["./entrypoint.worker.sh"]
