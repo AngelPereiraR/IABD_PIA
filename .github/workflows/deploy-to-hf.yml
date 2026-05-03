@@ -29,5 +29,6 @@ jobs:
           # Add remote using token (do NOT commit HF_TOKEN to repo)
           git remote add hf "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}.git"
 
-          # Push only the subdirectory to HF Spaces root
-          git subtree push --force hf "${SUBDIR}":main
+          # Split subdirectory into a temporary branch and push
+          git subtree split --prefix="${SUBDIR}" -b hf-deploy
+          git push --force hf hf-deploy:main
