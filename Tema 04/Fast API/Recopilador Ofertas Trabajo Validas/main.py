@@ -65,7 +65,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",           # Vite dev
-        "https://opticv.vercel.app",       # Producción Vercel
+        "https://opticv-frontend.vercel.app",       # Producción Vercel
         "https://opticv-engine.hf.space",  # HF Spaces
     ],
     allow_credentials=True,
