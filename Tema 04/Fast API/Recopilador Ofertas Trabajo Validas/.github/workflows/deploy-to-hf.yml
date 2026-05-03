@@ -1,0 +1,33 @@
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -e
+          HF_USERNAME="AngelPereiraR"
+          SPACE_NAME="opticv-backend"
+          SUBDIR="Tema 04/Fast API/Recopilador Ofertas Trabajo Validas"
+
+          # Add remote using token (do NOT commit HF_TOKEN to repo)
+          git remote add hf "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}.git"
+
+          # Push only the subdirectory to HF Spaces root
+          git subtree push --force hf "${SUBDIR}":main

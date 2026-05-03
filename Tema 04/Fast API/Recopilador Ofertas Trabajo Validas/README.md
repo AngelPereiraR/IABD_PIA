@@ -1,3 +1,12 @@
+---
+title: OptiCV - Recopilador Inteligente de Ofertas de Trabajo
+emoji: 🤖
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # 🤖 OptiCV - Recopilador Inteligente de Ofertas de Trabajo
 
 Sistema integral de análisis y visualización de ofertas laborales que combina **FastAPI backend**, **React frontend**, **IA Generativa** y **notificaciones en tiempo real**. Monitorea ofertas, analiza su ajuste con tu CV usando criterios profesionales (ATS + RRHH), proporciona adaptaciones personalizadas del CV, y te mantiene informado vía Telegram.
@@ -123,36 +132,36 @@ Sistema integral de análisis y visualización de ofertas laborales que combina 
 
 ### Backend
 
-| Tecnología                      | Propósito                      |
-| ------------------------------- | ------------------------------ |
-| **FastAPI**                     | Framework web moderno y rápido |
-| **Uvicorn**                     | Servidor ASGI                  |
-| **SQLAlchemy (asyncio)**        | ORM asincrónico                |
-| **PostgreSQL / asyncpg**        | Base de datos escalable        |
-| **Alembic**                     | Migraciones de BD              |
-| **LangChain + langchain-openai**| Orquestación de LLM            |
-| **DeepSeek v4-Flash**           | LLM para análisis y adaptación |
-| **Cloudinary**                  | Almacenamiento de archivos     |
-| **Firecrawl / Jina AI**         | Web scraping avanzado          |
-| **slowapi**                     | Rate limiting                  |
-| **PyPDF**                       | Procesamiento de PDF           |
-| **pydantic-settings**           | Configuración con env vars     |
-| **passlib / python-jose**       | Hashing y JWT                  |
+| Tecnología                       | Propósito                      |
+| -------------------------------- | ------------------------------ |
+| **FastAPI**                      | Framework web moderno y rápido |
+| **Uvicorn**                      | Servidor ASGI                  |
+| **SQLAlchemy (asyncio)**         | ORM asincrónico                |
+| **PostgreSQL / asyncpg**         | Base de datos escalable        |
+| **Alembic**                      | Migraciones de BD              |
+| **LangChain + langchain-openai** | Orquestación de LLM            |
+| **DeepSeek v4-Flash**            | LLM para análisis y adaptación |
+| **Cloudinary**                   | Almacenamiento de archivos     |
+| **Firecrawl / Jina AI**          | Web scraping avanzado          |
+| **slowapi**                      | Rate limiting                  |
+| **PyPDF**                        | Procesamiento de PDF           |
+| **pydantic-settings**            | Configuración con env vars     |
+| **passlib / python-jose**        | Hashing y JWT                  |
 
 ### Frontend
 
-| Tecnología          | Propósito              |
-| ------------------- | ---------------------- |
-| **React 18.3**      | UI interactiva         |
-| **Vite 6.4**        | Build tool rápido      |
-| **React Router v6** | Navegación SPA         |
-| **Zustand 4.4**     | State management       |
-| **React Query 5**   | Gestión de datos       |
-| **React Hook Form** | Formularios            |
-| **TailwindCSS 3.4** | Estilos                |
-| **Axios 1.7**       | HTTP client            |
-| **Zod 3.22**        | Validación             |
-| **Lucide React**    | Iconos                 |
+| Tecnología          | Propósito         |
+| ------------------- | ----------------- |
+| **React 18.3**      | UI interactiva    |
+| **Vite 6.4**        | Build tool rápido |
+| **React Router v6** | Navegación SPA    |
+| **Zustand 4.4**     | State management  |
+| **React Query 5**   | Gestión de datos  |
+| **React Hook Form** | Formularios       |
+| **TailwindCSS 3.4** | Estilos           |
+| **Axios 1.7**       | HTTP client       |
+| **Zod 3.22**        | Validación        |
+| **Lucide React**    | Iconos            |
 
 ---
 
@@ -539,13 +548,13 @@ O conecta tu GitHub a Vercel y hace deploy automático.
 
 El análisis devuelve un score 0-100 calculado en dos fases (ATS + evaluación humana):
 
-| Rango   | Nivel       | Significado                                              |
-| ------- | ----------- | -------------------------------------------------------- |
-| 0 – 59  | ATS_BLOCK   | Rechazo automático — faltan requisitos indispensables    |
-| 60 – 69 | Descarte    | Pasa el ATS pero débil en evaluación cualitativa         |
-| 70 – 79 | Apto        | Match competente                                         |
-| 80 – 89 | Fuerte      | Match sólido, candidato destacado                        |
-| 90 – 100| Ideal       | Ajuste perfecto                                          |
+| Rango    | Nivel     | Significado                                           |
+| -------- | --------- | ----------------------------------------------------- |
+| 0 – 59   | ATS_BLOCK | Rechazo automático — faltan requisitos indispensables |
+| 60 – 69  | Descarte  | Pasa el ATS pero débil en evaluación cualitativa      |
+| 70 – 79  | Apto      | Match competente                                      |
+| 80 – 89  | Fuerte    | Match sólido, candidato destacado                     |
+| 90 – 100 | Ideal     | Ajuste perfecto                                       |
 
 `is_valid = (score >= 60)` — solo las ofertas válidas permiten generar una adaptación de CV.
 
