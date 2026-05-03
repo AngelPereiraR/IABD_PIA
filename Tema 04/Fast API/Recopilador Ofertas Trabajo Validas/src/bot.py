@@ -1,9 +1,16 @@
 import os
 import time
+import logging
 import requests
+import socket
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Habilitar logging detallado de requests/urllib3
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger("urllib3").setLevel(logging.DEBUG)
+logging.getLogger("requests").setLevel(logging.DEBUG)
 
 class TelegramNotifier:
     """
@@ -72,8 +79,36 @@ class TelegramNotifier:
 
         return self._send_message(message)
 
+    def _diagnose_connection(self) -> None:
+        """Diagnostica la conectividad a api.telegram.org"""
+        print("\n[DIAG] Iniciando diagnóstico de conectividad a Telegram...")
+
+        try:
+            print("[DIAG] Resolviendo DNS para api.telegram.org...")
+            ip = socket.gethostbyname("api.telegram.org")
+            print(f"[DIAG] ✓ DNS resuelto: api.telegram.org → {ip}")
+        except socket.gaierror as e:
+            print(f"[DIAG] ✗ Error DNS: {e}")
+            return
+
+        try:
+            print("[DIAG] Intentando conexión TCP a api.telegram.org:443...")
+            sock = socket.create_connection(("api.telegram.org", 443), timeout=10)
+            print(f"[DIAG] ✓ Conexión TCP establecida")
+            sock.close()
+        except (socket.timeout, socket.error) as e:
+            print(f"[DIAG] ✗ Error conexión TCP: {e}")
+            return
+
+        try:
+            print("[DIAG] Intentando petición HTTPS simple (HEAD)...")
+            response = requests.head("https://api.telegram.org", timeout=10)
+            print(f"[DIAG] ✓ HTTPS funciona. Status: {response.status_code}")
+        except requests.exceptions.RequestException as e:
+            print(f"[DIAG] ✗ Error HTTPS: {type(e).__name__}: {e}")
+
     def _send_message(self, text: str, max_retries: int = 3) -> bool:
-        """Envía el payload final a la API de Telegram con reintentos."""
+        """Envía el payload final a la API de Telegram con reintentos y logging detallado."""
         payload = {
             "chat_id": self.chat_id,
             "text": text,
@@ -83,30 +118,50 @@ class TelegramNotifier:
 
         for attempt in range(max_retries):
             try:
+                print(f"\n[TELEGRAM] Intento {attempt + 1}/{max_retries}")
+                print(f"[TELEGRAM] URL: {self.base_url[:50]}...")
+                print(f"[TELEGRAM] Payload size: {len(str(payload))} bytes")
+                print(f"[TELEGRAM] Timeout: 30s")
+
                 response = requests.post(self.base_url, json=payload, timeout=30)
                 response.raise_for_status()
-                print("Notificación enviada a Telegram correctamente.")
+                print(f"[TELEGRAM] ✓ Notificación enviada correctamente. Status: {response.status_code}")
                 return True
 
-            except requests.exceptions.Timeout:
+            except requests.exceptions.ConnectTimeout:
+                print(f"[TELEGRAM] ✗ ConnectTimeout (no se pudo conectar en 30s)")
+                self._diagnose_connection()
                 wait_time = 2 ** attempt
-                print(f"Timeout enviando a Telegram (intento {attempt + 1}/{max_retries}). Esperando {wait_time}s...")
                 if attempt < max_retries - 1:
+                    print(f"[TELEGRAM] Reintentando en {wait_time}s...")
                     time.sleep(wait_time)
-                else:
-                    print("Máximo de reintentos alcanzado. Mensaje no enviado.")
-                    return False
+
+            except requests.exceptions.ReadTimeout:
+                print(f"[TELEGRAM] ✗ ReadTimeout (respuesta tardó >30s)")
+                wait_time = 2 ** attempt
+                if attempt < max_retries - 1:
+                    print(f"[TELEGRAM] Reintentando en {wait_time}s...")
+                    time.sleep(wait_time)
+
+            except requests.exceptions.ConnectionError as e:
+                print(f"[TELEGRAM] ✗ ConnectionError: {e}")
+                self._diagnose_connection()
+                wait_time = 2 ** attempt
+                if attempt < max_retries - 1:
+                    print(f"[TELEGRAM] Reintentando en {wait_time}s...")
+                    time.sleep(wait_time)
 
             except requests.exceptions.RequestException as e:
-                print(f"Error al enviar mensaje a Telegram (intento {attempt + 1}/{max_retries}): {e}")
+                print(f"[TELEGRAM] ✗ {type(e).__name__}: {e}")
                 if hasattr(e, 'response') and e.response is not None:
-                    print(f"   Detalle API: {e.response.text}")
+                    print(f"[TELEGRAM] Status: {e.response.status_code}")
+                    print(f"[TELEGRAM] Response: {e.response.text[:200]}")
+                wait_time = 2 ** attempt
                 if attempt < max_retries - 1:
-                    wait_time = 2 ** attempt
+                    print(f"[TELEGRAM] Reintentando en {wait_time}s...")
                     time.sleep(wait_time)
-                else:
-                    return False
 
+        print("[TELEGRAM] ✗ Máximo de reintentos alcanzado. Mensaje NO enviado.")
         return False
 
 if __name__ == "__main__":
