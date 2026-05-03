@@ -182,6 +182,9 @@ def run_bot_logic():
                         continue
 
                     decision = brain.analyze_offer(user_cv_context, offer_markdown)
+                    if not decision:
+                        print(f"       [ERROR] Brain retornó None para {url}")
+                        continue
 
                     if decision.get("is_relevant"):
                         print(f"       [MATCH] Persistiendo y enviando alerta.")
@@ -215,37 +218,17 @@ def run_bot_logic():
             print(f" [CRITICAL] Error en bucle: {e}")
             time.sleep(60)
 
-# --- WORKER DE TELEGRAM (ENVÍO ASÍNCRONO) ---
-def run_telegram_worker():
-    """Worker: procesa cola de mensajes de Telegram cada 30s."""
-    print(" [TELEGRAM WORKER] Iniciando worker de mensajes Telegram...", flush=True)
-
-    while True:
-        try:
-            time.sleep(30)  # Procesar cada 30 segundos
-            TelegramNotifier.send_queued_messages()
-        except Exception as e:
-            print(f" [TELEGRAM WORKER ERROR] {e}", flush=True)
-            time.sleep(30)
-
-
 # --- CORRECCION CRITICA PARA UVICORN ---
-# Arrancamos los hilos aqui, FUERA del bloque main, para que Uvicorn lo ejecute al importar
+# Arrancamos el hilo aqui, FUERA del bloque main, para que Uvicorn lo ejecute al importar
 # Usamos una variable global para evitar arrancar hilos duplicados si Uvicorn reinicia workers
 _bot_started = False
-_telegram_worker_started = False
 
 if not _bot_started:
     _bot_started = True
     bot_thread = threading.Thread(target=run_bot_logic, daemon=True)
     bot_thread.start()
     print(" [SYSTEM] Hilo de Bot lanzado en segundo plano.", flush=True)
-
-if not _telegram_worker_started:
-    _telegram_worker_started = True
-    telegram_worker_thread = threading.Thread(target=run_telegram_worker, daemon=True)
-    telegram_worker_thread.start()
-    print(" [SYSTEM] Worker de Telegram lanzado en segundo plano.", flush=True)
+    print(" [SYSTEM] Worker de Telegram se ejecuta en Render (servicio separado).", flush=True)
 
 if __name__ == "__main__":
     # Esto solo se ejecuta si lanzas 'python main.py' localmente

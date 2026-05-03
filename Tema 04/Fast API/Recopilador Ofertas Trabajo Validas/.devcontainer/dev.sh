@@ -29,6 +29,16 @@ PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
   FRONTEND_PID=$!
   echo "✓ Frontend PID: $FRONTEND_PID"
 
+  # Inicia el worker de Telegram en background
+  echo "📦 [$(date)] Iniciando Telegram Worker..."
+  (
+    cd "$PROJECT_ROOT"
+    source .venv/bin/activate
+    python telegram_worker.py
+  ) >> $LOG_FILE 2>&1 &
+  WORKER_PID=$!
+  echo "✓ Telegram Worker PID: $WORKER_PID"
+
   echo ""
   echo "════════════════════════════════════════════════"
   echo "✨ Servidores iniciados"
@@ -38,10 +48,14 @@ PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
   echo "   Backend:  http://localhost:7861"
   echo "   Frontend: http://localhost:5173"
   echo ""
+  echo "🤖 Workers:"
+  echo "   Bot (ofertas):     en background"
+  echo "   Telegram Worker:   en background"
+  echo ""
   echo "📋 Logs: $LOG_FILE"
   echo ""
 
-  # Mantiene ambos procesos ejecutándose
-  wait $BACKEND_PID $FRONTEND_PID
+  # Mantiene todos los procesos ejecutándose
+  wait $BACKEND_PID $FRONTEND_PID $WORKER_PID
 
 } 2>&1 | tee -a $LOG_FILE

@@ -134,7 +134,7 @@ class TelegramNotifier:
         }
 
         try:
-            response = requests.post(base_url, json=payload, timeout=20)
+            response = requests.post(base_url, json=payload, timeout=90)
             response.raise_for_status()
             notification.status = "sent"
             session.commit()
@@ -143,7 +143,7 @@ class TelegramNotifier:
 
         except requests.exceptions.RequestException as e:
             notification.retries += 1
-            max_retries = 10
+            max_retries = 20
             if notification.retries >= max_retries:
                 notification.status = "failed"
                 print(f"[TELEGRAM WORKER] ✗ Mensaje {notification.id} falló después de {max_retries} intentos: {e}")

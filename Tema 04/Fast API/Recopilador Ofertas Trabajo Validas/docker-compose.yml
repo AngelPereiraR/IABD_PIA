@@ -32,6 +32,26 @@ services:
       retries: 3
       start_period: 10s
 
+  # Telegram Worker - Procesa cola de mensajes
+  telegram-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: telegram-worker
+    environment:
+      # Cargar desde .env
+      - DATABASE_URL=${DATABASE_URL}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "ps", "aux"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
   # Vite Frontend Development
   frontend:
     build:
