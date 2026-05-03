@@ -17,6 +17,10 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
+      - name: Install Git LFS
+        run: |
+          apt-get update && apt-get install -y git-lfs
+
       - name: Push to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -26,9 +30,33 @@ jobs:
           SPACE_NAME="opticv-backend"
           SUBDIR="Tema 04/Fast API/Recopilador Ofertas Trabajo Validas"
 
-          # Add remote using token (do NOT commit HF_TOKEN to repo)
-          git remote add hf "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}.git"
+          # Create temporary directory with subdirectory content
+          mkdir -p /tmp/hf-space
+          cp -r "${SUBDIR}"/* /tmp/hf-space/
+          cd /tmp/hf-space
 
-          # Split subdirectory into a temporary branch and push
-          git subtree split --prefix="${SUBDIR}" -b hf-deploy
-          git push --force hf hf-deploy:main
+          # Initialize git with LFS support
+          git init
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          # Initialize Git LFS
+          git lfs install --skip-repo
+
+          # Create .gitattributes to track binary files with LFS
+          cat > .gitattributes << 'EOF'
+          *.pdf filter=lfs diff=lfs merge=lfs -text
+          *.jpg filter=lfs diff=lfs merge=lfs -text
+          *.png filter=lfs diff=lfs merge=lfs -text
+          EOF
+
+          # Add all files including .gitattributes
+          git add .gitattributes
+          git add .
+
+          # Commit
+          git commit -m "Deploy to HF Spaces with LFS for binary files"
+
+          # Add HF remote and push
+          git remote add hf "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}.git"
+          git push --force hf HEAD:main
