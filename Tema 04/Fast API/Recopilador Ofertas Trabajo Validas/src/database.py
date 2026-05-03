@@ -154,6 +154,24 @@ class CVAdaptation(Base):
     job_offer = relationship("JobOffer", back_populates="cv_adaptations")
 
 
+class TelegramNotification(Base):
+    """Cola de notificaciones de Telegram para envío asíncrono."""
+    __tablename__ = "telegram_notifications"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    job_offer_id = Column(Integer, ForeignKey("job_offers.id", ondelete="CASCADE"), nullable=False)
+    message = Column(Text, nullable=False)
+    status = Column(String(20), default="pending", nullable=False, index=True)  # pending, sent, failed
+    retries = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User")
+    job_offer = relationship("JobOffer")
+
+
 # --- FUNCIONES DE UTILIDAD ---
 def init_db_sync():
     """Crear todas las tablas de forma síncrona (para desarrollo en Windows)."""
