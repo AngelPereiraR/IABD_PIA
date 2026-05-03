@@ -1,16 +1,10 @@
 import os
 import time
-import logging
 import requests
 import socket
 from dotenv import load_dotenv
 
 load_dotenv()
-
-# Habilitar logging detallado de requests/urllib3
-logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("urllib3").setLevel(logging.DEBUG)
-logging.getLogger("requests").setLevel(logging.DEBUG)
 
 class TelegramNotifier:
     """
@@ -121,15 +115,15 @@ class TelegramNotifier:
                 print(f"\n[TELEGRAM] Intento {attempt + 1}/{max_retries}")
                 print(f"[TELEGRAM] URL: {self.base_url[:50]}...")
                 print(f"[TELEGRAM] Payload size: {len(str(payload))} bytes")
-                print(f"[TELEGRAM] Timeout: 30s")
+                print(f"[TELEGRAM] Timeout: 60s")
 
-                response = requests.post(self.base_url, json=payload, timeout=30)
+                response = requests.post(self.base_url, json=payload, timeout=60)
                 response.raise_for_status()
                 print(f"[TELEGRAM] ✓ Notificación enviada correctamente. Status: {response.status_code}")
                 return True
 
             except requests.exceptions.ConnectTimeout:
-                print(f"[TELEGRAM] ✗ ConnectTimeout (no se pudo conectar en 30s)")
+                print(f"[TELEGRAM] ✗ ConnectTimeout (no se pudo conectar en 60s)")
                 self._diagnose_connection()
                 wait_time = 2 ** attempt
                 if attempt < max_retries - 1:
@@ -137,7 +131,7 @@ class TelegramNotifier:
                     time.sleep(wait_time)
 
             except requests.exceptions.ReadTimeout:
-                print(f"[TELEGRAM] ✗ ReadTimeout (respuesta tardó >30s)")
+                print(f"[TELEGRAM] ✗ ReadTimeout (respuesta tardó >60s)")
                 wait_time = 2 ** attempt
                 if attempt < max_retries - 1:
                     print(f"[TELEGRAM] Reintentando en {wait_time}s...")
