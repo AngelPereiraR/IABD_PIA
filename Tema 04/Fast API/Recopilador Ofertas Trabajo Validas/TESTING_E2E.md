@@ -2,10 +2,11 @@
 
 ## Requisitos Previos
 
-- Backend FastAPI ejecutándose en `http://localhost:7860` (puerto por defecto configurado en `apiClient.js`)
+- Backend FastAPI ejecutándose en `http://localhost:7860` (puerto configurado en `.env`)
 - Servidor de desarrollo frontend en `http://localhost:5173`
-- Credenciales de prueba válidas para los endpoints de la API
-- `data/cv_usuario.pdf` debe existir (requerido por el bot thread)
+- Base de datos PostgreSQL conectada via `DATABASE_URL` en `.env`
+- `data/cv_usuario.pdf` debe existir (requerido para análisis)
+- Variables de entorno `.env` configuradas correctamente
 
 ---
 
@@ -162,10 +163,13 @@ Acceder a: `http://localhost:5173`
 ### Suite 4: Adaptación del CV
 
 #### 4.1 Generar Adaptación
-- [ ] Ver el resultado de una oferta válida (is_valid=true)
+- [ ] Ver el resultado de una oferta válida (is_valid=true, score ≥ 60)
 - [ ] Hacer click en el botón "Generar Adaptación de CV"
 - [ ] Navegar a `/dashboard/adaptations/generate/:analysisId`
 - [ ] Debe aparecer el spinner de carga con texto "Generando..."
+- [ ] **⏱️ Esperar 30-60 segundos** (adaptación + compilación LaTeX)
+  - Adaptación DeepSeek: 10-20s
+  - Compilación LaTeX: 20-40s
 - [ ] Tras la generación, debe redirigir a `/dashboard/adaptations/:adaptationId`
 
 #### 4.2 Vista de Detalle de Adaptación
@@ -242,8 +246,10 @@ Acceder a: `http://localhost:5173`
 #### 6.4 Estados de Carga
 - [ ] Formulario de auth: texto del botón "Iniciando sesión..." / "Registrando..."
 - [ ] Subida de CV: spinner de progreso visible
-- [ ] Análisis: componente Spinner con texto "Analizando..."
-- [ ] Generación de adaptación: componente Spinner con texto "Generando..."
+- [ ] Análisis: componente Spinner con texto "Analizando..." (⏱️ 12-25 segundos)
+- [ ] Generación de adaptación: componente Spinner con texto "Generando..." (⏱️ 30-60 segundos)
+  - Debe mostrar mensaje informativo sobre el tiempo esperado
+  - Spinner debe mantener usuario informado durante espera
 - [ ] Transiciones de página: Spinner con texto "Cargando..."
 
 #### 6.5 Notificaciones Toast

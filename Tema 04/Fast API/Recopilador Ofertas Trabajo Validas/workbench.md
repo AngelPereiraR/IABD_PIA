@@ -1,363 +1,189 @@
-# **🛠️ Workbench: Recopilador Ofertas de Trabajo Válidas con el CV del Usuario**
+# **🛠️ Workbench: OptiCV - Recopilador Inteligente de Ofertas de Trabajo**
 
 Versión: 2.0.0  
 Estado: ✅ **PRODUCCIÓN - Completamente Funcional**  
-Objetivo: Automatizar la búsqueda de empleo mediante un agente autónomo que filtra correos de LinkedIn e InfoJobs, analiza ofertas web y notifica solo las oportunidades relevantes basándose en el CV del usuario.
-
-## **1\. Arquitectura del Sistema**
-
-El sistema funciona como un pipeline ETL (Extract, Transform, Load) enriquecido con Inteligencia Artificial Generativa, ejecutándose en un servidor web con Flask + threading para cumplir requisitos de plataformas PaaS.
-
-### **Diagrama de Flujo de Datos**
-
-1. **Contexto (Input Estático):** CV Usuario (PDF) → PyPDFLoader → Texto de Referencia.
-2. **Disparador (Trigger):** Email LinkedIn/InfoJobs → GmailToolkit → URLs de Ofertas.
-3. **Extracción (Scraping Cascada):** URL → Jina AI (intento 1) → FireCrawl (intento 2) → HTTP Directo (intento 3) → Markdown Limpio.
-4. **Análisis (Cerebro IA - Doble Fase):** 
-   - **Fase 1 (ATS):** Filtro por keywords técnicas y requisitos básicos
-   - **Fase 2 (RRHH):** Evaluación semántica profunda de experiencia y soft skills
-   - Output: Score 0-100 + Justificación + Datos estructurados (salario, empresa, fecha, etc.)
-5. **Decisión:** Score >= 70 → Notificación | Score < 70 → Descartar silenciosamente
-6. **Notificación (Output):** Match Positivo → Telegram Bot API → Mensaje enriquecido con iconos y formato visual.
-
-## **2\. Stack Tecnológico**
-
-Selección de herramientas basada en robustez y capacidad de integración con LangChain.
-
-| Componente                | Herramienta                                  | Función Crítica                                                                                                       |
-| :------------------------ | :------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
-| **Ingesta de Documentos** | **PyPDFLoader** (LangChain Community)        | Transformar el CV en formato PDF a texto plano para inyectarlo en el System Prompt del LLM.                           |
-| **Fuente de Datos**       | **Gmail Toolkit** (LangChain Google)         | Leer correos, filtrar por remitente (LinkedIn/InfoJobs) y estado (unread), extraer enlaces y gestionar el estado de lectura. Incluye limpieza automática de correos >14 días.   |
-| **Web Scraping (Cascada)**| **Jina AI Reader** (Gratuito, sin API key)  | Primer intento: Scraping rápido sin autenticación. Excelente para LinkedIn y páginas estáticas. |
-|                           | **FireCrawl** (API Key requerida)           | Segundo intento: Navegar páginas dinámicas con JS, evadir detecciones y convertir HTML complejo en Markdown. Ideal para InfoJobs. |
-|                           | **Requests + BeautifulSoup** (Built-in)      | Tercer intento: Scraping directo HTTP como último recurso. Manejo de reintentos con exponential backoff. |
-| **Motor de IA**           | **Gemini 2.5 Flash** (Google AI Studio)      | Modelo orquestador. Implementa sistema de doble fase (ATS + RRHH) con anti-alucinación (grounding). Output estructurado via Pydantic. |
-| **Notificaciones**        | **Telegram Bot API** (requests síncronos)    | Canal de comunicación directo y gratuito para enviar alertas urgentes al móvil del usuario con formato enriquecido (iconos, barras de progreso).                           |
-| **Servidor Web**          | **Flask + Gunicorn**                         | Servidor HTTP para cumplir requisitos de Render/Railway. Endpoints: `/` (status) y `/health` (health check). Ejecuta bot en hilo secundario daemon. |
-| **Containerización**      | **Docker** (Python 3.11-slim)                | Imagen optimizada con multi-stage build. Inyección de secretos vía variables de entorno (`entrypoint.sh`). |
-
-## **3\. Lógica Detallada del Pipeline**
-
-### **Fase A: Inicialización (Cold Start)**
-
-_Se ejecuta una sola vez al arrancar el servicio._
-
-1. El sistema busca el archivo cv_usuario.pdf en la raíz.
-2. PyPDFLoader carga el archivo y extrae el texto.
-3. Se crea la variable global USER_CONTEXT que contiene la experiencia, skills y expectativas del usuario.
-
-### **Fase B: Bucle de Ejecución (Runtime Loop)**
-
-_Se ejecuta periódicamente (configurable vía `POLLING_INTERVAL`, por defecto 10 min)._
-
-1. **Refresco de Conexión Gmail:**
-   - Se crea una **nueva instancia** de `GmailJobCollector` en cada ciclo
-   - **Crítico**: `GmailToolkit` cachea la lista de correos al inicializarse. Sin reinicio, los correos nuevos NO se detectarían
-   - También evita timeouts de sesión OAuth y problemas de tokens expirados
-   - El toolkit de LangChain gestiona automáticamente el refresh token
-
-2. **Limpieza Automática de Correos Antiguos:**
-   - Query: `from:"linkedin OR infojobs" older_than:14d`
-   - Mueve correos a papelera en lotes de 500 (batch processing)
-   - Mantiene la bandeja de entrada limpia y evita procesamiento duplicado
-
-3. **Monitorización de Email:**
-   - Query: `from:("linkedin" OR "infojobs") label:UNREAD newer_than:14d ("empleos similares" OR "alertas de empleo" OR "Alerta de empleo InfoJobs")`
-   - Si no hay correos: Dormir `POLLING_INTERVAL` segundos
-   - Si hay correos (hasta 5 por ciclo):
-     - Extraer URLs (manejo de tracking links y redirecciones)
-     - Marcar correo como LEÍDO
-     - Procesar cada URL
-
-4. **Scraping Web (Estrategia en Cascada):**
-   - **Intento 1 - Jina AI:**
-     - URL: `https://r.jina.ai/{url}?t={timestamp}`
-     - Headers con selectores CSS personalizados según dominio
-     - Timeout: 15s
-     - Si falla → Intento 2
-   
-   - **Intento 2 - FireCrawl:**
-     - Cliente Python oficial con API key
-     - Renderizado JavaScript completo
-     - Extracción de Markdown limpio
-     - Timeout: 30s
-     - Si falla → Intento 3
-   
-   - **Intento 3 - HTTP Directo:**
-     - Requests con User-Agent realista
-     - Retry strategy: 3 intentos con exponential backoff
-     - BeautifulSoup para parsing HTML básico
-     - Si falla → Descartar oferta y continuar
-
-5. **Análisis con IA (Cerebro - Gemini 2.5 Flash):**
-   - **Sistema de Prompts Estructurado:**
-     ```
-     FASE 1 (ATS): Filtro por keywords técnicas + requisitos mínimos
-       - Score < 60 → RECHAZADO (mensaje robótico)
-       - Score >= 60 → Continuar a Fase 2
-     
-     FASE 2 (RRHH): Evaluación semántica profunda
-       - Score 60-69 → RECHAZADO (mensaje profesional)
-       - Score 70-79 → CANDIDATO APTO ✅
-       - Score 80-89 → CANDIDATO FUERTE 🚀
-       - Score 90-100 → CANDIDATO IDEAL 🔥
-     ```
-   
-   - **Output Estructurado (Pydantic):**
-     ```python
-     {
-       "match": bool,
-       "match_score": int,
-       "job_title": str,
-       "company": str,
-       "salary": str,
-       "posted_date": str,
-       "benefits": str,
-       "summary": str
-     }
-     ```
-   
-   - **Sistema Anti-Alucinación (Grounding):**
-     - Prohibición explícita de conocimiento externo
-     - Todas las conclusiones deben estar presentes en el texto
-     - Verificación de fecha real de publicación
-
-6. **Decisión y Notificación:**
-   - **Si Score < 70:**
-     - Log silencioso: `[DESCARTADO] {summary[:50]}...`
-     - No se notifica al usuario
-   
-   - **Si Score >= 70:**
-     - Formateo de mensaje enriquecido:
-       - Icono según score (🔥/🚀/✅/⚠️)
-       - Barra de progreso visual (🟩🟩🟩⬜⬜)
-       - Datos estructurados (título, empresa, salario, beneficios, fecha)
-       - Justificación del match
-       - Link directo para aplicar
-     - Envío vía Telegram Bot API
-     - Log: `[MATCH] Enviando alerta`
-
-7. **Gestión de Errores:**
-   - Errores de conexión Gmail: Reintento en 60s (evita crash)
-   - Errores de scraping: Continuar con siguiente URL
-   - Errores de Gemini: Log del error y continuar
-   - Error crítico del bucle: Sleep 60s y reintentar
-
-## **4\. Configuración del Entorno (.env)**
-
-Variables necesarias para la ejecución. **No compartir este archivo ni commitearlo a Git.**
-
-```env
-# === GEMINI (Google AI Studio) ===
-GEMINI_API_KEY="AIzaSy..."
-
-# === TELEGRAM BOT ===
-TELEGRAM_BOT_TOKEN="123456789:ABCdefGHI..."
-TELEGRAM_CHAT_ID="987654321"
-
-# === FIRECRAWL (Opcional pero recomendado) ===
-FIRECRAWL_API_KEY="fc-..."
-
-# === CONFIGURACION DEL SISTEMA ===
-# Intervalo de polling en segundos (600 = 10 minutos)
-POLLING_INTERVAL=600
-```
-
-### **4.1. Archivos de Credenciales Adicionales**
-
-Además del `.env`, el sistema requiere:
-
-1. **`credentials.json`** (OAuth 2.0 de Google Cloud Console)
-   - Descargado desde Google Cloud Console → APIs & Services → Credentials
-   - Tipo: "Desktop app"
-   - APIs habilitadas: Gmail API + Generative Language API
-
-2. **`token.json`** (Generado automáticamente)
-   - Se crea ejecutando: `python src/setup_auth.py`
-   - Contiene el access token y refresh token de OAuth
-   - Válido por tiempo indefinido (mientras no se revoquen permisos)
-
-3. **`data/cv_usuario.pdf`**
-   - Tu CV en formato PDF
-   - Debe tener texto seleccionable (no imagen escaneada)
-
-## **5\. Estructura del Proyecto**
-
-```
-/Recopilador Ofertas Trabajo Validas
-│
-├── /data
-│   └── cv_usuario.pdf              # Tu CV (Input) - NO commitear
-│
-├── /src
-│   ├── loader.py                   # PyPDFLoader - Extracción de CV
-│   ├── mail_agent.py               # Gmail Toolkit - Búsqueda y limpieza
-│   ├── scraper.py                  # Estrategia de scraping en cascada
-│   ├── brain.py                    # Gemini + Prompts + Pydantic schemas
-│   ├── bot.py                      # Telegram notifier con formato rico
-│   └── setup_auth.py               # CLI para generar token.json
-│
-├── main.py                         # Orquestador: Flask + Bot Thread
-├── requirements.txt                # Dependencias Python
-├── Dockerfile                      # Imagen Docker optimizada
-├── entrypoint.sh                   # Script de inicialización (secretos)
-├── .dockerignore                   # Excluir archivos sensibles del build
-├── .gitignore                      # Excluir archivos sensibles del repo
-├── .env                            # Variables de entorno - NO commitear
-├── credentials.json                # OAuth Google - NO commitear
-├── token.json                      # Token Gmail - NO commitear
-├── workbench.md                    # Documentación técnica (este archivo)
-└── README.md                       # Documentación de usuario
-```
-
-## **6\. Estado del Desarrollo**
-
-### ✅ **Funcionalidades Implementadas**
-
-1. ✅ **Carga de CV** (`loader.py`)
-   - Extracción completa de texto de PDF multi-página
-   - Verificación de archivo vacío
-   - Fallback a ruta alternativa si no se encuentra
-
-2. ✅ **Integración Gmail** (`mail_agent.py`)
-   - Búsqueda de correos UNREAD de LinkedIn e InfoJobs (<14 días)
-   - Limpieza automática de correos antiguos (>14 días)
-   - Resolución de tracking links y redirecciones
-   - Extracción de URLs tanto de LinkedIn como InfoJobs
-   - Manejo robusto de errores de API
-
-3. ✅ **Scraping Multi-Estrategia** (`scraper.py`)
-   - Jina AI Reader (intento 1)
-   - FireCrawl API (intento 2)
-   - Scraping directo con requests + retry logic (intento 3)
-   - Selectores CSS personalizados por dominio (LinkedIn, InfoJobs)
-   - Limpieza de URLs (parámetros tracking, fragmentos)
-   - Manejo de errores 422, 404, timeouts
-
-4. ✅ **Análisis con IA** (`brain.py`)
-   - Modelo: Gemini 2.5 Flash (temperature=0)
-   - Sistema de doble fase (ATS → RRHH)
-   - Output estructurado con Pydantic
-   - Anti-alucinación con grounding explícito
-   - Extracción de fecha literal del texto
-   - Validación de vigencia de oferta
-
-5. ✅ **Notificaciones Telegram** (`bot.py`)
-   - Cliente síncrono (requests) para evitar conflictos de event loop
-   - Formato enriquecido con:
-     - Iconos según score (🔥/🚀/✅/⚠️)
-     - Barra de progreso visual
-     - Datos estructurados
-     - Links directos
-   - Manejo de errores de API
-
-6. ✅ **Orquestación Principal** (`main.py`)
-   - Servidor Flask con endpoints `/` y `/health`
-   - Bot en hilo secundario daemon
-   - Bucle infinito con gestión de errores
-   - Logs detallados de cada fase
-   - Refresco de Gmail client en cada ciclo
-
-7. ✅ **Containerización** (`Dockerfile` + `entrypoint.sh`)
-   - Imagen Python 3.11-slim optimizada
-   - Multi-stage build para reducir tamaño
-   - Inyección de secretos vía variables de entorno
-   - Gunicorn para producción
-
-8. ✅ **Autenticación OAuth** (`setup_auth.py`)
-   - Script CLI para generación de token
-   - Flujo OAuth completo automatizado
-   - Instrucciones paso a paso
-
-### 🚀 **Despliegue en Producción**
-
-**Plataformas Soportadas:**
-- ✅ Render (Free Tier) - Recomendado
-- ✅ Railway
-- ✅ Docker Local
-
-**Estado:** Sistema probado y funcionando en entornos de desarrollo y producción.
-
-### 📈 **Métricas de Rendimiento**
-
-- **Tiempo de procesamiento por oferta:** ~5-15 segundos
-  - Scraping: 2-8s (depende de la estrategia exitosa)
-  - Análisis Gemini: 2-5s
-  - Notificación Telegram: <1s
-
-- **Uso de recursos:**
-  - RAM: ~150-200 MB (Flask + Bot + dependencias)
-  - CPU: Mínimo (mayoría del tiempo en sleep)
-  - Red: Bajo (solo durante scraping y API calls)
-
-- **Rate Limits:**
-  - Gemini Free Tier: 15 RPM (requests per minute) / 1000 RPD (requests per day)
-  - Gmail API: 250 cuota units/segundo (suficiente)
-  - Jina AI: Sin límites conocidos
-  - FireCrawl: Depende del plan contratado
-  - Telegram: 30 mensajes/segundo por bot
-
-### 🔧 **Mejoras Futuras (Opcional)**
-
-- [ ] Base de datos SQLite para histórico de ofertas
-- [ ] Dashboard web con Flask-Admin para visualización
-- [ ] Soporte para más plataformas (Indeed, Glassdoor)
-- [ ] Sistema de respuestas automáticas
-- [ ] Integración con Notion/Trello
-- [ ] Generación de cover letters con IA
-- [ ] Análisis de tendencias salariales
-- [ ] Sistema de feedback (usuario indica si match fue correcto)
+Objetivo: Sistema integral que monitorea correos de empleo, analiza ofertas contra CV del usuario usando IA, y proporciona adaptaciones personalizadas de CV.
 
 ---
 
-## **7\. Notas Técnicas Importantes**
+## **1. Arquitectura del Sistema**
 
-### **7.1. Por qué Flask + Threading**
+OptiCV es un **sistema distribuido de 3 servicios** que trabajan juntos:
 
-Plataformas como Render requieren un servidor web HTTP que responda a health checks. Si solo ejecutáramos el bot en un script simple, Render lo marcaría como "crashed" tras unos segundos sin respuesta HTTP.
+```
+┌─────────────────────────────────────────────────────┐
+│                   ARQUITECTURA GENERAL               │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  Frontend (Vercel)  ←→  Backend (HF Spaces)         │
+│  React + Vite           FastAPI + Uvicorn           │
+│  vercel.app             hf.space                     │
+│                              ↓                       │
+│                       Análisis Ofertas               │
+│                       (DeepSeek LLM)                 │
+│                              ↓                       │
+│                    PostgreSQL (Neon)                 │
+│                    (cola de mensajes)                │
+│                              ↓                       │
+│              Render Worker (Telegram)                │
+│              Procesa notificaciones                  │
+│                        cada 30s                      │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
 
-**Solución:** 
-- Flask escucha en el puerto asignado por `$PORT`
-- Bot se ejecuta en un hilo secundario daemon
-- Ambos comparten el proceso principal
+### **Pipeline de Datos**
 
-### **7.2. Por qué Reiniciar Gmail Client**
+1. **Input:** Email de LinkedIn/InfoJobs → URL de oferta
+2. **Extracción:** Scraping web (Jina AI → FireCrawl → HTTP directo)
+3. **Análisis:** DeepSeek LLM (doble fase: ATS + RRHH)
+4. **Scoring:** 0-100 con 5 bandas (0-59, 60-69, 70-79, 80-89, 90-100)
+5. **Persistencia:** Resultado guardado en BD
+6. **Notificación:** Worker en Render envía a Telegram (si score ≥ 70)
 
-**Razón Principal - Caché Interno:**
-`GmailToolkit` de LangChain guarda internamente un snapshot de los correos presentes en el momento de su inicialización. Si llegan nuevos correos después de crear la instancia, **NO serán detectados** hasta que se cree una nueva instancia del toolkit.
+---
 
-**Razones Secundarias:**
-Los tokens OAuth pueden expirar o perder sincronización con la API. Crear una nueva instancia de `GmailJobCollector` en cada ciclo fuerza a LangChain a:
-1. **Recargar la lista actualizada de correos** (incluye los recién llegados)
-2. Verificar validez del token OAuth
-3. Refrescar el token si es necesario
-4. Crear nueva sesión HTTP
+## **2. Stack Tecnológico**
 
-**Comportamiento sin reinicio:**
-- Ciclo 1 (10:00): Se inicializa Gmail → Ve 0 correos
-- Ciclo 2 (10:10): Reutiliza instancia → Sigue viendo 0 correos (aunque hayan llegado 3 nuevos)
-- Ciclo 3 (10:20): Reutiliza instancia → Sigue viendo 0 correos
+| Componente | Tecnología | Propósito |
+|:-----------|:-----------|:----------|
+| **Backend** | FastAPI + Uvicorn | API REST, análisis sincrónico |
+| **Frontend** | React 18 + Vite 6 | UI interactiva, dashboard |
+| **Base de datos** | PostgreSQL + asyncpg | Persistencia, cola de mensajes |
+| **LLM** | DeepSeek v4-Flash (LangChain) | Análisis de ofertas, adaptación de CV |
+| **Scraping** | Jina AI + FireCrawl + requests | Extracción de contenido web |
+| **Storage** | Cloudinary | Almacenamiento de PDFs (CV adaptados) |
+| **Notificaciones** | Telegram Bot API | Alertas en tiempo real |
+| **Auth** | JWT + bcrypt | Autenticación segura |
+| **Worker** | FastAPI (Render) | Procesa cola de Telegram |
+| **Deploy** | Docker + GitHub Actions | HF Spaces (backend), Vercel (frontend), Render (worker) |
 
-**Comportamiento con reinicio (actual):**
-- Ciclo 1 (10:00): Nueva instancia → Ve 0 correos
-- Ciclo 2 (10:10): Nueva instancia → Ve 3 correos nuevos ✅
-- Ciclo 3 (10:20): Nueva instancia → Ve los correos que llegaron desde 10:10 ✅
+---
 
-Esto garantiza que el sistema detecte correos en tiempo real sin necesidad de reiniciar manualmente el servicio.
+## **3. Servicios Principales**
 
-### **7.3. Estrategia de Scraping en Cascada**
+### **3.1 Backend (HF Spaces)**
 
-**¿Por qué 3 métodos?**
+**Propósito:** Procesar análisis de ofertas, gestionar autenticación, servir API
 
-- **Jina AI:** Rápido y gratuito, pero puede fallar en páginas muy dinámicas
-- **FireCrawl:** Potente pero requiere API key de pago
-- **Directo:** Último recurso, funciona en la mayoría de sitios estáticos
+**Endpoints principales:**
+- `POST /api/analysis` - Analizar oferta por URL o texto
+- `GET /api/analysis/history` - Historial de análisis
+- `POST /api/adaptations/generate/{analysis_id}` - Generar CV adaptado
+- `GET /health` - Health check
 
-**Ventaja:** Alta disponibilidad. Si un servicio cae, los otros compensan.
+**Características:**
+- ✅ Scoring en 5 bandas (0-59, 60-69, 70-79, 80-89, 90-100)
+- ✅ Solo ofertas con score ≥ 60 pueden generar adaptación
+- ✅ Rate limiting con slowapi
+- ✅ Autenticación JWT
 
-### **7.4. Sistema de Grounding (Anti-Alucinación)**
+### **3.2 Telegram Worker (Render)**
 
-El prompt de Gemini incluye instrucciones explícitas:
+**Propósito:** Procesar cola de notificaciones independientemente del backend
+
+**Comportamiento:**
+- Lee BD cada 30 segundos
+- Si hay mensajes pendientes: intenta enviar a Telegram
+- Si falla: reintenta con exponential backoff
+- Marca como enviado o error
+
+**¿Por qué separado?**
+- HF Spaces tiene restricciones de red que bloquean conexiones persistentes
+- Telegram API requiere timeouts largos
+- Desacoplamiento → mayor confiabilidad y reintentos automáticos
+
+### **3.3 Frontend (Vercel)**
+
+**Propósito:** Dashboard web para análisis, gestión de CV, historial
+
+**Características:**
+- ✅ Análisis en tiempo real
+- ✅ Generación de CV adaptados en LaTeX/PDF
+- ✅ Historial paginado
+- ✅ Responsive design
+
+---
+
+## **4. Lógica Detallada del Análisis**
+
+### **Fase 1: ATS (Applicant Tracking System)**
+
+Filtra por keywords técnicas y requisitos básicos:
+- ¿Tiene los skills requeridos?
+- ¿Coincide el nivel de experiencia?
+- ¿Está en el rango salarial?
+
+**Output:** Score 0-59 (RECHAZADO) o continúa a Fase 2
+
+### **Fase 2: Evaluación Humana (RRHH)**
+
+Evaluación semántica profunda:
+- ¿Encaja la cultura empresarial?
+- ¿Son los soft skills compatibles?
+- ¿Hay crecimiento profesional?
+
+**Output:** Score final 60-100
+
+### **Bandas de Scoring Finales**
+
+| Rango | Nivel | Icono | Acción |
+|-------|-------|-------|--------|
+| 0-59 | ATS_BLOCK | ⛔ | Descartar |
+| 60-69 | Descarte | ⚠️ | No notificar |
+| 70-79 | Apto | ✅ | ← Notificar |
+| 80-89 | Fuerte | 🚀 | ← Notificar |
+| 90-100 | Ideal | 🔥 | ← Notificar |
+
+**Validez:** `is_valid = (score >= 60)` — solo estas pueden generar CV adaptado
+
+---
+
+## **5. Scraping en Cascada**
+
+**Intento 1: Jina AI**
+- Rápido, gratuito
+- URL: `https://r.jina.ai/{url}`
+- Timeout: 15s
+
+**Intento 2: FireCrawl**
+- Renderiza JavaScript
+- Maneja HTML complejo
+- Timeout: 30s
+
+**Intento 3: HTTP Directo**
+- Requests + BeautifulSoup
+- Retry con exponential backoff
+- Último recurso
+
+**Ventaja:** Si un servicio cae, los otros compensan
+
+---
+
+## **6. CV Adaptado (LaTeX + Cloudinary)**
+
+**Flujo:**
+1. Usuario selecciona oferta (score ≥ 60)
+2. Backend adapta CV con DeepSeek (10-20s)
+3. Genera template LaTeX personalizado (5s)
+4. Compila LaTeX → PDF (20-40s)
+5. Sube a Cloudinary (<5s)
+6. Frontend descarga desde Cloudinary
+
+**⏱️ Tiempo Total:** 30-60 segundos por generación
+
+**Características:**
+- ✅ Adaptación automática de secciones según oferta
+- ✅ Sin inventar datos (grounding del prompt)
+- ✅ PDF compilado y descargable
+- ✅ Almacenado en Cloudinary para acceso rápido
+
+---
+
+## **7. Anti-Alucinación (Grounding)**
+
+El prompt de DeepSeek incluye instrucciones explícitas:
+
 ```
 ⚠️ INSTRUCCIONES DE GROUNDING:
 1. Tu análisis debe basarse ÚNICA Y EXCLUSIVAMENTE en el contenido de "TEXTO DE LA WEB"
@@ -365,22 +191,166 @@ El prompt de Gemini incluye instrucciones explícitas:
 3. Debes extraer la fecha de publicación REAL del texto
 ```
 
-Esto reduce drásticamente las alucinaciones del modelo, especialmente en:
+Esto reduce alucinaciones en:
 - Salarios no especificados
 - Fechas inventadas
 - Beneficios no mencionados
 
-### **7.5. Selectores CSS Personalizados**
+---
 
-InfoJobs tiene una estructura HTML compleja con múltiples contenedores. Los selectores actuales fueron obtenidos mediante:
-1. Inspección del DOM con DevTools
-2. Pruebas iterativas con diferentes combinaciones
-3. Validación de contenido extraído
+## **8. Configuración del Entorno**
 
-**Selectores actuales (InfoJobs):**
-```css
-target: #job-description-container, .ij-OfferDetailHeader, h1, .subtitle
-remove: header.global-header, footer, .ij-Share, .ij-Report, #demand-button-container
+### **Variables de Entorno (.env)**
+
+```bash
+# Base de datos
+DATABASE_URL=postgresql+asyncpg://user:pass@host/db
+
+# JWT
+SECRET_KEY=tu_secret_key_super_segura
+
+# DeepSeek LLM
+DEEPSEEK_API_KEY=sk-xxxx
+
+# Cloudinary (PDF)
+CLOUDINARY_NAME=xxxx
+CLOUDINARY_API_KEY=xxxx
+CLOUDINARY_API_SECRET=xxxx
+
+# Gmail (Opcional)
+GOOGLE_CREDENTIALS_JSON={...}
+GOOGLE_TOKEN_JSON={...}
+
+# Telegram
+TELEGRAM_BOT_TOKEN=xxxx
+TELEGRAM_CHAT_ID=xxxx
+
+# Scraping
+JINA_API_KEY=jina_xxxx
+FIRECRAWL_API_KEY=fcrawl_xxxx
+
+# Server
+PORT=7860
 ```
 
-Si InfoJobs cambia su estructura, estos selectores deberán actualizarse.
+---
+
+## **9. Despliegue**
+
+### **Backend → Hugging Face Spaces**
+
+```bash
+git push origin main
+↓
+GitHub Actions ejecuta .github/workflows/deploy-to-hf.yml
+↓
+Pushea a HF Space
+↓
+HF Spaces build Dockerfile automático
+↓
+https://opticv-engine.hf.space
+```
+
+### **Worker → Render**
+
+```bash
+git push origin main
+↓
+Render detecta cambios automáticamente
+↓
+Build Dockerfile.worker
+↓
+Proceso corre independientemente
+```
+
+### **Frontend → Vercel**
+
+```bash
+git push origin main
+↓
+Vercel detecta cambios automáticamente
+↓
+Build con npm run build
+↓
+https://opticv-frontend.vercel.app
+```
+
+---
+
+## **10. Notas Técnicas Importantes**
+
+### **Por qué FastAPI + Uvicorn (no Flask)**
+
+- ✅ Async nativo → mejor performance
+- ✅ Automatic docs (Swagger)
+- ✅ Validación automática (Pydantic)
+- ✅ Rate limiting integrado
+- ✅ Mejor para APIs modernas
+
+### **Por qué Worker Separado en Render**
+
+**Problema con HF Spaces:**
+- Restricciones de red para conexiones persistentes
+- Telegram API requiere timeouts largos
+- Conexiones pueden ser bloqueadas/interrumpidas
+
+**Solución:**
+- Backend guarda mensajes en BD
+- Render Worker los procesa independientemente
+- Reintentos automáticos sin afectar análisis
+
+### **Scoring en 5 Bandas (no 2)**
+
+Permite usuario distinguir entre:
+- Oferta completamente fuera de rango (0-59)
+- Oferta válida pero débil (60-69)
+- Oferta buena (70-79)
+- Oferta excelente (80-89)
+- Oferta perfecta (90-100)
+
+---
+
+## **11. Métricas de Rendimiento**
+
+### **Tiempo de Análisis de Oferta**
+- Scraping: 2-8s (depende de estrategia exitosa)
+- DeepSeek LLM: 10-15s (doble fase ATS + RRHH)
+- Notificación Telegram: <1s
+- **⏱️ Total análisis:** 12-25s
+
+### **Tiempo de Generación de CV Adaptado**
+- Adaptación con DeepSeek: 10-20s
+- Compilación LaTeX → PDF: 20-40s
+- Upload a Cloudinary: <5s
+- **⏱️ Total generación:** 30-60s
+
+### **Recursos del Sistema**
+- RAM: ~150-200 MB
+- CPU: Mínimo (mayoría del tiempo en sleep)
+- BD: ~5MB por 1000 análisis
+
+### **Rate Limits**
+
+**DeepSeek API:**
+- Límites de concurrencia **dinámicos** (basados en carga del servidor)
+- HTTP 429: Respuesta inmediata cuando se alcanza el límite de concurrencia
+- Timeout: Cierra conexión si no comienza inferencia después de 10 minutos
+- Ver: [DeepSeek Rate Limit Docs](https://api-docs.deepseek.com/quick_start/rate_limit)
+
+**LaTeX Compiler:**
+- Tiempo variable según complejidad del CV
+
+---
+
+## **12. Mejoras Futuras**
+
+- [ ] Soporte para más plataformas (Indeed, Glassdoor, etc.)
+- [ ] Dashboard de estadísticas (salary trends, demand by skill)
+- [ ] Integración Notion/Trello para gestionar candidaturas
+- [ ] Generación automática de cover letters
+- [ ] Sistema de feedback (usuario indica si match fue correcto)
+- [ ] Export a CSV/JSON
+
+---
+
+⚡ **Sistema completamente funcional en producción.**

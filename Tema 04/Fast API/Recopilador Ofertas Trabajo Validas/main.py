@@ -66,7 +66,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",           # Vite dev
         "https://opticv-frontend.vercel.app",       # Producción Vercel
-        "https://opticv-engine.hf.space",  # HF Spaces
+        "https://opticv-backend.hf.space",  # HF Spaces
     ],
     allow_credentials=True,
     allow_methods=["*"],

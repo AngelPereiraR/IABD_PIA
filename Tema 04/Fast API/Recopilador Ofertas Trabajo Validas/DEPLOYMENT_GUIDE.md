@@ -1,16 +1,18 @@
-# 🚀 Deployment Guide - OpticsV (Distributed Architecture)
+# 🚀 Deployment Guide - OptiCV (Distributed Architecture)
 
-Guía completa para desplegar OpticsV con **Backend en Hugging Face Spaces** y **Frontend en Vercel/Render**.
+Guía completa para desplegar OptiCV con **Backend en Hugging Face Spaces** (vía GitHub Actions), **Worker de Telegram en Render** y **Frontend en Vercel**.
 
 ---
 
 ## 📋 Tabla de Contenidos
 
 - [Arquitectura de Despliegue](#-arquitectura-de-despliegue)
+- [Setup Inicial](#-setup-inicial)
 - [Backend en Hugging Face Spaces](#-backend-en-hugging-face-spaces)
+- [Telegram Worker en Render](#-telegram-worker-en-render)
 - [Frontend en Vercel](#-frontend-en-vercel)
-- [Frontend en Render](#-frontend-en-render)
 - [Configuración de Conexión](#-configuración-de-conexión)
+- [Checklist Pre-Producción](#-checklist-pre-producción)
 - [Troubleshooting](#-troubleshooting)
 - [Monitoreo y Mantenimiento](#-monitoreo-y-mantenimiento)
 
@@ -19,171 +21,372 @@ Guía completa para desplegar OpticsV con **Backend en Hugging Face Spaces** y *
 ## 🏗️ Arquitectura de Despliegue
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRODUCCIÓN                              │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────────────────┐         ┌──────────────────────┐  │
-│  │   VERCEL            │         │  HUGGING FACE SPACES │  │
-│  │   (Frontend)        │────────▶│  (Backend)           │  │
-│  │                     │         │                      │  │
-│  │ React + Vite 6      │         │ FastAPI + Uvicorn    │  │
-│  │ TailwindCSS         │  REST   │ PostgreSQL (ext)     │  │
-│  │ Zustand State       │  API    │ LangChain + DeepSeek │  │
-│  │ Auto Deploy (Git)   │  :7860  │ Cloudinary           │  │
-│  └─────────────────────┘         └──────────────────────┘  │
-│   https://opticv.vercel.app    https://opticv-engine.hf.space│
-│                                                             │
-│  External Services:                                        │
-│  • PostgreSQL (Railway / Neon / AWS RDS)                  │
-│  • Google OAuth (Gmail)                                   │
-│  • Cloudinary (PDF Storage)                               │
-│  • LLM API (DeepSeek / Gemini)                           │
-│  • Telegram (Notifications - Optional)                    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                         PRODUCCIÓN                                   │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌────────────────────┐      ┌──────────────────────┐                │
+│  │ VERCEL FRONTEND    │      │ HUGGING FACE SPACES  │                │
+│  │ (React + Vite)     │◀───▶│ (FastAPI + Uvicorn)  │                │
+│  │ :5173 (dev)        │  ↑   │ :7860                │                │
+│  │ vercel.app (prod)  │  │   │ hf.space (prod)      │                │
+│  └────────────────────┘  │   └──────────────────────┘                │
+│                          │            ▲                              │
+│          GitHub Push     │            │ Mensaje Bot                  │
+│         (Vercel CI)      │            │ (Telegram API)               │
+│                          │            ▼                              │
+│                      ┌──────────────────────────────┐                │
+│                      │  RENDER WORKER               │                │
+│                      │  (Telegram Bot Processor)    │                │
+│                      │  Dockerfile.worker           │                │
+│                      │  :8000 (health checks)       │                │
+│                      │  render.com (prod)           │                │
+│                      └──────────────────────────────┘                │
+│                               ▲                                      │
+│                               │ Lee cola de BD                       │
+│                               │ cada 30s                             │
+│                               ▼                                      │
+│                      ┌──────────────────────┐                        │
+│                      │  PostgreSQL (Neon)   │                        │
+│                      │  (Persistencia)      │                        │
+│                      └──────────────────────┘                        │
+│                                                                      │
+│  External Services:                                                  │
+│  • Google OAuth (Gmail) → mail_agent.py                              │
+│  • DeepSeek API (LLM) → brain.py                                     │
+│  • Cloudinary (PDF Storage) → loader.py                              │
+│  • Jina AI / FireCrawl (Scraping) → scraper.py                       │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+FLUJO DE DESPLIEGUE:
+  1. GitHub Push → .github/workflows/deploy-to-hf.yml
+  2. GitHub Actions → Push a HF Space (rama main)
+  3. HF Spaces detecta cambios → Build Dockerfile → Deploy
+  4. Frontend push → Vercel CI detecta automáticamente
+  5. Render Worker corre independientemente (lee BD)
+
+⚠️ NOTA IMPORTANTE - Por qué el Worker está separado:
+  • HF Spaces tiene restricciones de red para APIs REST externas
+  • Telegram API requiere conexiones persistentes y timeouts largos
+  • HF Spaces puede bloquear/interrumpir estas conexiones
+  • SOLUCIÓN: Desacoplar el envío a un servicio independiente (Render)
+  • Beneficio: Mayor confiabilidad, reintentos automáticos, sin bloqueos
+```
+
+---
+
+## 🔧 Setup Inicial
+
+Antes de desplegar, asegúrate de tener todo configurado localmente:
+
+### 1. Estructura de carpetas esperada
+
+```
+.
+├── main.py                      # Punto de entrada (FastAPI + Bot thread)
+├── requirements.txt             # Dependencias Python
+├── Dockerfile                   # Backend: HF Spaces + GitHub Actions
+├── Dockerfile.worker            # Worker: Telegram en Render
+├── Dockerfile.frontend          # Frontend: opcional (local dev)
+├── entrypoint.sh               # Script de inicio para backend
+├── entrypoint.worker.sh        # Script de inicio para worker
+├── .github/
+│   └── workflows/
+│       └── deploy-to-hf.yml    # GitHub Actions workflow
+├── src/
+│   ├── mail_agent.py           # Gmail OAuth
+│   ├── scraper.py              # Web scraping
+│   ├── brain.py                # DeepSeek AI analysis
+│   ├── bot.py                  # Telegram bot
+│   ├── loader.py               # CV loader
+│   └── setup_auth.py           # OAuth setup
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── .env.production
+│   └── ...
+├── data/
+│   └── cv_usuario.pdf          # CV para análisis
+└── tests/
+    └── test_plan_*.py
+```
+
+### 2. Variables de entorno globales
+
+Crear `.env` local (NO hacer push a GitHub):
+
+```bash
+# Base de datos
+DATABASE_URL=postgresql+asyncpg://user:pass@host/db
+
+# Gmail OAuth
+GOOGLE_CREDENTIALS_JSON='{"installed":{...}}'
+GOOGLE_TOKEN_JSON='{"token":"..."}'
+
+# DeepSeek LLM
+DEEPSEEK_API_KEY=sk-xxxx
+
+# Cloudinary (PDF storage)
+CLOUDINARY_NAME=xxxx
+CLOUDINARY_API_KEY=xxxx
+CLOUDINARY_API_SECRET=xxxx
+
+# Jina AI (Scraping primario)
+JINA_API_KEY=jina_xxxx
+
+# FireCrawl (Scraping fallback)
+FIRECRAWL_API_KEY=fcrawl_xxxx
+
+# Telegram (Bot + Worker)
+TELEGRAM_BOT_TOKEN=123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
+TELEGRAM_CHAT_ID=987654321
+
+# Server
+PORT=7860
+SECRET_KEY=tu_secret_key_muy_segura
 ```
 
 ---
 
 ## ⚙️ Backend en Hugging Face Spaces
 
-Hugging Face Spaces es ideal para FastAPI porque:
-- ✅ Soporte nativo para Python/FastAPI
-- ✅ Permanencia de datos en disco
-- ✅ Base de datos externa (PostgreSQL)
-- ✅ Variables de entorno seguras
-- ✅ SSL/HTTPS automático
-- ✅ GPU disponible (si necesario)
+El backend se despliega automáticamente via GitHub Actions cuando haces push a `main`.
 
-### Paso 1: Preparar el Repositorio
+### Paso 1: Preparar el repositorio
 
-#### 1.1 Estructura de archivos para HF Spaces
+Verifica que tengas:
 
-Crea en la raíz un archivo `app.py` (puede ser un symlink a `main.py`):
+- ✅ `main.py` en la raíz (punto de entrada)
+- ✅ `requirements.txt` actualizado con todas las dependencias
+- ✅ `Dockerfile` (multi-stage, optimizado)
+- ✅ `entrypoint.sh` (inyecta secrets en credenciales)
+- ✅ `src/` con todos los módulos
+- ✅ `data/cv_usuario.pdf` existe
+- ✅ `.github/workflows/deploy-to-hf.yml` configurado
 
-```bash
-# En la raíz del proyecto
-cp main.py app.py
-# O crea un alias
-ln -s main.py app.py  # Linux/Mac
-mklink app.py main.py # Windows
-```
+### Paso 2: Configurar GitHub Secrets
 
-#### 1.2 Archivo `requirements.txt` actualizado
+En tu repositorio GitHub:
 
-Verifica que está en la raíz del proyecto con todas las dependencias.
-
-#### 1.3 Crear archivo `.gitignore` si no existe
+1. Ve a **Settings → Secrets and variables → Actions**
+2. Añade estos secrets (todos obligatorios):
 
 ```
-.venv/
-__pycache__/
-*.pyc
-.env
-.env.local
-.DS_Store
-*.pdf
-node_modules/
-dist/
-credentials.json
-token.json
-.vercel/
+HF_TOKEN              # Token de Hugging Face (https://huggingface.co/settings/tokens)
 ```
 
-### Paso 2: Crear Space en Hugging Face
+**Cómo obtener HF_TOKEN:**
+
+- Ve a https://huggingface.co/settings/tokens
+- Crea un nuevo token con permisos de escritura (write)
+- Cópialo y añádelo como `HF_TOKEN` en GitHub Secrets
+
+### Paso 3: Crear el Space en Hugging Face
 
 1. Ve a https://huggingface.co/new-space
-2. **Space name**: `opticv-backend` (o el que prefieras)
-3. **Space type**: `Docker` (recomendado para FastAPI)
-4. **Visibility**: `Private` (seguridad) o `Public` si prefieres
-5. Click **Create space**
+2. Configura:
+   - **Space name**: `opticv-backend`
+   - **License**: Selecciona una (MIT recomendado)
+   - **Visibility**: `Private` (para seguridad)
+3. Click **Create space**
+4. ⚠️ NO hagas push manual—GitHub Actions lo hará automáticamente
 
-### Paso 3: Pushear Código a HF
+### Paso 4: Configurar Variables de Entorno en HF Spaces
+
+En tu Space de HF:
+
+1. Ve a **Settings → Repository secrets**
+2. Añade todas estas variables:
+
+```
+DATABASE_URL=postgresql+asyncpg://user:pass@host/db
+SECRET_KEY=tu_secret_key_super_segura
+DEEPSEEK_API_KEY=sk-xxxx
+CLOUDINARY_NAME=xxxx
+CLOUDINARY_API_KEY=xxxx
+CLOUDINARY_API_SECRET=xxxx
+GOOGLE_CREDENTIALS_JSON={"installed":{...}}
+GOOGLE_TOKEN_JSON={"token":"..."}
+JINA_API_KEY=jina_xxxx
+FIRECRAWL_API_KEY=fcrawl_xxxx
+TELEGRAM_BOT_TOKEN=123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
+TELEGRAM_CHAT_ID=987654321
+PORT=7860
+```
+
+### Paso 5: Entender el flujo de GitHub Actions
+
+Cuando hagas `git push` a `main`:
+
+1. GitHub Actions ejecuta `.github/workflows/deploy-to-hf.yml`
+2. El workflow:
+   - Clona tu repositorio
+   - Copia la carpeta `Tema 04/Fast API/Recopilador Ofertas Trabajo Validas` a `/tmp/hf-space`
+   - Inicializa git local en esa carpeta
+   - Configura Git LFS para archivos binarios (`.pdf`, `.jpg`, `.png`)
+   - Hace commit de todos los cambios
+   - Pushea a `https://huggingface.co/spaces/AngelPereiraR/opticv-backend`
+3. HF Spaces detecta el push:
+   - Build del Dockerfile
+   - Deploy automático
+   - Logs visibles en tiempo real
+
+### Paso 6: Monitorear el despliegue
+
+Tras hacer `git push`:
+
+1. Ve a tu repositorio GitHub → **Actions**
+2. Verifica que el workflow `Deploy to Hugging Face Space` está en verde
+3. Ve a https://huggingface.co/spaces/tu-usuario/opticv-backend
+4. En la pestaña **Logs**, verás:
+   ```
+   Building Docker image...
+   Installing dependencies...
+   [TELEGRAM WORKER] Iniciando bot...
+   Starting Uvicorn server...
+   ```
+5. Cuando veas `Uvicorn running on 0.0.0.0:7860`, el deploy está completo
+
+### Paso 7: Verificar el backend
 
 ```bash
-# Clonar el space recién creado
-git clone https://huggingface.co/spaces/tu-usuario/opticv-backend
-cd opticv-backend
+# En tu navegador o curl:
+curl https://opticv-backend.hf.space/health
 
-# Copiar archivos de tu proyecto
-# Copia main.py, requirements.txt, src/, etc.
-
-# Push a HF
-git add .
-git commit -m "Initial FastAPI backend"
-git push
+# Debe retornar:
+# {"status":"ok"}
 ```
 
-### Paso 4: Configurar Variables de Entorno
+---
 
-En el **Space → Settings → Repository Secrets**, añade:
+## 🤖 Telegram Worker en Render
+
+El Worker de Telegram es un servicio independiente que procesa la cola de notificaciones en la BD.
+
+### ¿Por qué un worker separado en Render?
+
+**Restricciones de HF Spaces con Telegram API:**
+
+HF Spaces ejecuta contenedores con restricciones severas de red que **interfieren con la API de Telegram**:
+
+- 🔴 Conexiones persistentes → bloqueadas/interrumpidas
+- 🔴 Timeouts extensos → HF puede terminar la conexión antes de que llegue la respuesta
+- 🔴 Rate limiting → conexiones HTTP pueden ser limitadas
+- 🔴 Reintentos → muy complejos de implementar de forma confiable
+
+**Resultado en HF Spaces:** Los mensajes se pierden sin forma de recuperarlos.
+
+**Solución: Desacoplamiento mediante Render Worker**
 
 ```
-DATABASE_URL = postgresql+asyncpg://user:pass@host/db
-SECRET_KEY = tu_secret_key_super_segura
-DEEPSEEK_API_KEY = sk-xxxx
-CLOUDINARY_NAME = xxxx
-CLOUDINARY_API_KEY = xxxx
-CLOUDINARY_API_SECRET = xxxx
-GOOGLE_CREDENTIALS_JSON = {"installed":{...}}
-GOOGLE_TOKEN_JSON = {"token":"..."}
-JINA_API_KEY = jina_xxxx            # Scraping primario
-TELEGRAM_BOT_TOKEN = xxxx (opcional)
-TELEGRAM_CHAT_ID = xxxx (opcional)
-PORT = 7860                          # Default para HF Spaces
+HF Spaces (main.py)          Render Worker
+    │                            │
+    ├─ Análisis offer            │
+    ├─ Inserta en BD             │
+    └─ INSERT telegram_          ├─ Lee BD cada 30s
+       notifications (pending)    ├─ Intenta enviar
+                                  ├─ Reintenta si falla
+                                  └─ Marca como enviado
 ```
 
-### Paso 5: Configurar Dockerfile (opcional pero recomendado)
+- ✅ El backend guarda mensajes, **no intenta enviarlos**
+- ✅ Render Worker corre independientemente con mejor conectividad
+- ✅ Implementa reintentos automáticos si Telegram API falla
+- ✅ Render es gratuito y perfecto para tareas periódicas
+- ✅ Desacoplamiento: análisis y envío son independientes
 
-Si usas Docker en HF Spaces, crea `Dockerfile`:
+**Beneficios de esta arquitectura:**
 
-```dockerfile
-FROM python:3.11-slim
+| Aspecto           | HF Spaces Directo ❌ | Con Render Worker ✅   |
+| ----------------- | -------------------- | ---------------------- |
+| **Confiabilidad** | Mensajes se pierden  | Reintentos indefinidos |
+| **Latencia**      | Bloquea análisis     | Análisis no afectado   |
+| **Conectividad**  | Restricciones de red | Conexión normal        |
+| **Costo**         | Gratuito (limitado)  | Gratuito (free tier)   |
+| **Recuperación**  | Imposible            | Automática             |
 
-WORKDIR /app
+### Paso 1: Crear un nuevo servicio en Render
 
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
+1. Ve a https://dashboard.render.com
+2. Click **New +** → **Web Service**
+3. Conecta tu repositorio GitHub (la rama `main`)
 
-# Copiar archivos
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+### Paso 2: Configurar el servicio
 
-COPY . .
+En la pantalla de creación:
 
-# FastAPI en puerto 7860 (default de HF Spaces)
-EXPOSE 7860
+| Campo               | Valor                    |
+| ------------------- | ------------------------ |
+| **Name**            | `opticv-telegram-worker` |
+| **Environment**     | `Docker`                 |
+| **Repository**      | Tu repo GitHub           |
+| **Branch**          | `main`                   |
+| **Dockerfile Path** | `Dockerfile.worker`      |
+| **Plan**            | `Free` (suficiente)      |
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
+### Paso 3: Configurar variables de entorno
+
+En **Environment Variables**, añade exactamente las mismas que en HF Spaces:
+
+```
+DATABASE_URL=postgresql+asyncpg://user:pass@host/db
+TELEGRAM_BOT_TOKEN=123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
+TELEGRAM_CHAT_ID=987654321
+PORT=8000
 ```
 
-### Paso 6: Inicializar base de datos y usuario admin
+⚠️ **Importante:**
 
-Tras el primer deploy, ejecuta desde tu entorno local (o via HF terminal):
+- Usa el **mismo** `DATABASE_URL`, `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID` que en HF Spaces
+- El `PORT` en Render puede ser 8000 (el healthcheck lo encontrará)
 
-```bash
-# Crear tablas
-python init_db.py
+### Paso 4: Deploy y monitoreo
 
-# Aplicar migraciones
-alembic upgrade head
+1. Click **Create Web Service**
+2. Render hace build y deployment automático
+3. En la pestaña **Logs**, busca:
+   ```
+   [TELEGRAM WORKER] Iniciando worker...
+   [TELEGRAM WORKER] Procesando cola cada 30 segundos...
+   ```
+4. Cuando veas esos logs, el worker está listo
 
-# Inicializar usuario admin con CV y avatar en Cloudinary
-python seed_user.py
+### Paso 5: Entender el flujo de mensajes
+
+```
+HF Spaces (bot.py genera mensaje)
+    ↓
+BD PostgreSQL (Neon) - guarda en tabla telegram_notifications
+    ↓
+Render Worker (lee BD cada 30s)
+    ↓
+Si hay mensajes pendientes:
+    • Intenta enviar a Telegram API
+    • Si falla: reintenta con exponential backoff
+    • Marca como enviado o error en BD
+    ↓
+Telegram Chat (usuario recibe alerta)
 ```
 
-### Paso 7: Monitoreo en HF Spaces
+### Paso 6: Monitorear el worker
 
-- El space automáticamente:
-  - Detecta cambios en git
-  - Reconstruye la imagen
-  - Reinicia la aplicación
-  - Proporciona logs en tiempo real
+**En Render:**
 
-**URL del backend**: `https://opticv-engine.hf.space`
+- Visita tu servicio en el dashboard
+- Pestaña **Logs** → filtra por `[TELEGRAM WORKER]`
+- Status debe estar en verde (**Running**)
+
+**En BD:**
+Query para verificar la cola:
+
+```sql
+SELECT id, status, retries, created_at
+FROM telegram_notifications
+ORDER BY created_at DESC
+LIMIT 10;
+```
 
 ---
 
@@ -192,112 +395,81 @@ python seed_user.py
 ### Requisitos Previos
 
 - Cuenta en Vercel (https://vercel.com)
-- Repositorio GitHub con el código frontend
+- Repositorio GitHub con el código frontend en carpeta `frontend/`
 
-### Paso 1: Conectar Repositorio a Vercel
+### Paso 1: Conectar repositorio a Vercel
 
 1. Ve a https://vercel.com/new
-2. Selecciona **Import Git Repository**
-3. Elige tu repositorio GitHub
-4. Configure el Import:
-   - **Project name**: `opticv-frontend`
-   - **Root Directory**: `frontend/` (si es monorepo)
-   - **Framework Preset**: `Vite`
-5. Click **Import**
+2. Click **Import Git Repository**
+3. Selecciona tu repositorio GitHub
+4. Vercel detectará automáticamente que es un proyecto Node.js
 
-### Paso 2: Configurar Build Settings
+### Paso 2: Configurar el proyecto
 
-Vercel automáticamente detecta Vite, pero verifica:
+En la pantalla de importación:
 
 ```
+Project Name: opticv-frontend
+Root Directory: frontend/
+Framework Preset: Vite
 Build Command: npm run build
 Output Directory: dist
 Install Command: npm install
 ```
 
-### Paso 3: Variables de Entorno en Vercel
+Vercel debería detectar esto automáticamente si tienes:
+
+- `frontend/package.json`
+- `frontend/vite.config.js`
+
+### Paso 3: Configurar variables de entorno
 
 En **Project Settings → Environment Variables**, añade:
 
 ```
-VITE_API_URL = https://opticv-engine.hf.space
-VITE_GOOGLE_CLIENT_ID = tu_google_client_id_production
+VITE_API_URL = https://opticv-backend.hf.space
 ```
 
-**Importante**: 
-- Aplica a: **Production**, **Preview**, **Development**
-- VITE_ prefix es requerido por Vite
+**Aplicar a:**
 
-### Paso 4: Deploy
+- Production
+- Preview
+- Development
+
+**Importante:**
+
+- El prefijo `VITE_` es **obligatorio** para que Vite las exponga al navegador
+- `VITE_API_URL` debe ser HTTPS
+
+### Paso 4: Deploy automático
+
+1. Click **Import** para crear el proyecto
+2. Vercel hace build automáticamente
+3. Tras el primer deploy, cada `git push` a `main` triggeará un nuevo deploy
+
+**URLs generadas:**
+
+- Preview: `https://opticv-frontend-RANDOM.vercel.app` (para cada PR)
+- Production: `https://opticv-frontend.vercel.app` (rama main)
+
+### Paso 5: Verificar el frontend
 
 ```bash
-# Automático: Push a GitHub y Vercel hace deploy automáticamente
-git push origin main
+# En el navegador:
+https://opticv-frontend.vercel.app
 
-# O manual con Vercel CLI:
-npm install -g vercel
-cd frontend
-vercel --prod
+# En DevTools Console, verifica:
+console.log(import.meta.env.VITE_API_URL)
+# Debe mostrar: https://opticv-backend.hf.space
 ```
-
-### Paso 5: Verificar Deployment
-
-- [ ] Accede a `https://opticv.vercel.app`
-- [ ] Comprueba que carga sin errores
-- [ ] Abre DevTools → Console y busca errores
-- [ ] Verifica que `VITE_API_URL` apunta a `https://opticv-engine.hf.space`
-- [ ] Prueba login (debe conectar con backend en HF)
-
-### Troubleshooting Vercel
-
-**Build falla:**
-```bash
-# Verifica que package.json tiene "build" script
-npm run build  # Debe funcionar localmente primero
-```
-
-**CORS errors:**
-```
-→ Verifica que backend tiene CORS configurado para Vercel URL
-→ En main.py: allow_origins incluye vercel.app domain
-```
-
----
-
-## 🚀 Frontend en Render (Alternativa a Vercel)
-
-Si prefieres Render en lugar de Vercel:
-
-### Paso 1: Crear Web Service en Render
-
-1. Ve a https://dashboard.render.com
-2. **New** → **Web Service**
-3. Conecta tu repositorio GitHub
-4. Configuración:
-   - **Name**: `opticv-frontend`
-   - **Environment**: `Node`
-   - **Build Command**: `cd frontend && npm install && npm run build`
-   - **Start Command**: `npm run preview`
-   - **Root Directory**: (dejar vacío o `/`)
-
-### Paso 2: Variables de Entorno en Render
-
-En **Environment → Environment Variables**:
-
-```
-VITE_API_URL = https://opticv-engine.hf.space
-VITE_GOOGLE_CLIENT_ID = tu_google_client_id
-```
-
-### Paso 3: Deploy
-
-Click **Create Web Service** y Render hace deploy automáticamente.
 
 ---
 
 ## 🔗 Configuración de Conexión
 
-### Paso 1: Actualizar CORS en Backend (main.py)
+### Paso 1: CORS en Backend
+
+En `main.py`, verifica que el middleware CORS incluye todos los dominios:
 
 ```python
 from fastapi.middleware.cors import CORSMiddleware
@@ -305,9 +477,10 @@ from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",                # Local dev
-        "https://opticv.vercel.app",            # Vercel producción
-        "https://opticv-engine.hf.space",       # HF Spaces (self)
+        "http://localhost:5173",                    # Dev local
+        "http://localhost:3000",                    # Dev alt
+        "https://opticv-frontend.vercel.app",       # Vercel production
+        "https://opticv-backend.hf.space",           # HF Spaces (self)
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -315,159 +488,315 @@ app.add_middleware(
 )
 ```
 
-### Paso 2: Verificar apiClient.js
+### Paso 2: Verificar API Client
+
+En `frontend/src/services/apiClient.js`:
 
 ```javascript
-// frontend/src/services/apiClient.js
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7860';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:7860";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 10000,
 });
-// El token Bearer se añade via interceptor de request
+
+// Interceptor para agregar token Bearer
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 ```
 
-### Paso 3: Probar Conexión
+### Paso 3: Probar conectividad
 
-En el navegador, abre la consola DevTools y ejecuta:
+En DevTools Console del navegador:
 
 ```javascript
-fetch('https://opticv-engine.hf.space/health')
-  .then(r => r.json())
+fetch("https://opticv-backend.hf.space/health")
+  .then((r) => r.json())
   .then(console.log)
-  .catch(e => console.error('Error:', e))
-```
+  .catch((e) => console.error("Error:", e));
 
-Debe retornar `{"status":"ok"}` o similar.
+// Debe imprimir: {status: "ok"}
+```
 
 ---
 
 ## 🗄️ Base de Datos Persistente
 
-### Opción A: Railway (Recomendado)
-
-1. Ve a https://railway.app
-2. **New Project** → **PostgreSQL**
-3. Copia `DATABASE_URL` completa
-4. Añade a **HF Spaces Secrets**:
-   ```
-   DATABASE_URL = postgresql+asyncpg://...
-   ```
-
-### Opción B: Neon
+### Opción Recomendada: Neon
 
 1. Ve a https://console.neon.tech
 2. Crea un proyecto PostgreSQL
-3. Copia **Connection String**
+3. Copia la **Connection String**
 4. Cámbialo a asyncpg:
-   ```
-   postgresql+asyncpg://user:pass@host/db
-   ```
 
-### Opción C: AWS RDS
+```
+# Original (psycopg2):
+postgresql://user:pass@host/dbname
 
-Para producción más robusta, usa RDS, pero requiere setup más complejo.
+# Cambiar a asyncpg:
+postgresql+asyncpg://user:pass@host/dbname
+```
+
+5. Usa este `DATABASE_URL` en:
+   - `.env` local
+   - HF Spaces Secrets
+   - Render Worker Environment Variables
+
+### Opción B: Railway
+
+1. Ve a https://railway.app
+2. **New Project** → **PostgreSQL**
+3. En la BD recién creada:
+   - Click **Variables**
+   - Busca `DATABASE_URL`
+   - Cópiala y cámbiala a asyncpg
+
+### Verificar conexión local
+
+```bash
+python -c "
+import asyncio
+import asyncpg
+async def test():
+    conn = await asyncpg.connect('postgresql+asyncpg://...')
+    result = await conn.fetchval('SELECT 1')
+    print(f'Conexión OK: {result}')
+    await conn.close()
+asyncio.run(test())
+"
+```
+
+---
+
+## ⏱️ Tiempos Esperados en Producción
+
+- **Análisis de oferta:** 12-25 segundos
+  - Scraping: 2-8s
+  - DeepSeek LLM: 10-15s
+- **Generación de CV adaptado:** 30-60 segundos
+  - Adaptación DeepSeek: 10-20s
+  - Compilación LaTeX: 20-40s
+- **Notificaciones Telegram:** <1 segundo (via Render Worker)
 
 ---
 
 ## 📝 Checklist Pre-Producción
 
+### GitHub & Repositorio
+
+- [ ] `.github/workflows/deploy-to-hf.yml` existe y está actualizado
+- [ ] `HF_TOKEN` y `HF_USERNAME` configurados en GitHub Secrets
+- [ ] Rama `main` está protegida (require review antes de merge)
+- [ ] No hay secretos commiteados (`grep -r "sk-" .`)
+
 ### Backend (HF Spaces)
 
-- [ ] Dockerfile funciona localmente
-- [ ] `requirements.txt` actualizado
-- [ ] Variables de entorno configuradas en HF
-- [ ] Base de datos externa conectada
-- [ ] CORS permite frontend URL
-- [ ] `/health` endpoint funciona
-- [ ] Logs visibles en HF Spaces
+- [ ] `Dockerfile` funciona localmente: `docker build -t test .`
+- [ ] `requirements.txt` actualizado con todas las dependencias
+- [ ] `entrypoint.sh` existe y es ejecutable
+- [ ] HF Space `opticv-backend` creado y set a Private
+- [ ] Todos los secrets configurados en HF Spaces Settings
+- [ ] `main.py` tiene ambos endpoints: `GET /` y `GET /health`
+- [ ] `data/cv_usuario.pdf` existe en el repositorio
+- [ ] GitHub Actions workflow ejecutó exitosamente (rama main)
+- [ ] Backend responde en `https://opticv-backend.hf.space/health`
 
-### Frontend (Vercel/Render)
+### Telegram Worker (Render)
 
-- [ ] `npm run build` funciona localmente
-- [ ] `VITE_API_URL` apunta a backend HF
-- [ ] Variables de entorno en Vercel/Render
-- [ ] Login funciona con backend en HF
-- [ ] CV upload funciona
-- [ ] Análisis completo funciona
-- [ ] Descargas de PDF funcionan
+- [ ] `Dockerfile.worker` existe y funciona localmente
+- [ ] `entrypoint.worker.sh` existe
+- [ ] `telegram_worker.py` existe
+- [ ] Servicio creado en Render: `opticv-telegram-worker`
+- [ ] Todos los secrets configurados en Render Environment Variables
+- [ ] Logs muestran `[TELEGRAM WORKER]` messages
+- [ ] Healthcheck responde en `http://localhost:8000/health`
+
+### Frontend (Vercel)
+
+- [ ] `frontend/package.json` tiene scripts `build` y `dev`
+- [ ] `frontend/vite.config.js` existe y está configurado
+- [ ] `frontend/.env.production` existe
+- [ ] Variables de entorno en Vercel Project Settings
+- [ ] `npm run build` funciona localmente sin errores
+- [ ] Frontend carga en `https://opticv-frontend.vercel.app`
+- [ ] `VITE_API_URL` apunta correctamente a backend HF
 
 ### Integración
 
-- [ ] Frontend conecta a backend sin CORS errors
-- [ ] Autenticación JWT funciona
+- [ ] Frontend conecta a backend (no CORS errors)
+- [ ] Login funciona con Google OAuth
+- [ ] CV upload y análisis funcionan
+- [ ] Telegram bot recibe alertas
 - [ ] Rate limiting activo
-- [ ] Errores se manejan gracefully
-- [ ] Carga es rápida (<3s TTI)
+- [ ] HTTPS en todas las URLs
 
 ---
 
 ## 🐛 Troubleshooting
 
-### CORS Errors
+### GitHub Actions workflow no se ejecuta
 
-**Error**: `Access to XMLHttpRequest blocked by CORS`
+**Problema:** No ves logs en GitHub → Actions
 
-**Solución**:
+**Soluciones:**
+
+```bash
+# 1. Verifica que el workflow file es válido YAML
+yamllint .github/workflows/deploy-to-hf.yml
+
+# 2. Verifica que los secrets existen
+# GitHub → Settings → Secrets → Actions
+
+# 3. Verifica permisos en el workflow:
+#    El token debe tener write access a HF Spaces
+```
+
+### Backend no inicia en HF Spaces
+
+**Error en logs:** `ModuleNotFoundError: No module named 'src'`
+
+**Solución:**
+
+```bash
+# Verifica estructura:
+ls -la
+# Debe mostrar: main.py, requirements.txt, Dockerfile, src/, etc.
+
+# Verifica Dockerfile copia correctamente:
+COPY src/ src/
+COPY main.py .
+```
+
+**Error:** `PORT already in use`
+
+```bash
+# En entrypoint.sh, verifica:
+uvicorn main:app --host 0.0.0.0 --port $PORT
+# Donde $PORT viene de variables de entorno (default 7860)
+```
+
+### CORS errors en frontend
+
+**Error:** `Access to XMLHttpRequest at 'https://opticv-backend.hf.space/...' from origin 'https://opticv-frontend.vercel.app' has been blocked`
+
+**Soluciones:**
+
+1. Verifica CORS en `main.py`:
+
 ```python
-# En main.py, verifica que tu Vercel/Render URL está en allow_origins
-# Y asegúrate de usar https, no http
+allow_origins=[
+    "https://opticv-frontend.vercel.app",  # ← Verifica que está aquí
+    "https://opticv-backend.hf.space",
+]
 ```
 
-### Backend no responde
+2. Verifica que es HTTPS, no HTTP:
 
-**Error**: `502 Bad Gateway` en Vercel
+```javascript
+// ❌ Mal
+const API_URL = "http://opticv-backend.hf.space";
 
-**Solución**:
+// ✅ Correcto
+const API_URL = "https://opticv-backend.hf.space";
+```
+
+3. Deploy a HF nuevamente (push a GitHub):
+
 ```bash
-# Verifica logs en HF Spaces
-# Asegúrate que el servicio está ejecutándose
-# Comprueba DATABASE_URL es correcta
+git add .
+git commit -m "Fix CORS configuration"
+git push origin main
+# Espera a que GitHub Actions complete el deploy
 ```
 
-### Variables de entorno no funcionan
+### Telegram messages no llegan
 
-**Error**: `KeyError: VITE_API_URL` o `None`
+**Problema:** Worker está running pero no se envían mensajes
 
-**Solución**:
-- Frontend: Verifica `VITE_` prefix
-- Backend: Verifica nombres exactos en `.env`
-- Reinicia el build después de cambiar env vars
+**Checklist:**
 
-### Base de datos no conecta
+1. Verifica logs en Render:
 
-**Error**: `asyncpg.exceptions.PostgresError`
+```
+[TELEGRAM WORKER] Iniciando worker...
+[TELEGRAM WORKER] Procesando cola cada 30 segundos...
+```
 
-**Solución**:
+2. Verifica que la cola tiene mensajes (en BD):
+
+```sql
+SELECT COUNT(*) FROM telegram_notifications WHERE status = 'pending';
+```
+
+3. Verifica credenciales:
+
+```sql
+-- En HF Spaces:
+echo $TELEGRAM_BOT_TOKEN
+echo $TELEGRAM_CHAT_ID
+
+-- Deben coincidir con Render Environment Variables
+```
+
+4. Verifica que el worker está actualmente leyendo (logs cada 30s):
+
+```
+# Espera 30 segundos, deben ver logs como:
+[TELEGRAM WORKER] Processing 5 messages...
+[TELEGRAM WORKER] Message sent: id=123
+```
+
+5. Si sigue sin funcionar, revisa si la API de Telegram está bloqueada:
+
 ```bash
-# En local, prueba:
-python -c "import asyncpg; print('OK')"
-
-# Verifica DATABASE_URL:
-# postgresql+asyncpg://user:pass@host:port/dbname
-#                    ^-- asyncpg es importante
+# En local:
+curl -X POST https://api.telegram.org/bot${TOKEN}/sendMessage \
+  -H "Content-Type: application/json" \
+  -d '{"chat_id":"'"${CHAT_ID}"'","text":"Test"}'
 ```
 
-### PDF download no funciona
+### Frontend no carga
 
-**Error**: `403 Forbidden` desde Cloudinary
+**Error 404 o página en blanco**
 
-**Solución**:
+1. Verifica que el build succeeded en Vercel Dashboard
+2. Abre DevTools → Console y busca errores
+3. Verifica `VITE_API_URL`:
+
+```javascript
+console.log(import.meta.env.VITE_API_URL);
 ```
-→ Verifica CLOUDINARY_API_KEY en HF Secrets
-→ Asegúrate que Cloudinary_NAME es correcto
-→ Prueba PDF upload localmente primero
+
+### Database connection error
+
+**Error:** `asyncpg.exceptions.PostgresError` o `OperationalError`
+
+**Soluciones:**
+
+1. Verifica que `DATABASE_URL` es correcta (asyncpg):
+
+```
+✅ postgresql+asyncpg://user:pass@host/db
+❌ postgresql://user:pass@host/db (sin asyncpg)
 ```
 
-### Análisis fallan
+2. Verifica que la BD existe y es accesible desde la red:
 
-**Error**: `LLM API Error` o `Rate Limit`
-
-**Solución**:
+```bash
+psql "$(echo $DATABASE_URL | sed 's/asyncpg//' | sed 's/+//')" -c "SELECT 1"
 ```
-→ Verifica DEEPSEEK_API_KEY (o GOOGLE_GEMINI_API_KEY)
-→ Comprueba que tienes saldo en API
-→ Revisa rate limiting en slowapi
+
+3. Si usa Neon, verifica connection limits no estén alcanzados:
+
+```sql
+SELECT datname, count(*) as connections
+FROM pg_stat_activity
+GROUP BY datname;
 ```
 
 ---
@@ -477,138 +806,129 @@ python -c "import asyncpg; print('OK')"
 ### Monitoreo Diario
 
 **HF Spaces:**
-- Visita https://huggingface.co/spaces/tu-usuario/opticv-backend
-- Comprueba logs recientes
-- Verifica que el status es "RUNNING"
 
-**Vercel:**
-- Visita https://vercel.com/dashboard
-- Revisa últimos deployments
-- Comprueba analytics
+- Ve a https://huggingface.co/spaces/tu-usuario/opticv-backend
+- Pestaña **Logs** → Busca errores
+- Status debe estar en verde (**RUNNING**)
+- Endpoint debe responder en `/health`
+
+**Render (Worker):**
+
+- Dashboard Render → Tu servicio
+- Logs → Filtra `[TELEGRAM WORKER]`
+- Status debe estar en verde (**Running**)
+- Última actualización no debe ser > 1 hora
+
+**Vercel (Frontend):**
+
+- https://vercel.com/dashboard → Tu proyecto
+- Pestaña **Deployments** → Último debe estar en verde
+- Analytics → Monitorea latencia y errores
 
 ### Alertas Recomendadas
 
 Configura notificaciones para:
-- Fallos de deployment
-- Errores 5xx en backend
-- Uso alto de API
-- Latencia > 2s
 
-### Actualizaciones de Dependencias
+**GitHub Actions:**
+
+- Workflow failures
+- View: https://github.com/tu-repo/actions
+
+**HF Spaces:**
+
+- Visita los logs regularmente (no tiene alertas automáticas)
+
+**Render:**
+
+- Settings → Notifications
+- Enable: Failed deploys, instance crashes
+
+**Vercel:**
+
+- Project Settings → Notifications
+- Enable: Failed deployments
+
+### Actualizar Dependencias
 
 **Mensual:**
+
 ```bash
 # Backend
 pip list --outdated
 pip install --upgrade <package>
+pip freeze > requirements.txt
+git add requirements.txt && git commit -m "Upgrade dependencies"
+git push  # GitHub Actions hará deploy automático
 
 # Frontend
 npm outdated
 npm update
+git add package-lock.json && git commit -m "Upgrade dependencies"
+git push  # Vercel hará deploy automático
 ```
 
 **Trimestral:**
+
 ```bash
-# Actualiza Python minor version
-# Actualiza Node.js LTS
-# Revisa breaking changes en dependencias clave
+# Actualiza versiones major
+pip install --upgrade --pre
+
+# Revisa breaking changes
+# Python: https://docs.python.org/3/whatsnew/
+# Node.js: https://nodejs.org/en/blog/release/
 ```
 
 ---
 
-## 🔄 CI/CD Automático
+## 🚨 Rollback (Emergencia)
 
-### GitHub Actions (Backend)
+Si algo falla en producción:
 
-Crear `.github/workflows/deploy-backend.yml`:
+### Backend (HF Spaces)
 
-```yaml
-name: Deploy Backend to HF Spaces
-
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/**'
-      - 'requirements.txt'
-      - 'main.py'
-      - '.github/workflows/deploy-backend.yml'
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Push to HF Spaces
-        run: |
-          git config --global user.email "ci@example.com"
-          git config --global user.name "CI Bot"
-          git remote add hf https://${{ secrets.HF_USERNAME }}:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_USERNAME }}/opticv-backend
-          git push -u hf main
-```
-
-### GitHub Actions (Frontend)
-
-Vercel se integra automáticamente, pero puedes añadir checks:
-
-```yaml
-name: Frontend Tests & Deploy
-
-on:
-  push:
-    branches: [main]
-    paths: ['frontend/**']
-  pull_request:
-    paths: ['frontend/**']
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: cd frontend && npm install
-      - run: cd frontend && npm run build
-      # Vercel se despliega automáticamente
-```
-
----
-
-## 🚨 Rollback
-
-### Si algo falla en producción
-
-**Backend (HF Spaces):**
 ```bash
-# Vuelve al commit anterior
+# 1. Ve al último commit bueno
+git log --oneline | head -5
+
+# 2. Revert el commit malo
 git revert <commit-hash>
-git push
-# HF Spaces detecta cambios y redeploy automáticamente
+git push origin main
+
+# GitHub Actions detectará y hará deploy automático (2-3 min)
 ```
 
-**Frontend (Vercel):**
+### Frontend (Vercel)
+
 1. Dashboard Vercel → Deployments
-2. Selecciona la versión anterior
-3. Click "Promote to Production"
+2. Busca el deployment anterior que funcionaba
+3. Click en los 3 puntos → "Promote to Production"
+
+### Worker (Render)
+
+Si el worker está en crash loop:
+
+1. Dashboard Render → Tu servicio
+2. Click **Suspend** (pausa el servicio)
+3. Verifica logs para encontrar el error
+4. Fix el código, push a GitHub
+5. Render re-deploya automáticamente
+6. Si sigue fallando, click **Resume** y investiga más
 
 ---
 
-## 📋 Checklist de Seguridad
+## 🔐 Checklist de Seguridad
 
-- [ ] No hay secretos en GitHub (usa env vars)
-- [ ] HTTPS en todas las URLs
-- [ ] CORS solo permite dominios conocidos
-- [ ] Rate limiting activo
-- [ ] Passwords hasheados con bcrypt
-- [ ] JWT tokens con expiración
-- [ ] No hay logs con datos sensibles
-- [ ] Cloudinary tiene restricciones de acceso
-- [ ] Base de datos tiene backups automáticos
-- [ ] API keys no expuestos en frontend
+- [ ] No hay secretos en GitHub (`.env` en `.gitignore`)
+- [ ] HTTPS en todas las URLs (no http://)
+- [ ] CORS solo permite dominios conocidos (no `*`)
+- [ ] JWT tokens tienen expiración (15 min recomendado)
+- [ ] Passwords hasheados con bcrypt, no plaintext
+- [ ] Rate limiting activo en todos los endpoints
+- [ ] No hay logs con tokens o passwords
+- [ ] Cloudinary tiene restricciones de acceso (upload only for auth users)
+- [ ] Base de datos tiene backups automáticos (verificar con Neon/Railway)
+- [ ] API keys no expuestos en frontend (solo en backend via env vars)
+- [ ] Google OAuth redirect URIs configurados correctamente
 
 ---
 
@@ -616,22 +936,24 @@ git push
 
 Si tienes problemas:
 
-1. Revisa logs:
-   - Backend: HF Spaces dashboard
-   - Frontend: Vercel analytics
-   - Browser: DevTools console
+1. **Revisa logs** (por orden):
+   - GitHub Actions: https://github.com/tu-repo/actions
+   - HF Spaces: https://huggingface.co/spaces/tu-usuario/opticv-backend → Logs
+   - Render: Dashboard → Tu servicio → Logs
+   - Vercel: Dashboard → Tu proyecto → Logs
+   - Browser: DevTools → Console
 
-2. Comprueba:
-   - Variables de entorno (todas)
-   - URLs (https://, no http://)
+2. **Comprueba configuración:**
+   - Todas las variables de entorno (copied exactamente)
+   - URLs (https://, dominios correctos)
    - CORS (frontend URL en allow_origins)
-   - Database (conecta correctamente)
+   - Database (conexión correcta desde todas las apps)
 
-3. Contacta:
+3. **Contacta:**
    - GitHub Issues para bugs
-   - Documentación de cada plataforma
-   - Discord/comunidad de HF/Vercel
+   - Documentación oficial: HF, Render, Vercel
+   - Comunidades: Discord de HF, Render, Vercel
 
 ---
 
-**⚡ ¡Despliegue completado! 🎉**
+**⚡ ¡Sistema completamente desplegado! 🎉**
