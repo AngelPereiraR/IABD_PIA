@@ -66,6 +66,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Telegram Worker API", lifespan=lifespan)
 
 @app.get("/")
+@app.head("/")
 async def root():
     """Health check endpoint."""
     return {"status": "ok", "service": "telegram-worker"}
